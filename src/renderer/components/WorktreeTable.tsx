@@ -6,6 +6,15 @@ import { FilterBar, type Filters } from './FilterBar';
 
 const DEFAULT_FILTERS: Filters = { repo: null, dirty: false, safeToDelete: false, hasPr: false, locked: false };
 
+const TH: React.CSSProperties = {
+  padding: '6px 10px', textAlign: 'left', fontSize: 12, fontWeight: 600,
+  color: 'var(--fg-muted)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
+};
+const TD: React.CSSProperties = {
+  padding: '6px 10px', fontSize: 13, borderBottom: '1px solid var(--bg-tertiary)',
+  verticalAlign: 'middle', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+};
+
 interface Props {
   worktrees: WorktreeRow[];
   loading: boolean;
@@ -43,21 +52,17 @@ export function WorktreeTable({ worktrees, loading, onSelect }: Props): React.JS
         if (sortKey === 'repo') { av = a.repo.name + a.path; bv = b.repo.name + b.path; }
         else if (sortKey === 'branch') { av = a.branch ?? ''; bv = b.branch ?? ''; }
         else if (sortKey === 'lastCommit') { av = a.lastCommitDate; bv = b.lastCommitDate; }
-        else if (sortKey === 'sessions') { av = String(a.sessions.length); bv = String(b.sessions.length); }
-        else if (sortKey === 'pr') { av = a.pr ? String(a.pr.number) : ''; bv = b.pr ? String(b.pr.number) : ''; }
+        else if (sortKey === 'sessions') {
+          const cmp = a.sessions.length - b.sessions.length;
+          return sortDir === 'asc' ? cmp : -cmp;
+        } else if (sortKey === 'pr') {
+          const cmp = (a.pr?.number ?? 0) - (b.pr?.number ?? 0);
+          return sortDir === 'asc' ? cmp : -cmp;
+        }
         const cmp = av.localeCompare(bv);
         return sortDir === 'asc' ? cmp : -cmp;
       });
   }, [worktrees, search, filters, sortKey, sortDir]);
-
-  const TH: React.CSSProperties = {
-    padding: '6px 10px', textAlign: 'left', fontSize: 12, fontWeight: 600,
-    color: 'var(--fg-muted)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
-  };
-  const TD: React.CSSProperties = {
-    padding: '6px 10px', fontSize: 13, borderBottom: '1px solid var(--bg-tertiary)',
-    verticalAlign: 'middle', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-  };
 
   return (
     <div>

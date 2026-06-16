@@ -6,8 +6,12 @@ export function Toast({ message, type, onDone }: ToastProps): React.JSX.Element 
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const t = setTimeout(() => { setVisible(false); setTimeout(onDone, 300); }, 3000);
-    return () => clearTimeout(t);
+    let fadeTimer: ReturnType<typeof setTimeout>;
+    const dismissTimer = setTimeout(() => {
+      setVisible(false);
+      fadeTimer = setTimeout(onDone, 300);
+    }, 3000);
+    return () => { clearTimeout(dismissTimer); clearTimeout(fadeTimer); };
   }, [onDone]);
 
   return (

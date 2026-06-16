@@ -17,22 +17,28 @@ export function OperationsMenu({ worktree, onResult, onRefresh }: Props): React.
 
   const doRemove = async (): Promise<void> => {
     setConfirm(null);
-    const r = await window.api.worktrees.remove(worktree.path, { force: forceRemove, deleteLocalBranch });
-    onResult(r.message, r.success);
-    if (r.success) onRefresh();
+    try {
+      const r = await window.api.worktrees.remove(worktree.path, { force: forceRemove, deleteLocalBranch });
+      onResult(r.message, r.success);
+      if (r.success) onRefresh();
+    } catch (e) { onResult(String(e), false); }
   };
 
   const doDeleteRemote = async (): Promise<void> => {
     setConfirm(null);
-    const r = await window.api.worktrees.deleteRemoteBranch(worktree.path);
-    onResult(r.message, r.success);
-    if (r.success) onRefresh();
+    try {
+      const r = await window.api.worktrees.deleteRemoteBranch(worktree.path);
+      onResult(r.message, r.success);
+      if (r.success) onRefresh();
+    } catch (e) { onResult(String(e), false); }
   };
 
   const doSync = async (action: 'fetch' | 'pull' | 'mergeBase' | 'prune'): Promise<void> => {
-    const r = await window.api.worktrees.sync(worktree.path, action);
-    onResult(r.message, r.success);
-    if (r.success) onRefresh();
+    try {
+      const r = await window.api.worktrees.sync(worktree.path, action);
+      onResult(r.message, r.success);
+      if (r.success) onRefresh();
+    } catch (e) { onResult(String(e), false); }
   };
 
   return (

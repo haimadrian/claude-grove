@@ -11,6 +11,8 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
   const [editorCommand, setEditorCommand] = useState(settings.editorCommand);
   const [defaultBaseBranch, setDefaultBaseBranch] = useState(settings.defaultBaseBranch);
   const [prCacheTtl, setPrCacheTtl] = useState(String(settings.prCacheTtlSeconds));
+  const [theme, setThemeLocal] = useState(settings.theme);
+  const [terminal, setTerminalLocal] = useState(settings.defaultTerminal);
   const [saving, setSaving] = useState(false);
 
   const addRoot = async (): Promise<void> => {
@@ -30,12 +32,11 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
       editorCommand,
       defaultBaseBranch,
       prCacheTtlSeconds: Number(prCacheTtl) || 60,
+      theme,
+      defaultTerminal: terminal,
     });
     setSaving(false);
   };
-
-  const setTheme = (theme: Theme): Promise<void> => onUpdate({ theme });
-  const setTerminal = (t: TerminalKind): Promise<void> => onUpdate({ defaultTerminal: t });
 
   return (
     <div style={{
@@ -65,7 +66,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
         <Section title="Theme">
           {(['system', 'light', 'dark'] as Theme[]).map((t) => (
             <label key={t} style={{ marginRight: 12, fontSize: 13, cursor: 'pointer' }}>
-              <input type="radio" name="theme" value={t} checked={settings.theme === t} onChange={() => setTheme(t)} style={{ marginRight: 4 }} />
+              <input type="radio" name="theme" value={t} checked={theme === t} onChange={() => setThemeLocal(t)} style={{ marginRight: 4 }} />
               {t}
             </label>
           ))}
@@ -74,7 +75,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
         <Section title="Default terminal">
           {(['Terminal', 'iTerm2', 'Warp'] as TerminalKind[]).map((t) => (
             <label key={t} style={{ marginRight: 12, fontSize: 13, cursor: 'pointer' }}>
-              <input type="radio" name="terminal" value={t} checked={settings.defaultTerminal === t} onChange={() => setTerminal(t)} style={{ marginRight: 4 }} />
+              <input type="radio" name="terminal" value={t} checked={terminal === t} onChange={() => setTerminalLocal(t)} style={{ marginRight: 4 }} />
               {t}
             </label>
           ))}

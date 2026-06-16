@@ -4,15 +4,23 @@ import { ThemeProvider } from './theme/ThemeProvider';
 import { WorktreeTable } from './components/WorktreeTable';
 import { WorktreeDetail } from './components/WorktreeDetail';
 import { GhMissingNotice } from './components/GhMissingNotice';
+import { SettingsPage } from './components/SettingsPage';
+import { Onboarding } from './components/Onboarding';
+import { Toast, useToast } from './components/Toast';
 import { useSettings } from './hooks/useSettings';
 import { useWorktrees } from './hooks/useWorktrees';
 
 export function App(): React.JSX.Element {
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const { worktrees, loading, refresh } = useWorktrees();
   const [ghInstalled, setGhInstalled] = useState<boolean | null>(null);
   const [ghAuthed, setGhAuthed] = useState<boolean | null>(null);
   const [selected, setSelected] = useState<WorktreeRow | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { toast, showToast, clearToast } = useToast();
+
+  // showToast is available for future use (e.g. pass to WorktreeDetail)
+  void showToast;
 
   React.useEffect(() => {
     window.api.gh.status().then((s) => {
@@ -22,9 +30,22 @@ export function App(): React.JSX.Element {
   }, []);
 
   const showGhNotice = ghInstalled === false || ghAuthed === false;
+  const noRoots = settings !== null && settings.roots.length === 0;
+
+  const addRoot = async (): Promise<void> => {
+    const res = await window.api.dialog.pickDirectory();
+    if (!res.canceled && res.filePaths[0] !== undefined) {
+      await updateSettings({ roots: [...(settings?.roots ?? []), res.filePaths[0]] });
+      refresh();
+    }
+  };
+
+  if (settings === null) {
+    return <ThemeProvider setting="system"><div style={{ padding: 32 }}>Loading...</div></ThemeProvider>;
+  }
 
   return (
-    <ThemeProvider setting={settings?.theme ?? 'system'}>
+    <ThemeProvider setting={settings.theme}>
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <header style={{
           padding: '10px 16px', borderBottom: '1px solid var(--border)',
@@ -41,15 +62,36 @@ export function App(): React.JSX.Element {
           >
             Refresh
           </button>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            style={{
+              fontSize: 12, padding: '4px 10px', background: 'var(--bg-secondary)',
+              border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', color: 'var(--fg)',
+            }}
+          >
+            Settings
+          </button>
         </header>
         <main style={{ flex: 1, overflow: 'auto', padding: '12px 16px' }}>
           {showGhNotice && <GhMissingNotice installed={ghInstalled ?? false} />}
-          {selected ? (
+          {noRoots ? (
+            <Onboarding onAddRoot={addRoot} />
+          ) : selected !== null ? (
             <WorktreeDetail worktree={selected} onBack={() => setSelected(null)} />
           ) : (
             <WorktreeTable worktrees={worktrees} loading={loading} onSelect={setSelected} />
           )}
         </main>
+        {settingsOpen && (
+          <SettingsPage
+            settings={settings}
+            onUpdate={async (patch) => { await updateSettings(patch); refresh(); }}
+            onClose={() => setSettingsOpen(false)}
+          />
+        )}
+        {toast !== null && (
+          <Toast message={toast.message} type={toast.type} onDone={clearToast} />
+        )}
       </div>
     </ThemeProvider>
   );

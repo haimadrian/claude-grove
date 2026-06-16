@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { WorktreeRow } from '../shared/types';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { WorktreeTable } from './components/WorktreeTable';
+import { WorktreeDetail } from './components/WorktreeDetail';
 import { GhMissingNotice } from './components/GhMissingNotice';
 import { useSettings } from './hooks/useSettings';
 import { useWorktrees } from './hooks/useWorktrees';
@@ -32,9 +33,11 @@ export function App(): React.JSX.Element {
           <span style={{ fontWeight: 600, fontSize: 15 }}>Claude Grove</span>
           <button
             onClick={refresh}
-            style={{ marginLeft: 'auto', fontSize: 12, padding: '4px 10px',
+            style={{
+              marginLeft: 'auto', fontSize: 12, padding: '4px 10px',
               background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-              borderRadius: 6, cursor: 'pointer', color: 'var(--fg)' }}
+              borderRadius: 6, cursor: 'pointer', color: 'var(--fg)',
+            }}
           >
             Refresh
           </button>
@@ -42,11 +45,7 @@ export function App(): React.JSX.Element {
         <main style={{ flex: 1, overflow: 'auto', padding: '12px 16px' }}>
           {showGhNotice && <GhMissingNotice installed={ghInstalled ?? false} />}
           {selected ? (
-            <div>
-              <button onClick={() => setSelected(null)} style={{ marginBottom: 12, fontSize: 12 }}>← Back</button>
-              <h2>{selected.branch ?? 'detached'}</h2>
-              <p style={{ color: 'var(--fg-muted)', fontSize: 12 }}>{selected.path}</p>
-            </div>
+            <WorktreeDetail worktree={selected} onBack={() => setSelected(null)} />
           ) : (
             <WorktreeTable worktrees={worktrees} loading={loading} onSelect={setSelected} />
           )}

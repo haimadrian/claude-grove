@@ -21,8 +21,8 @@ export async function resolveBaseBranch(worktreePath: string, opts: BaseBranchOp
     if (name) return await preferOrigin(worktreePath, name, runner);
   }
 
-  // 3. defaultBaseBranch + fallback to main/master
-  for (const candidate of [opts.defaultBaseBranch, 'main', 'master']) {
+  // 3. defaultBaseBranch + fallback to main/master (deduplicated)
+  for (const candidate of [...new Set([opts.defaultBaseBranch, 'main', 'master'].filter(Boolean))]) {
     if (!candidate) continue;
     const verify = await runner.run(['-C', worktreePath, 'rev-parse', '--verify', '--quiet', candidate]);
     if (verify.code === 0) return await preferOrigin(worktreePath, candidate, runner);

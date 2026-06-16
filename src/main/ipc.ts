@@ -11,7 +11,8 @@ import { getPr } from './gh/pr';
 import { ghStatus } from './gh/ghRunner';
 import { isPathWithinRoots } from './security/validate';
 import { logger } from './logger';
-import type { Settings, SyncAction } from '../shared/types';
+import type { Settings, SyncAction, TerminalKind } from '../shared/types';
+import { available as terminalsAvailable, resumeSession, openDir as terminalOpenDir } from './terminals/adapters';
 
 let cachedRepos: string[] = [];
 
@@ -113,10 +114,14 @@ export function registerIpc(): void {
   // GH
   ipcMain.handle(CH.ghStatus, async () => ghStatus());
 
-  // Terminals (stub — implemented fully in Task 18)
-  ipcMain.handle(CH.terminalsAvailable, async () => ['Terminal']);
-  ipcMain.handle(CH.terminalsResume, async () => ({ success: false, message: 'Terminal adapters not yet implemented' }));
-  ipcMain.handle(CH.terminalsOpenDir, async () => ({ success: false, message: 'Terminal adapters not yet implemented' }));
+  // Terminals
+  ipcMain.handle(CH.terminalsAvailable, async () => terminalsAvailable());
+  ipcMain.handle(CH.terminalsResume, async (_e, input: { terminal: TerminalKind; launchDir: string; sessionId: string }) => {
+    return resumeSession(input.terminal, input.launchDir, input.sessionId);
+  });
+  ipcMain.handle(CH.terminalsOpenDir, async (_e, input: { terminal: TerminalKind; dir: string }) => {
+    return terminalOpenDir(input.terminal, input.dir);
+  });
 
   // Open
   ipcMain.handle(CH.openEditor, async (_e, p: string) => {

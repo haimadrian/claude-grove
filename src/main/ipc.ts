@@ -69,13 +69,15 @@ export function registerIpc(): void {
     return fullDiff(wtPath, resolvedBase);
   });
 
-  ipcMain.handle(CH.worktreesRemove, async (_e, wtPath: string, opts: { force: boolean; deleteLocalBranch: boolean; branch: string | null }) => {
+  ipcMain.handle(CH.worktreesRemove, async (_e, wtPath: string, opts: { force: boolean; deleteLocalBranch: boolean }) => {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
     const repos = await getRepos(settings);
     const repoRoot = repos.find((r) => wtPath.startsWith(r + '/')) ?? '';
     if (!repoRoot) return { success: false, message: 'Cannot find repo root for worktree' };
-    const result = await removeWorktree(wtPath, repoRoot, opts);
+    const wts = await listAllWorktrees(repos);
+    const branch = wts.find((w) => w.path === wtPath)?.branch ?? null;
+    const result = await removeWorktree(wtPath, repoRoot, { ...opts, branch });
     if (result.success) invalidateRepoCache();
     return result;
   });
@@ -119,6 +121,7 @@ export function registerIpc(): void {
   // Open
   ipcMain.handle(CH.openEditor, async (_e, p: string) => {
     const settings = await loadSettings();
+    if (!guardPath(p, settings)) return { success: false, message: 'Path not allowed' };
     return new Promise<{ success: boolean; message: string }>((resolve) => {
       execFile(settings.editorCommand, [p], (err) => {
         if (err) resolve({ success: false, message: err.message });
@@ -128,11 +131,14 @@ export function registerIpc(): void {
   });
 
   ipcMain.handle(CH.openFinder, async (_e, p: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(p, settings)) return { success: false, message: 'Path not allowed' };
     const res = await shell.openPath(p);
     return { success: !res, message: res || `Opened ${p}` };
   });
 
   ipcMain.handle(CH.openUrl, async (_e, url: string) => {
+    if (!/^https?:\/\//i.test(url)) return { success: false, message: 'Only http/https URLs allowed' };
     await shell.openExternal(url);
     return { success: true, message: `Opened ${url}` };
   });

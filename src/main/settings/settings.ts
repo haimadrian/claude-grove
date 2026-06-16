@@ -4,6 +4,7 @@ import { app } from 'electron';
 import type { Settings } from '../../shared/types';
 import { DEFAULT_SETTINGS } from './defaults';
 import { mergeSettings } from './mergeSettings';
+import { logger } from '../logger';
 
 function settingsPath(): string {
   return path.join(app.getPath('userData'), 'settings.json');
@@ -15,6 +16,7 @@ export async function loadSettings(): Promise<Settings> {
     const parsed = JSON.parse(raw) as Partial<Settings>;
     return mergeSettings(DEFAULT_SETTINGS, parsed);
   } catch {
+    logger.warn('settings: failed to load, using defaults');
     return { ...DEFAULT_SETTINGS };
   }
 }

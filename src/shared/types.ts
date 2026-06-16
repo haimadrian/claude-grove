@@ -80,4 +80,7 @@ export interface OpResult {
   stderr?: string;
 }
 
-export interface GhStatus { installed: boolean; authed: boolean; }
+export interface GhStatus {
+  installed: boolean;
+  authed: boolean;
+}

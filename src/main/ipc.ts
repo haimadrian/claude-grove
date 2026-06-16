@@ -1,0 +1,147 @@
+import { ipcMain, dialog, shell } from 'electron';
+import { execFile } from 'node:child_process';
+import { CH } from '../shared/ipcChannels';
+import { loadSettings, updateSettings } from './settings/settings';
+import { scanRepos } from './git/repoScanner';
+import { listAllWorktrees } from './git/worktrees';
+import { listCommits, commitDiff, fullDiff } from './git/diff';
+import { resolveBaseBranch } from './git/baseBranch';
+import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree } from './git/operations';
+import { getPr } from './gh/pr';
+import { ghStatus } from './gh/ghRunner';
+import { isPathWithinRoots } from './security/validate';
+import { logger } from './logger';
+import type { Settings, SyncAction } from '../shared/types';
+
+let cachedRepos: string[] = [];
+
+async function getRepos(settings: Settings): Promise<string[]> {
+  if (cachedRepos.length === 0 && settings.roots.length > 0) {
+    cachedRepos = await scanRepos(settings.roots);
+  }
+  return cachedRepos;
+}
+
+function invalidateRepoCache(): void {
+  cachedRepos = [];
+}
+
+function guardPath(p: string, settings: Settings): boolean {
+  return isPathWithinRoots(p, settings.roots) || cachedRepos.some((r) => p === r || p.startsWith(r + '/'));
+}
+
+export function registerIpc(): void {
+  // Settings
+  ipcMain.handle(CH.settingsGet, async () => {
+    return loadSettings();
+  });
+
+  ipcMain.handle(CH.settingsUpdate, async (_e, patch: Partial<Settings>) => {
+    const result = await updateSettings(patch);
+    invalidateRepoCache();
+    return result;
+  });
+
+  // Worktrees
+  ipcMain.handle(CH.worktreesList, async () => {
+    const settings = await loadSettings();
+    const repos = await getRepos(settings);
+    return listAllWorktrees(repos);
+  });
+
+  ipcMain.handle(CH.worktreesCommits, async (_e, wtPath: string, base?: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) { logger.warn(`ipc: rejected path ${wtPath}`); return []; }
+    const resolvedBase = base ?? await resolveBaseBranch(wtPath, { pr: null, defaultBaseBranch: settings.defaultBaseBranch });
+    return listCommits(wtPath, resolvedBase);
+  });
+
+  ipcMain.handle(CH.worktreesCommitDiff, async (_e, wtPath: string, sha: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return '';
+    return commitDiff(wtPath, sha);
+  });
+
+  ipcMain.handle(CH.worktreesFullDiff, async (_e, wtPath: string, base?: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return '';
+    const resolvedBase = base ?? await resolveBaseBranch(wtPath, { pr: null, defaultBaseBranch: settings.defaultBaseBranch });
+    return fullDiff(wtPath, resolvedBase);
+  });
+
+  ipcMain.handle(CH.worktreesRemove, async (_e, wtPath: string, opts: { force: boolean; deleteLocalBranch: boolean; branch: string | null }) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
+    const repos = await getRepos(settings);
+    const repoRoot = repos.find((r) => wtPath.startsWith(r + '/')) ?? '';
+    if (!repoRoot) return { success: false, message: 'Cannot find repo root for worktree' };
+    const result = await removeWorktree(wtPath, repoRoot, opts);
+    if (result.success) invalidateRepoCache();
+    return result;
+  });
+
+  ipcMain.handle(CH.worktreesDeleteRemote, async (_e, wtPath: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
+    const wts = await listAllWorktrees(await getRepos(settings));
+    const wt = wts.find((w) => w.path === wtPath);
+    return deleteRemoteBranch(wtPath, wt?.branch ?? null);
+  });
+
+  ipcMain.handle(CH.worktreesCreate, async (_e, input: { repoPath: string; branch: string; base: string }) => {
+    const settings = await loadSettings();
+    if (!guardPath(input.repoPath, settings)) return { success: false, message: 'Path not allowed' };
+    const result = await createWorktree(input, settings.newWorktreeParentDir);
+    if (result.success) invalidateRepoCache();
+    return result;
+  });
+
+  ipcMain.handle(CH.worktreesSync, async (_e, wtPath: string, action: SyncAction) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
+    return syncWorktree(wtPath, action, settings.defaultBaseBranch);
+  });
+
+  // PR
+  ipcMain.handle(CH.prGet, async (_e, ownerRepo: string, branch: string) => {
+    const settings = await loadSettings();
+    return getPr(ownerRepo, branch, settings.prCacheTtlSeconds);
+  });
+
+  // GH
+  ipcMain.handle(CH.ghStatus, async () => ghStatus());
+
+  // Terminals (stub — implemented fully in Task 18)
+  ipcMain.handle(CH.terminalsAvailable, async () => ['Terminal']);
+  ipcMain.handle(CH.terminalsResume, async () => ({ success: false, message: 'Terminal adapters not yet implemented' }));
+  ipcMain.handle(CH.terminalsOpenDir, async () => ({ success: false, message: 'Terminal adapters not yet implemented' }));
+
+  // Open
+  ipcMain.handle(CH.openEditor, async (_e, p: string) => {
+    const settings = await loadSettings();
+    return new Promise<{ success: boolean; message: string }>((resolve) => {
+      execFile(settings.editorCommand, [p], (err) => {
+        if (err) resolve({ success: false, message: err.message });
+        else resolve({ success: true, message: `Opened ${p}` });
+      });
+    });
+  });
+
+  ipcMain.handle(CH.openFinder, async (_e, p: string) => {
+    const res = await shell.openPath(p);
+    return { success: !res, message: res || `Opened ${p}` };
+  });
+
+  ipcMain.handle(CH.openUrl, async (_e, url: string) => {
+    await shell.openExternal(url);
+    return { success: true, message: `Opened ${url}` };
+  });
+
+  // Dialog
+  ipcMain.handle(CH.pickDirectory, async () => {
+    const result = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+    return result;
+  });
+
+  logger.info(`ipc: registered ${Object.keys(CH).length} handlers`);
+}

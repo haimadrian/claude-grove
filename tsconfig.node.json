@@ -5,5 +5,5 @@
     "types": ["node"],
     "outDir": "out/main"
   },
-  "include": ["src/main/**/*", "src/preload/**/*", "src/shared/**/*"]
+  "include": ["src/main/**/*", "src/preload/**/*", "src/shared/**/*", "src/stubs/**/*"]
 }

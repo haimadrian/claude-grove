@@ -13,6 +13,8 @@ import { isPathWithinRoots } from './security/validate';
 import { logger } from './logger';
 import type { Settings, SyncAction, TerminalKind } from '../shared/types';
 import { available as terminalsAvailable, resumeSession, openDir as terminalOpenDir } from './terminals/adapters';
+import { scanSessions } from './sessions/sessionScanner';
+import { linkSessions } from './sessions/sessionLinker';
 
 let cachedRepos: string[] = [];
 
@@ -47,7 +49,11 @@ export function registerIpc(): void {
   ipcMain.handle(CH.worktreesList, async () => {
     const settings = await loadSettings();
     const repos = await getRepos(settings);
-    return listAllWorktrees(repos);
+    const worktrees = await listAllWorktrees(repos);
+    const wtPaths = worktrees.map((w) => w.path);
+    const sessions = await scanSessions(settings.claudeProjectsDir, wtPaths);
+    linkSessions(worktrees, sessions);
+    return worktrees;
   });
 
   ipcMain.handle(CH.worktreesCommits, async (_e, wtPath: string, base?: string) => {
@@ -117,9 +123,13 @@ export function registerIpc(): void {
   // Terminals
   ipcMain.handle(CH.terminalsAvailable, async () => terminalsAvailable());
   ipcMain.handle(CH.terminalsResume, async (_e, input: { terminal: TerminalKind; launchDir: string; sessionId: string }) => {
+    const settings = await loadSettings();
+    if (!guardPath(input.launchDir, settings)) return { success: false, message: 'Path not allowed' };
     return resumeSession(input.terminal, input.launchDir, input.sessionId);
   });
   ipcMain.handle(CH.terminalsOpenDir, async (_e, input: { terminal: TerminalKind; dir: string }) => {
+    const settings = await loadSettings();
+    if (!guardPath(input.dir, settings)) return { success: false, message: 'Path not allowed' };
     return terminalOpenDir(input.terminal, input.dir);
   });
 

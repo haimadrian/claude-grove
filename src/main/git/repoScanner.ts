@@ -23,7 +23,7 @@ async function walk(dir: string, depth: number, repos: string[]): Promise<void> 
   } catch {
     return;
   }
-  // check if this dir is a git repo
+  // Intentionally no isDirectory() guard: linked worktrees use a .git FILE, not a dir.
   const hasGit = entries.some((e) => e.name === '.git');
   if (hasGit) {
     repos.push(dir);

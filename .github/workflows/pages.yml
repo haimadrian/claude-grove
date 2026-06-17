@@ -1,0 +1,62 @@
+name: GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build site with test reports and deploy
+    runs-on: macos-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+
+      - name: Unit tests + coverage
+        run: pnpm test
+        env:
+          CI: "true"
+
+      - name: Build Pages site
+        run: node scripts/build-pages.mjs
+
+      - name: Delete stale github-pages artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: github-pages
+          failOnError: false
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _pages
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          {
+            echo "## Deployed to GitHub Pages"
+            echo ""
+            echo "- Home: ${{ steps.deployment.outputs.page_url }}"
+            echo "- Unit tests: ${{ steps.deployment.outputs.page_url }}reports/unit/"
+            echo "- Coverage: ${{ steps.deployment.outputs.page_url }}reports/coverage/"
+          } >> "$GITHUB_STEP_SUMMARY"

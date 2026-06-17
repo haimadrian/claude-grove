@@ -2,6 +2,8 @@ name: CI
 on: [push, pull_request]
 permissions:
   contents: read
+  checks: write
+  pull-requests: write
 
 jobs:
   lint-typecheck-test:
@@ -15,4 +17,21 @@ jobs:
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
-      - run: pnpm test
+      - name: Run unit tests
+        run: pnpm test
+        env:
+          CI: "true"
+      - name: Upload unit test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-report
+          path: reports/unit-html
+          retention-days: 14
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: reports/coverage
+          retention-days: 14

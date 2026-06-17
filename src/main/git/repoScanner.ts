@@ -23,12 +23,13 @@ async function walk(dir: string, depth: number, repos: string[]): Promise<void> 
   } catch {
     return;
   }
-  // Only match .git DIRECTORY — linked worktrees have a .git file and are discovered
-  // via `git worktree list`, not by the scanner.
-  const hasGit = entries.some((e) => e.name === '.git' && e.isDirectory());
-  if (hasGit) {
-    repos.push(dir);
-    return; // don't descend into repos
+  // Stop at any .git entry. If it's a directory, this is a main repo — add it.
+  // If it's a file, this is a linked worktree — don't add (git worktree list handles it),
+  // but still stop descending so we don't spam depth-limit warnings inside worktrees.
+  const gitEntry = entries.find((e) => e.name === '.git');
+  if (gitEntry) {
+    if (gitEntry.isDirectory()) repos.push(dir);
+    return;
   }
   // recurse into non-hidden, non-node_modules subdirs
   for (const e of entries) {

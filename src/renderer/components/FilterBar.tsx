@@ -50,7 +50,7 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
       <span style={filters.locked ? CHIP_ACTIVE : CHIP_STYLE} onClick={() => toggle('locked')}>locked</span>
       <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--fg-muted)' }}>
         Sort:{' '}
-        {['repo', 'branch', 'lastCommit', 'sessions', 'pr'].map((k) => (
+        {['repo', 'branch', 'lastCommit', 'modified', 'sessions', 'pr'].map((k) => (
           <span
             key={k}
             style={{ ...CHIP_STYLE, display: 'inline', marginLeft: 4 }}

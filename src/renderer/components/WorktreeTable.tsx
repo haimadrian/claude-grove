@@ -176,6 +176,8 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   });
 
   const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Modified', 'Sessions', 'PR'];
+  // Sort key per header (empty string = not sortable, e.g. State)
+  const HEADER_SORT_KEYS = ['repo', 'branch', '', 'lastCommit', 'modified', 'sessions', 'pr'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -200,12 +202,19 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
         >
           <thead>
             <tr>
-              {HEADERS.map((label, idx) => (
-                <th key={label} style={thStyle(idx)}>
-                  {label}
-                  <div style={RESIZE_HANDLE} onMouseDown={(e) => handleResizeStart(e, idx)} />
+              {HEADERS.map((label, idx) => {
+                const sk = HEADER_SORT_KEYS[idx] ?? '';
+                return (
+                <th
+                  key={label}
+                  style={{ ...thStyle(idx), cursor: sk ? 'pointer' : 'default' }}
+                  onClick={() => { if (sk) handleSort(sk); }}
+                >
+                  {label}{sk && sortKey === sk ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+                  <div style={RESIZE_HANDLE} onMouseDown={(e) => { e.stopPropagation(); handleResizeStart(e, idx); }} />
                 </th>
-              ))}
+                );
+              })}
               {/* Zero-width th — actions float absolutely, no layout contribution */}
               <th style={{ ...TH, width: 0, padding: 0, overflow: 'visible' }} />
             </tr>

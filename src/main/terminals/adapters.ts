@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import fs from 'node:fs';
-import { clipboard } from 'electron';
+import { clipboard, Notification } from 'electron';
 import type { TerminalKind, OpResult } from '../../shared/types';
 
 export function available(): TerminalKind[] {
@@ -66,7 +66,11 @@ async function runInWarp(dir: string, cmd?: string): Promise<OpResult> {
   });
   if (cmd) {
     clipboard.writeText(cmd);
-    return { success: true, message: `Warp opened at ${dir}. Command copied to clipboard — paste to run.` };
+    new Notification({
+      title: 'Claude Grove',
+      body: `Command copied to clipboard — paste in Warp:\n${cmd}`,
+    }).show();
+    return { success: true, message: `Command copied to clipboard — paste in Warp.` };
   }
   return { success: true, message: `Warp opened at ${dir}` };
 }

@@ -23,8 +23,9 @@ async function walk(dir: string, depth: number, repos: string[]): Promise<void> 
   } catch {
     return;
   }
-  // Intentionally no isDirectory() guard: linked worktrees use a .git FILE, not a dir.
-  const hasGit = entries.some((e) => e.name === '.git');
+  // Only match .git DIRECTORY — linked worktrees have a .git file and are discovered
+  // via `git worktree list`, not by the scanner.
+  const hasGit = entries.some((e) => e.name === '.git' && e.isDirectory());
   if (hasGit) {
     repos.push(dir);
     return; // don't descend into repos

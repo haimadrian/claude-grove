@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { WorktreeRow } from '../../shared/types';
 
 export function useWorktrees(): {
@@ -8,7 +8,6 @@ export function useWorktrees(): {
 } {
   const [worktrees, setWorktrees] = useState<WorktreeRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -34,18 +33,6 @@ export function useWorktrees(): {
 
   useEffect(() => {
     load();
-  }, [load]);
-
-  useEffect(() => {
-    const onFocus = (): void => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => load(), 1000);
-    };
-    window.addEventListener('focus', onFocus);
-    return () => {
-      window.removeEventListener('focus', onFocus);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
   }, [load]);
 
   return { worktrees, loading, refresh };

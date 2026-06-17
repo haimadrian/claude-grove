@@ -36,6 +36,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
       defaultTerminal: terminal,
     });
     setSaving(false);
+    onClose();
   };
 
   return (

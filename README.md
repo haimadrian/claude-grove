@@ -14,20 +14,24 @@ A macOS desktop app to view and manage local git worktrees across multiple repos
 pnpm install
 ```
 
+### hot-reload dev mode
 ```bash
-pnpm dev        # hot-reload dev mode
+pnpm dev
 ```
 
+### TypeScript check
 ```bash
-pnpm typecheck  # TypeScript check
+pnpm typecheck
 ```
 
+### vitest unit tests
 ```bash
-pnpm test       # vitest unit tests
+pnpm test
 ```
 
+### build .dmg -> release/
 ```bash
-pnpm package    # build .dmg -> release/
+pnpm package
 ```
 
 ## First run

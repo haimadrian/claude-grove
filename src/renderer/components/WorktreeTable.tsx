@@ -14,6 +14,11 @@ const TD: React.CSSProperties = {
   padding: '6px 10px', fontSize: 13, borderBottom: '1px solid var(--bg-tertiary)',
   verticalAlign: 'middle', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
 };
+const ROW_BTN: React.CSSProperties = {
+  fontSize: 11, padding: '2px 7px', background: 'var(--bg-tertiary)',
+  border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer',
+  color: 'var(--fg)', whiteSpace: 'nowrap',
+};
 
 interface Props {
   worktrees: WorktreeRow[];
@@ -96,10 +101,6 @@ export function WorktreeTable({ worktrees, loading, onSelect }: Props): React.JS
             {filtered.map((w) => (
               <tr
                 key={w.id}
-                onClick={() => onSelect(w)}
-                style={{ cursor: 'pointer' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = 'var(--bg-secondary)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = ''; }}
               >
                 <td style={TD} title={w.repo.path}>{w.repo.name}</td>
                 <td style={TD} title={w.path}>{w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}</td>
@@ -125,14 +126,39 @@ export function WorktreeTable({ worktrees, loading, onSelect }: Props): React.JS
                     {...(w.pr ? { onClick: () => { void window.api.open.url(w.pr!.url); } } : {})}
                   />
                 </td>
-                <td style={TD} onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => window.api.open.editor(w.path)}
-                    style={{ fontSize: 11, padding: '2px 6px', background: 'var(--bg-tertiary)',
-                      border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', color: 'var(--fg)' }}
-                  >
-                    edit
-                  </button>
+                <td style={{ ...TD, maxWidth: 'none' }} onClick={(e) => e.stopPropagation()}>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button
+                      onClick={() => onSelect(w)}
+                      style={ROW_BTN}
+                      title="View commits and diff"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => window.api.open.editor(w.path).catch(() => {})}
+                      style={ROW_BTN}
+                      title="Open in editor"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => window.api.open.finder(w.path).catch(() => {})}
+                      style={ROW_BTN}
+                      title="Reveal in Finder"
+                    >
+                      Finder
+                    </button>
+                    {w.repo.remoteUrl && (
+                      <button
+                        onClick={() => window.api.open.url(w.repo.remoteUrl!).catch(() => {})}
+                        style={ROW_BTN}
+                        title="Open repo on GitHub"
+                      >
+                        GitHub
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

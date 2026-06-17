@@ -169,7 +169,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
       ) : (
         <table
           ref={tableRef}
-          style={{ width: '100%', borderCollapse: 'collapse', tableLayout: hasFixed ? 'fixed' : 'auto' }}
+          style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, tableLayout: hasFixed ? 'fixed' : 'auto' }}
         >
           <thead>
             <tr>

@@ -1,15 +1,17 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import type { WorktreeRow, TerminalKind } from '../../shared/types';
 import { PrBadge } from './PrBadge';
 import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 
 const DEFAULT_FILTERS: Filters = { repo: null, dirty: false, safeToDelete: false, hasPr: false, locked: false };
+const COL_COUNT = 6; // Repo, Branch, State, Last commit, Sessions, PR
 
 const TH: React.CSSProperties = {
   padding: '6px 10px', textAlign: 'left', fontSize: 12, fontWeight: 600,
   color: 'var(--fg-muted)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
   position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 1,
+  userSelect: 'none', overflow: 'hidden',
 };
 const TD: React.CSSProperties = {
   padding: '6px 10px', fontSize: 13, borderBottom: '1px solid var(--bg-tertiary)',
@@ -19,6 +21,10 @@ const ROW_BTN: React.CSSProperties = {
   fontSize: 11, padding: '2px 8px', background: 'var(--bg)',
   border: '1px solid var(--border)', borderRadius: 4,
   color: 'var(--fg)', whiteSpace: 'nowrap', boxShadow: '0 1px 3px var(--shadow)',
+};
+const RESIZE_HANDLE: React.CSSProperties = {
+  position: 'absolute', right: 0, top: 0, bottom: 0, width: 6,
+  cursor: 'col-resize', zIndex: 2,
 };
 
 interface Props {
@@ -34,11 +40,51 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
   const [sortKey, setSortKey] = useState('repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  // null = auto-sized by browser; number = user-set pixel width
+  const [colWidths, setColWidths] = useState<(number | null)[]>(Array(COL_COUNT).fill(null));
+  const tableRef = useRef<HTMLTableElement>(null);
+  const dragging = useRef<{ idx: number; startX: number; startW: number } | null>(null);
 
   const handleSort = useCallback((key: string): void => {
     setSortDir((d) => (sortKey === key ? (d === 'asc' ? 'desc' : 'asc') : 'asc'));
     setSortKey(key);
   }, [sortKey]);
+
+  const handleResizeStart = useCallback((e: React.MouseEvent<HTMLDivElement>, idx: number): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Snapshot all column widths from the DOM the first time any column is dragged
+    const getStartWidth = (): number => {
+      if (colWidths[idx] !== null) return colWidths[idx] as number;
+      if (!tableRef.current) return 120;
+      const ths = Array.from(tableRef.current.querySelectorAll('thead th')).slice(0, COL_COUNT);
+      const snapped = ths.map((th) => (th as HTMLElement).getBoundingClientRect().width);
+      setColWidths(snapped);
+      return snapped[idx] ?? 120;
+    };
+    const startW = getStartWidth();
+    dragging.current = { idx, startX: e.clientX, startW };
+
+    const onMove = (ev: MouseEvent): void => {
+      if (!dragging.current) return;
+      const delta = ev.clientX - dragging.current.startX;
+      const newW = Math.max(60, dragging.current.startW + delta);
+      setColWidths((prev) => {
+        const next = [...prev];
+        next[dragging.current!.idx] = newW;
+        return next;
+      });
+    };
+    const onUp = (): void => {
+      dragging.current = null;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [colWidths]);
+
+  const hasFixed = colWidths.some((w) => w !== null);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -72,6 +118,14 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
       });
   }, [worktrees, search, filters, sortKey, sortDir]);
 
+  const thStyle = (idx: number): React.CSSProperties => ({
+    ...TH,
+    position: 'sticky',
+    ...(colWidths[idx] !== null ? { width: colWidths[idx] } : {}),
+  });
+
+  const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Sessions', 'PR'];
+
   return (
     <div>
       <SearchBar value={search} onChange={setSearch} />
@@ -88,25 +142,20 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
       ) : filtered.length === 0 ? (
         <div style={{ padding: 32, textAlign: 'center', color: 'var(--fg-muted)' }}>No worktrees found.</div>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-          <colgroup>
-            <col style={{ width: 120 }} />   {/* Repo */}
-            <col style={{ width: 160 }} />   {/* Branch */}
-            <col style={{ width: 130 }} />   {/* State */}
-            <col style={{ width: 180 }} />   {/* Last commit */}
-            <col />                          {/* Sessions — takes remaining space */}
-            <col style={{ width: 160 }} />   {/* PR */}
-            <col style={{ width: 1 }} />     {/* Floating actions */}
-          </colgroup>
+        <table
+          ref={tableRef}
+          style={{ width: '100%', borderCollapse: 'collapse', tableLayout: hasFixed ? 'fixed' : 'auto' }}
+        >
           <thead>
             <tr>
-              <th style={TH}>Repo</th>
-              <th style={TH}>Branch</th>
-              <th style={TH}>State</th>
-              <th style={TH}>Last commit</th>
-              <th style={TH}>Sessions</th>
-              <th style={TH}>PR</th>
-              <th style={{ ...TH, padding: 0 }} />
+              {HEADERS.map((label, idx) => (
+                <th key={label} style={thStyle(idx)}>
+                  {label}
+                  <div style={RESIZE_HANDLE} onMouseDown={(e) => handleResizeStart(e, idx)} />
+                </th>
+              ))}
+              {/* Empty th for the floating actions column */}
+              <th style={{ ...TH, width: 0, padding: 0 }} />
             </tr>
           </thead>
           <tbody>
@@ -122,7 +171,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
                 >
                   <td style={TD} title={w.repo.path}>{w.repo.name}</td>
                   <td style={TD} title={w.path}>{w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}</td>
-                  <td style={{ ...TD, maxWidth: 'none' }}>
+                  <td style={{ ...TD, overflow: 'visible', whiteSpace: 'normal' }}>
                     {w.isDirty && <span style={{ color: 'var(--warn)', marginRight: 4 }}>dirty</span>}
                     {w.ahead > 0 && <span style={{ color: 'var(--ok)', marginRight: 4 }}>↑{w.ahead}</span>}
                     {w.behind > 0 && <span style={{ color: 'var(--danger)', marginRight: 4 }}>↓{w.behind}</span>}
@@ -146,10 +195,11 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
                   </td>
                   {/* Floating actions — sticky right, fade in on row hover */}
                   <td style={{
-                    ...TD, maxWidth: 'none', padding: '0 8px',
+                    ...TD, padding: '0 8px',
                     position: 'sticky', right: 0,
                     background: rowBg ?? 'var(--bg)',
                     transition: 'background 0.1s',
+                    overflow: 'visible', whiteSpace: 'normal',
                   }}>
                     <div style={{
                       display: 'flex', gap: 4, alignItems: 'center',

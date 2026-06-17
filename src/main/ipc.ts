@@ -151,8 +151,11 @@ export function registerIpc(): void {
   ipcMain.handle(CH.openEditor, async (_e, p: string) => {
     const settings = await loadSettings();
     if (!guardPath(p, settings)) return { success: false, message: 'Path not allowed' };
+    const parts = settings.editorCommand.trim().split(/\s+/);
+    const cmd = parts[0] ?? 'code';
+    const preArgs = parts.slice(1);
     return new Promise<{ success: boolean; message: string }>((resolve) => {
-      execFile(settings.editorCommand, [p], (err) => {
+      execFile(cmd, [...preArgs, p], (err) => {
         if (err) resolve({ success: false, message: err.message });
         else resolve({ success: true, message: `Opened ${p}` });
       });

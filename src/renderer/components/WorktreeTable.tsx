@@ -45,9 +45,11 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   const [sortKey, setSortKey] = useState('repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [prHoveredId, setPrHoveredId] = useState<string | null>(null);
   // null = auto-sized by browser; number = user-set pixel width
   const [colWidths, setColWidths] = useState<(number | null)[]>(Array(COL_COUNT).fill(null));
   const [renameState, setRenameState] = useState<{ wt: WorktreeRow; value: string } | null>(null);
+  const [deleteState, setDeleteState] = useState<{ wt: WorktreeRow; deleteRemote: boolean } | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const dragging = useRef<{ idx: number; startX: number; startW: number } | null>(null);
 
@@ -97,6 +99,15 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     setRenameState(null);
     void window.api.worktrees.renameBranch(wt.path, value.trim());
   }, [renameState]);
+
+  const doDelete = useCallback((): void => {
+    if (!deleteState) return;
+    const { wt, deleteRemote } = deleteState;
+    setDeleteState(null);
+    window.api.worktrees.remove(wt.path, { force: false, deleteLocalBranch: deleteRemote })
+      .then((r) => onMessage(r.message, r.success))
+      .catch((e) => onMessage(String(e), false));
+  }, [deleteState, onMessage]);
 
   const hasFixed = colWidths.some((w) => w !== null);
 
@@ -201,7 +212,10 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                       </span>
                     ) : '—'}
                   </td>
-                  <td style={TD}>
+                  <td style={TD}
+                    onMouseEnter={() => setPrHoveredId(w.id)}
+                    onMouseLeave={() => setPrHoveredId(null)}
+                  >
                     <PrBadge
                       pr={w.pr}
                       {...(w.pr ? { onClick: () => { void window.api.open.url(w.pr!.url); } } : {})}
@@ -216,9 +230,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                     <div style={{
                       position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                       display: 'flex', gap: 4, alignItems: 'center',
-                      opacity: hovered ? 1 : 0,
+                      opacity: (hovered && prHoveredId !== w.id) ? 1 : 0,
                       transition: 'opacity 0.15s',
-                      pointerEvents: hovered ? 'auto' : 'none',
+                      pointerEvents: (hovered && prHoveredId !== w.id) ? 'auto' : 'none',
                       background: rowBg ?? 'var(--bg)',
                       padding: '2px 4px', borderRadius: 6,
                       boxShadow: hovered ? '0 2px 8px var(--shadow)' : 'none',
@@ -250,6 +264,13 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                           Rename
                         </button>
                       )}
+                      <button
+                        onClick={() => setDeleteState({ wt: w, deleteRemote: false })}
+                        style={{ ...ROW_BTN, color: 'var(--danger)' }}
+                        title="Delete worktree"
+                      >
+                        Delete
+                      </button>
                       <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} title="Reveal in Finder">Finder</button>
                       {w.repo.remoteUrl && (
                         <button onClick={() => void window.api.open.url(w.repo.remoteUrl!)} style={ROW_BTN} title="Open on GitHub">GitHub</button>
@@ -297,6 +318,49 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                 style={{ ...DIALOG_BTN, background: 'var(--accent)', color: 'var(--bg)', borderColor: 'transparent' }}
               >
                 Rename
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {deleteState && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10,
+            padding: 24, maxWidth: 420, width: '90%', boxShadow: '0 8px 32px var(--shadow)',
+          }}>
+            <h3 style={{ marginBottom: 12, fontSize: 15 }}>Delete worktree</h3>
+            <p style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 8 }}>
+              Branch: <code style={{ color: 'var(--fg)' }}>{deleteState.wt.branch ?? 'detached'}</code>
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--fg-muted)', marginBottom: 16, wordBreak: 'break-all' }}>
+              {deleteState.wt.path}
+            </p>
+            {(deleteState.wt.upstreamGone || deleteState.wt.pr?.state === 'MERGED') ? (
+              <p style={{ fontSize: 12, color: 'var(--ok)', marginBottom: 12 }}>✓ Safe to delete (upstream gone or PR merged)</p>
+            ) : (
+              <p style={{ fontSize: 12, color: 'var(--warn)', marginBottom: 12 }}>⚠ Branch may not be merged yet.</p>
+            )}
+            {deleteState.wt.branch && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginBottom: 16, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={deleteState.deleteRemote}
+                  onChange={(e) => setDeleteState((s) => s ? { ...s, deleteRemote: e.target.checked } : null)}
+                />
+                Also delete remote branch
+              </label>
+            )}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setDeleteState(null)} style={DIALOG_BTN}>Cancel</button>
+              <button
+                onClick={doDelete}
+                style={{ ...DIALOG_BTN, background: 'var(--danger)', color: 'var(--bg)', borderColor: 'transparent' }}
+              >
+                Delete
               </button>
             </div>
           </div>

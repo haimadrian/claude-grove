@@ -82,13 +82,30 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
           ))}
         </Section>
 
-        <Section title="Editor command">
+        <Section title="Editor">
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+            <select
+              value={EDITOR_PRESETS.find((p) => p.command === editorCommand)?.label ?? 'Custom'}
+              onChange={(e) => {
+                const preset = EDITOR_PRESETS.find((p) => p.label === e.target.value);
+                if (preset && preset.command) setEditorCommand(preset.command);
+              }}
+              style={{ ...INPUT, width: 'auto', cursor: 'pointer' }}
+            >
+              {EDITOR_PRESETS.map((p) => (
+                <option key={p.label} value={p.label}>{p.label}</option>
+              ))}
+            </select>
+          </div>
           <input
             value={editorCommand}
             onChange={(e) => setEditorCommand(e.target.value)}
             style={INPUT}
-            placeholder="code"
+            placeholder="e.g. code, cursor, open -a WebStorm"
           />
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4 }}>
+            Command to open a path. Selecting a preset fills the field above.
+          </div>
         </Section>
 
         <Section title="Default base branch">
@@ -132,3 +149,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 const BTN_SMALL: React.CSSProperties = { fontSize: 12, padding: '3px 8px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', color: 'var(--fg)' };
 const BTN_SECONDARY: React.CSSProperties = { padding: '6px 14px', fontSize: 13, borderRadius: 6, cursor: 'pointer', background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--fg)' };
 const INPUT: React.CSSProperties = { padding: '5px 8px', fontSize: 13, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', width: '100%' };
+const EDITOR_PRESETS: { label: string; command: string }[] = [
+  { label: 'VS Code', command: 'code' },
+  { label: 'Cursor', command: 'cursor' },
+  { label: 'WebStorm', command: 'open -a WebStorm' },
+  { label: 'RubyMine', command: 'open -a RubyMine' },
+  { label: 'IntelliJ IDEA', command: 'open -a "IntelliJ IDEA"' },
+  { label: 'Custom', command: '' },
+];

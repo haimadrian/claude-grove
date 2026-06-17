@@ -7,6 +7,25 @@ import { FilterBar, type Filters } from './FilterBar';
 const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
 const COL_COUNT = 7; // Repo, Branch, State, Last commit, Modified, Sessions, PR
 
+const LS_KEY = 'claude-grove:table-state';
+
+interface PersistedTableState {
+  filters: Filters;
+  sortKey: string;
+  sortDir: 'asc' | 'desc';
+}
+
+function loadPersistedState(): Partial<PersistedTableState> {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? (JSON.parse(raw) as Partial<PersistedTableState>) : {};
+  } catch { return {}; }
+}
+
+function savePersistedState(state: PersistedTableState): void {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch { /* ignore */ }
+}
+
 const TH: React.CSSProperties = {
   padding: '6px 10px', textAlign: 'left', fontSize: 12, fontWeight: 600,
   color: 'var(--fg-muted)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
@@ -79,7 +98,15 @@ interface Props {
 
 export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, onMessage }: Props): React.JSX.Element {
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const persisted = loadPersistedState();
+  const [filters, setFilters] = useState<Filters>(persisted.filters ?? DEFAULT_FILTERS);
+  const [sortKey, setSortKey] = useState(persisted.sortKey ?? 'repo');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.sortDir ?? 'asc');
+
+  // Persist filter + sort whenever they change
+  useEffect(() => {
+    savePersistedState({ filters, sortKey, sortDir });
+  }, [filters, sortKey, sortDir]);
 
   // Drop repo selections that no longer exist in the current worktree list
   useEffect(() => {
@@ -90,9 +117,6 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
       setFilters((f) => ({ ...f, repo: valid }));
     }
   }, [worktrees]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const [sortKey, setSortKey] = useState('repo');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [prHoveredId, setPrHoveredId] = useState<string | null>(null);
   const [stateTooltip, setStateTooltip] = useState<{ id: string; x: number; y: number } | null>(null);

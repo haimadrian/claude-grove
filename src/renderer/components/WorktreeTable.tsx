@@ -13,7 +13,7 @@ const TH: React.CSSProperties = {
 };
 const TD: React.CSSProperties = {
   padding: '6px 10px', fontSize: 13, borderBottom: '1px solid var(--bg-tertiary)',
-  verticalAlign: 'middle', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+  verticalAlign: 'middle', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
 };
 const ROW_BTN: React.CSSProperties = {
   fontSize: 11, padding: '2px 8px', background: 'var(--bg)',
@@ -88,7 +88,16 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
       ) : filtered.length === 0 ? (
         <div style={{ padding: 32, textAlign: 'center', color: 'var(--fg-muted)' }}>No worktrees found.</div>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: 120 }} />   {/* Repo */}
+            <col style={{ width: 160 }} />   {/* Branch */}
+            <col style={{ width: 130 }} />   {/* State */}
+            <col style={{ width: 180 }} />   {/* Last commit */}
+            <col />                          {/* Sessions — takes remaining space */}
+            <col style={{ width: 160 }} />   {/* PR */}
+            <col style={{ width: 1 }} />     {/* Floating actions */}
+          </colgroup>
           <thead>
             <tr>
               <th style={TH}>Repo</th>
@@ -97,7 +106,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
               <th style={TH}>Last commit</th>
               <th style={TH}>Sessions</th>
               <th style={TH}>PR</th>
-              <th style={{ ...TH, width: 0, padding: 0 }} />
+              <th style={{ ...TH, padding: 0 }} />
             </tr>
           </thead>
           <tbody>
@@ -125,7 +134,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
                   <td style={TD}>
                     {w.sessions.length > 0 ? (
                       <span title={w.sessions[0]?.title ?? undefined}>
-                        {w.sessions.length} {w.sessions[0]?.title ? `· ${w.sessions[0].title.slice(0, 30)}` : ''}
+                        {w.sessions.length} {w.sessions[0]?.title ? `· ${w.sessions[0].title}` : ''}
                       </span>
                     ) : '—'}
                   </td>

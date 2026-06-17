@@ -78,21 +78,27 @@ export function App(): React.JSX.Element {
           {showGhNotice && <GhMissingNotice installed={ghInstalled ?? false} />}
           {noRoots ? (
             <Onboarding onAddRoot={addRoot} />
-          ) : selected !== null ? (
-            <WorktreeDetail
-              worktree={selected}
-              defaultTerminal={settings.defaultTerminal}
-              onBack={() => setSelected(null)}
-              onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
-            />
           ) : (
-            <WorktreeTable
-              worktrees={worktrees}
-              loading={loading}
-              defaultTerminal={settings.defaultTerminal}
-              onSelect={setSelected}
-              onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
-            />
+            <>
+              {/* Keep WorktreeTable mounted so sort/filter/column state persists across navigation */}
+              <div style={{ display: selected !== null ? 'none' : 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                <WorktreeTable
+                  worktrees={worktrees}
+                  loading={loading}
+                  defaultTerminal={settings.defaultTerminal}
+                  onSelect={setSelected}
+                  onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
+                />
+              </div>
+              {selected !== null && (
+                <WorktreeDetail
+                  worktree={selected}
+                  defaultTerminal={settings.defaultTerminal}
+                  onBack={() => setSelected(null)}
+                  onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
+                />
+              )}
+            </>
           )}
         </main>
         {settingsOpen && (

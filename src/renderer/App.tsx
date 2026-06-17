@@ -70,7 +70,7 @@ export function App(): React.JSX.Element {
             Settings
           </button>
         </header>
-        <main style={{ flex: 1, overflow: 'auto', padding: '12px 16px' }}>
+        <main style={{ flex: 1, overflow: 'hidden', padding: '12px 16px', display: 'flex', flexDirection: 'column' }}>
           {showGhNotice && <GhMissingNotice installed={ghInstalled ?? false} />}
           {noRoots ? (
             <Onboarding onAddRoot={addRoot} />

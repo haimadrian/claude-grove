@@ -152,7 +152,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Sessions', 'PR'];
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <SearchBar value={search} onChange={setSearch} />
       <FilterBar
         worktrees={worktrees}
@@ -162,6 +162,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
         onFilters={setFilters}
         onSort={handleSort}
       />
+      <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
       {loading ? (
         <div style={{ padding: 32, textAlign: 'center', color: 'var(--fg-muted)' }}>Loading worktrees…</div>
       ) : filtered.length === 0 ? (
@@ -286,6 +287,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
           </tbody>
         </table>
       )}
+      </div>
       {renameState && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900,

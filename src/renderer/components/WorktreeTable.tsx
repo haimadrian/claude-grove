@@ -254,7 +254,10 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                           Resume
                         </button>
                       )}
-                      <button onClick={() => void window.api.open.editor(w.path)} style={ROW_BTN} title="Open in editor">Edit</button>
+                      <button
+                        onClick={() => window.api.open.editor(w.path).then((r) => { if (!r.success) onMessage(r.message, false); }).catch((e) => onMessage(String(e), false))}
+                        style={ROW_BTN} title="Open in editor"
+                      >Edit</button>
                       {w.branch && (
                         <button
                           onClick={() => setRenameState({ wt: w, value: w.branch! })}

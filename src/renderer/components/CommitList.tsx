@@ -4,6 +4,7 @@ import type { Commit } from '../../shared/types';
 interface Props {
   worktreePath: string;
   isDirty: boolean;
+  prBase?: string | undefined;  // PR's baseRefName — overrides auto-resolved base branch
   onDiff: (diff: string) => void;
   onFullDiff: () => void;
   onMessage: (msg: string, ok: boolean) => void;
@@ -14,7 +15,7 @@ const MODAL_BTN: React.CSSProperties = {
   background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--fg)',
 };
 
-export function CommitList({ worktreePath, isDirty, onDiff, onFullDiff, onMessage }: Props): React.JSX.Element {
+export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, onMessage }: Props): React.JSX.Element {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export function CommitList({ worktreePath, isDirty, onDiff, onFullDiff, onMessag
 
   useEffect(() => {
     setLoading(true);
-    window.api.worktrees.commits(worktreePath).then((c) => {
+    window.api.worktrees.commits(worktreePath, prBase).then((c) => {
       setCommits(c);
       setLoading(false);
     });

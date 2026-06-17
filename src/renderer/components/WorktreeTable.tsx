@@ -31,6 +31,20 @@ const RESIZE_HANDLE: React.CSSProperties = {
   cursor: 'col-resize', zIndex: 2,
 };
 
+function buildPrLines(pr: import('../../shared/types').PrInfo): string[] {
+  const lines: string[] = [];
+  lines.push(`#${pr.number} — ${pr.isDraft ? 'draft ' : ''}${pr.state.toLowerCase()} pull request`);
+  if (pr.title) lines.push(`Title: ${pr.title}`);
+  if (pr.baseRefName) lines.push(`Target branch: ${pr.baseRefName}`);
+  if (pr.checksState === 'PASSING') lines.push('✓ — all CI checks passing');
+  else if (pr.checksState === 'FAILING') lines.push('✗ — one or more CI checks failing');
+  else if (pr.checksState === 'PENDING') lines.push('○ — CI checks in progress');
+  if (pr.reviewDecision === 'APPROVED') lines.push('✓rev — approved by reviewer(s)');
+  else if (pr.reviewDecision === 'CHANGES_REQUESTED') lines.push('✗rev — reviewer requested changes');
+  else if (pr.reviewDecision === 'REVIEW_REQUIRED') lines.push('review required — awaiting review');
+  return lines;
+}
+
 function buildStateLines(w: WorktreeRow): string[] {
   const lines: string[] = [];
   if (w.isDirty) lines.push('dirty — uncommitted changes present');
@@ -71,6 +85,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [prHoveredId, setPrHoveredId] = useState<string | null>(null);
   const [stateTooltip, setStateTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [prTooltip, setPrTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
   // null = auto-sized by browser; number = user-set pixel width
   const [colWidths, setColWidths] = useState<(number | null)[]>(Array(COL_COUNT).fill(null));
   const [renameState, setRenameState] = useState<{ wt: WorktreeRow; value: string } | null>(null);
@@ -265,9 +280,14 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                       </span>
                     ) : '—'}
                   </td>
-                  <td style={TD}
-                    onMouseEnter={() => setPrHoveredId(w.id)}
-                    onMouseLeave={() => setPrHoveredId(null)}
+                  <td
+                    style={TD}
+                    onMouseEnter={(e) => {
+                      setPrHoveredId(w.id);
+                      if (w.pr) setPrTooltip({ id: w.id, x: e.clientX, y: e.clientY });
+                    }}
+                    onMouseMove={(e) => { if (prTooltip?.id === w.id) setPrTooltip({ id: w.id, x: e.clientX, y: e.clientY }); }}
+                    onMouseLeave={() => { setPrHoveredId(null); setPrTooltip(null); }}
                   >
                     <PrBadge
                       pr={w.pr}
@@ -351,6 +371,22 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
             borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--fg)',
             boxShadow: '0 4px 14px var(--shadow)', zIndex: 1000, pointerEvents: 'none',
             maxWidth: 320, lineHeight: 1.9,
+          }}>
+            {lines.map((line, i) => <div key={i}>{line}</div>)}
+          </div>
+        );
+      })()}
+      {prTooltip && (() => {
+        const row = filtered.find((w) => w.id === prTooltip.id);
+        if (!row?.pr) return null;
+        const lines = buildPrLines(row.pr);
+        return (
+          <div style={{
+            position: 'fixed', left: prTooltip.x + 14, top: prTooltip.y + 14,
+            background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+            borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--fg)',
+            boxShadow: '0 4px 14px var(--shadow)', zIndex: 1000, pointerEvents: 'none',
+            maxWidth: 360, lineHeight: 1.9,
           }}>
             {lines.map((line, i) => <div key={i}>{line}</div>)}
           </div>

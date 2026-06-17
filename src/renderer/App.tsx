@@ -16,7 +16,9 @@ export function App(): React.JSX.Element {
   const { worktrees, loading, refresh } = useWorktrees();
   const [ghInstalled, setGhInstalled] = useState<boolean | null>(null);
   const [ghAuthed, setGhAuthed] = useState<boolean | null>(null);
-  const [selected, setSelected] = useState<WorktreeRow | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Always use the live row from `worktrees` so PR data (fetched lazily) is reflected
+  const selected = selectedId !== null ? (worktrees.find((w) => w.id === selectedId) ?? null) : null;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const { toast, showToast, clearToast } = useToast();
@@ -86,7 +88,7 @@ export function App(): React.JSX.Element {
                   worktrees={worktrees}
                   loading={loading}
                   defaultTerminal={settings.defaultTerminal}
-                  onSelect={setSelected}
+                  onSelect={(w) => setSelectedId(w.id)}
                   onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
                 />
               </div>
@@ -94,7 +96,7 @@ export function App(): React.JSX.Element {
                 <WorktreeDetail
                   worktree={selected}
                   defaultTerminal={settings.defaultTerminal}
-                  onBack={() => setSelected(null)}
+                  onBack={() => setSelectedId(null)}
                   onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
                 />
               )}

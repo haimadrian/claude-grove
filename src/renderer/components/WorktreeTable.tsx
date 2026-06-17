@@ -38,8 +38,8 @@ function buildStateLines(w: WorktreeRow): string[] {
   if (w.behind > 0) lines.push(`↓${w.behind} — ${w.behind} commit${w.behind !== 1 ? 's' : ''} behind upstream`);
   if (w.isLocked) lines.push(`🔒 locked${w.lockedReason ? ` — ${w.lockedReason}` : ''}`);
   if (w.isPrunable) lines.push(`prunable${w.prunableReason ? ` — ${w.prunableReason}` : ' — worktree can be pruned'}`);
-  if (w.upstreamGone) lines.push('✓ safe — upstream branch is gone (merged and deleted on remote)');
-  else if (w.pr?.state === 'MERGED') lines.push('✓ safe — PR is merged');
+  if (w.upstreamGone) lines.push('🗑 remote gone — upstream branch was deleted (click badge to remove local worktree)');
+  else if (w.pr?.state === 'MERGED') lines.push('✓ merged — PR is merged on GitHub');
   return lines;
 }
 
@@ -243,7 +243,18 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                     {w.behind > 0 && <span style={{ color: 'var(--danger)', marginRight: 4 }}>↓{w.behind}</span>}
                     {w.isLocked && <span style={{ color: 'var(--fg-muted)', marginRight: 4 }}>🔒</span>}
                     {w.isPrunable && <span style={{ color: 'var(--fg-muted)', marginRight: 4 }}>prunable</span>}
-                    {(w.upstreamGone || w.pr?.state === 'MERGED') && <span style={{ color: 'var(--ok)' }}>✓ safe</span>}
+                    {w.upstreamGone && (
+                      <span
+                        style={{ color: 'var(--warn)', cursor: 'pointer', marginRight: 4 }}
+                        title="Remote branch deleted — click to delete local worktree"
+                        onClick={(e) => { e.stopPropagation(); setDeleteState({ wt: w, deleteRemote: false }); }}
+                      >
+                        🗑 remote gone
+                      </span>
+                    )}
+                    {!w.upstreamGone && w.pr?.state === 'MERGED' && (
+                      <span style={{ color: 'var(--ok)' }}>✓ merged</span>
+                    )}
                   </td>
                   <td style={TD} title={w.lastCommitDate}>{w.lastCommitSubject || '—'}</td>
                   <td style={TD} title={w.lastCommitDate}>{formatDate(w.lastCommitDate)}</td>
@@ -414,6 +425,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                   onChange={(e) => setDeleteState((s) => s ? { ...s, deleteRemote: e.target.checked } : null)}
                 />
                 Also delete remote branch
+                {deleteState.wt.upstreamGone && (
+                  <span style={{ color: 'var(--fg-muted)', fontSize: 11, marginLeft: 6 }}>(already deleted on remote)</span>
+                )}
               </label>
             )}
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>

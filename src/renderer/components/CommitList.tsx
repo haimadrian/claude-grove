@@ -138,6 +138,18 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
                 background: f.label === 'deleted' ? 'var(--danger)' : f.label === 'added' ? 'var(--ok)' : 'var(--warn)',
                 color: 'var(--bg)', flexShrink: 0,
               }}>{f.label[0]!.toUpperCase()}</span>
+              <span
+                style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--fg)' }}
+                title={`${f.path.split('/').pop() ?? f.path}\n${f.path}`}
+              >
+                {f.path.split('/').pop() ?? f.path}
+              </span>
+              <span
+                style={{ fontSize: 11, color: 'var(--fg-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                title={`${f.path.split('/').pop() ?? f.path}\n${f.path}`}
+              >
+                {f.path.includes('/') ? f.path.substring(0, f.path.lastIndexOf('/')) : ''}
+              </span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -152,18 +164,6 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
               >
                 ↩
               </button>
-              <span
-                style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--fg)' }}
-                title={`${f.path.split('/').pop() ?? f.path}\n${f.path}`}
-              >
-                {f.path.split('/').pop() ?? f.path}
-              </span>
-              <span
-                style={{ fontSize: 11, color: 'var(--fg-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                title={`${f.path.split('/').pop() ?? f.path}\n${f.path}`}
-              >
-                {f.path.includes('/') ? f.path.substring(0, f.path.lastIndexOf('/')) : ''}
-              </span>
             </div>
           ))}
         </div>

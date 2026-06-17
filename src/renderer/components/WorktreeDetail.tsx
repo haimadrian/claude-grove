@@ -122,7 +122,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
           <CommitList
             worktreePath={worktree.path}
             isDirty={worktree.isDirty}
-            prBase={worktree.pr?.baseRefName}
+            {...(worktree.pr?.baseRefName ? { prBase: worktree.pr.baseRefName } : {})}
             onDiff={setDiff}
             onFullDiff={loadFullDiff}
             onMessage={onMessage}

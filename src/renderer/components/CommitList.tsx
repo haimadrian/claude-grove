@@ -4,7 +4,7 @@ import type { Commit } from '../../shared/types';
 interface Props {
   worktreePath: string;
   isDirty: boolean;
-  prBase?: string | undefined;  // PR's baseRefName — overrides auto-resolved base branch
+  prBase?: string;
   onDiff: (diff: string) => void;
   onFullDiff: () => void;
   onMessage: (msg: string, ok: boolean) => void;

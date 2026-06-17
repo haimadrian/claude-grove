@@ -41,5 +41,7 @@ contextBridge.exposeInMainWorld('api', {
   },
   dialog: {
     pickDirectory: (): Promise<{ canceled: boolean; filePaths: string[] }> => ipcRenderer.invoke(CH.pickDirectory),
+    pickApplication: (): Promise<{ canceled: boolean; filePaths: string[] }> =>
+      ipcRenderer.invoke(CH.pickApplication),
   },
 });

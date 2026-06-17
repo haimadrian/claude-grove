@@ -36,6 +36,7 @@ declare global {
       };
       dialog: {
         pickDirectory(): Promise<{ canceled: boolean; filePaths: string[] }>;
+        pickApplication(): Promise<{ canceled: boolean; filePaths: string[] }>;
       };
     };
   }

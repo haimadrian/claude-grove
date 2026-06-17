@@ -151,14 +151,25 @@ export function registerIpc(): void {
   ipcMain.handle(CH.openEditor, async (_e, p: string) => {
     const settings = await loadSettings();
     if (!guardPath(p, settings)) return { success: false, message: 'Path not allowed' };
-    const parts = settings.editorCommand.trim().split(/\s+/);
-    const cmd = parts[0] ?? 'code';
-    const preArgs = parts.slice(1);
+    const cmd = settings.editorCommand.trim();
+    if (!cmd) return { success: false, message: 'No editor configured. Set one in Settings.' };
     return new Promise<{ success: boolean; message: string }>((resolve) => {
-      execFile(cmd, [...preArgs, p], (err) => {
-        if (err) resolve({ success: false, message: err.message });
-        else resolve({ success: true, message: `Opened ${p}` });
-      });
+      // .app bundle path → use /usr/bin/open -a
+      if (cmd.endsWith('.app')) {
+        execFile('/usr/bin/open', ['-a', cmd, p], (err) => {
+          if (err) resolve({ success: false, message: `Failed to open in ${cmd}: ${err.message}` });
+          else resolve({ success: true, message: `Opened in editor` });
+        });
+      } else {
+        // CLI command — split on spaces, use first token as binary
+        const parts = cmd.split(/\s+/);
+        const binary = parts[0] === 'open' ? '/usr/bin/open' : (parts[0] ?? 'code');
+        const preArgs = parts[0] === 'open' ? parts.slice(1) : parts.slice(1);
+        execFile(binary, [...preArgs, p], (err) => {
+          if (err) resolve({ success: false, message: `Failed to open editor (${binary}): ${err.message}` });
+          else resolve({ success: true, message: `Opened in editor` });
+        });
+      }
     });
   });
 
@@ -179,6 +190,15 @@ export function registerIpc(): void {
   ipcMain.handle(CH.pickDirectory, async () => {
     const result = await dialog.showOpenDialog({ properties: ['openDirectory'] });
     return result;
+  });
+
+  ipcMain.handle(CH.pickApplication, async () => {
+    return dialog.showOpenDialog({
+      title: 'Select editor application',
+      defaultPath: '/Applications',
+      properties: ['openFile'],
+      filters: [{ name: 'Applications', extensions: ['app'] }],
+    });
   });
 
   logger.info(`ipc: registered ${Object.keys(CH).length} handlers`);

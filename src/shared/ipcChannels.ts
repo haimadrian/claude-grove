@@ -19,4 +19,5 @@ export const CH = {
   openFinder: 'open:finder',
   openUrl: 'open:url',
   pickDirectory: 'dialog:pickDirectory',
+  pickApplication: 'dialog:pickApplication',
 } as const;

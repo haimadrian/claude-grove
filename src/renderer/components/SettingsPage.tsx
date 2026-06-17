@@ -84,27 +84,38 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
 
         <Section title="Editor">
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-            <select
-              value={EDITOR_PRESETS.find((p) => p.command === editorCommand)?.label ?? 'Custom'}
-              onChange={(e) => {
-                const preset = EDITOR_PRESETS.find((p) => p.label === e.target.value);
-                if (preset && preset.command) setEditorCommand(preset.command);
+            <span style={{
+              flex: 1, fontSize: 13, padding: '5px 8px',
+              background: 'var(--bg-tertiary)', borderRadius: 6, color: 'var(--fg)',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {editorCommand
+                ? editorCommand.endsWith('.app')
+                  ? (editorCommand.split('/').pop()?.replace('.app', '') ?? editorCommand)
+                  : editorCommand
+                : <span style={{ color: 'var(--fg-muted)' }}>Not configured</span>}
+            </span>
+            <button
+              onClick={async () => {
+                const res = await window.api.dialog.pickApplication();
+                if (!res.canceled && res.filePaths[0] !== undefined) setEditorCommand(res.filePaths[0]);
               }}
-              style={{ ...INPUT, width: 'auto', cursor: 'pointer' }}
+              style={BTN_SMALL}
             >
-              {EDITOR_PRESETS.map((p) => (
-                <option key={p.label} value={p.label}>{p.label}</option>
-              ))}
-            </select>
+              Choose app...
+            </button>
+            {editorCommand && (
+              <button onClick={() => setEditorCommand('')} style={{ ...BTN_SMALL, color: 'var(--fg-muted)' }}>✕</button>
+            )}
           </div>
           <input
-            value={editorCommand}
+            value={editorCommand.endsWith('.app') ? '' : editorCommand}
             onChange={(e) => setEditorCommand(e.target.value)}
             style={INPUT}
-            placeholder="e.g. code, cursor, open -a WebStorm"
+            placeholder="Or type a CLI command: code, cursor…"
           />
           <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4 }}>
-            Command to open a path. Selecting a preset fills the field above.
+            Pick an app above, or type a CLI command manually.
           </div>
         </Section>
 
@@ -149,11 +160,3 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 const BTN_SMALL: React.CSSProperties = { fontSize: 12, padding: '3px 8px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', color: 'var(--fg)' };
 const BTN_SECONDARY: React.CSSProperties = { padding: '6px 14px', fontSize: 13, borderRadius: 6, cursor: 'pointer', background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--fg)' };
 const INPUT: React.CSSProperties = { padding: '5px 8px', fontSize: 13, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', width: '100%' };
-const EDITOR_PRESETS: { label: string; command: string }[] = [
-  { label: 'VS Code', command: 'code' },
-  { label: 'Cursor', command: 'cursor' },
-  { label: 'WebStorm', command: 'open -a WebStorm' },
-  { label: 'RubyMine', command: 'open -a RubyMine' },
-  { label: 'IntelliJ IDEA', command: 'open -a "IntelliJ IDEA"' },
-  { label: 'Custom', command: '' },
-];

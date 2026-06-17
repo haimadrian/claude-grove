@@ -167,8 +167,8 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
                   <div style={RESIZE_HANDLE} onMouseDown={(e) => handleResizeStart(e, idx)} />
                 </th>
               ))}
-              {/* Empty th for the floating actions column */}
-              <th style={{ ...TH, width: 0, padding: 0 }} />
+              {/* Zero-width th — actions float absolutely, no layout contribution */}
+              <th style={{ ...TH, width: 0, padding: 0, overflow: 'visible' }} />
             </tr>
           </thead>
           <tbody>
@@ -206,19 +206,22 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
                       {...(w.pr ? { onClick: () => { void window.api.open.url(w.pr!.url); } } : {})}
                     />
                   </td>
-                  {/* Floating actions — sticky right, fade in on row hover */}
+                  {/* Floating actions — absolutely positioned so they don't affect table width */}
                   <td style={{
-                    ...TD, padding: '0 8px',
-                    position: 'sticky', right: 0,
-                    background: rowBg ?? 'var(--bg)',
-                    transition: 'background 0.1s',
-                    overflow: 'visible', whiteSpace: 'normal',
+                    padding: 0, width: 0,
+                    borderBottom: '1px solid var(--bg-tertiary)',
+                    position: 'relative', overflow: 'visible',
                   }}>
                     <div style={{
+                      position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                       display: 'flex', gap: 4, alignItems: 'center',
                       opacity: hovered ? 1 : 0,
                       transition: 'opacity 0.15s',
                       pointerEvents: hovered ? 'auto' : 'none',
+                      background: rowBg ?? 'var(--bg)',
+                      padding: '2px 4px', borderRadius: 6,
+                      boxShadow: hovered ? '0 2px 8px var(--shadow)' : 'none',
+                      whiteSpace: 'nowrap', zIndex: 10,
                     }}>
                       <button onClick={() => onSelect(w)} style={ROW_BTN} title="View commits and diff">View</button>
                       {w.sessions[0] && (

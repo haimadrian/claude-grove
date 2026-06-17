@@ -79,7 +79,7 @@ export function App(): React.JSX.Element {
           ) : selected !== null ? (
             <WorktreeDetail worktree={selected} onBack={() => setSelected(null)} />
           ) : (
-            <WorktreeTable worktrees={worktrees} loading={loading} onSelect={setSelected} />
+            <WorktreeTable worktrees={worktrees} loading={loading} defaultTerminal={settings.defaultTerminal} onSelect={setSelected} />
           )}
         </main>
         {settingsOpen && (

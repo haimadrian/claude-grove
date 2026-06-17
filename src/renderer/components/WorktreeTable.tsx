@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import type { WorktreeRow } from '../../shared/types';
+import type { WorktreeRow, TerminalKind } from '../../shared/types';
 import { PrBadge } from './PrBadge';
 import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
@@ -24,10 +24,11 @@ const ROW_BTN: React.CSSProperties = {
 interface Props {
   worktrees: WorktreeRow[];
   loading: boolean;
+  defaultTerminal: TerminalKind;
   onSelect: (wt: WorktreeRow) => void;
 }
 
-export function WorktreeTable({ worktrees, loading, onSelect }: Props): React.JSX.Element {
+export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }: Props): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [sortKey, setSortKey] = useState('repo');
@@ -148,6 +149,19 @@ export function WorktreeTable({ worktrees, loading, onSelect }: Props): React.JS
                       pointerEvents: hovered ? 'auto' : 'none',
                     }}>
                       <button onClick={() => onSelect(w)} style={ROW_BTN} title="View commits and diff">View</button>
+                      {w.sessions[0] && (
+                        <button
+                          onClick={() => void window.api.terminals.resumeSession({
+                            terminal: defaultTerminal,
+                            launchDir: w.sessions[0]!.launchDir,
+                            sessionId: w.sessions[0]!.sessionId,
+                          })}
+                          style={{ ...ROW_BTN, color: 'var(--accent)' }}
+                          title={`Resume Claude session: ${w.sessions[0].title ?? w.sessions[0].sessionId}`}
+                        >
+                          Resume
+                        </button>
+                      )}
                       <button onClick={() => void window.api.open.editor(w.path)} style={ROW_BTN} title="Open in editor">Edit</button>
                       <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} title="Reveal in Finder">Finder</button>
                       {w.repo.remoteUrl && (

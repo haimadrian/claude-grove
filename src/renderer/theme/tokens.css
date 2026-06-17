@@ -43,3 +43,10 @@ body {
   font-size: 14px;
   line-height: 1.5;
 }
+
+button {
+  cursor: pointer;
+}
+button:not(:disabled):hover {
+  filter: brightness(0.9);
+}

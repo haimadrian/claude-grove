@@ -16,9 +16,9 @@ const TD: React.CSSProperties = {
   verticalAlign: 'middle', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
 };
 const ROW_BTN: React.CSSProperties = {
-  fontSize: 11, padding: '2px 7px', background: 'var(--bg-tertiary)',
-  border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer',
-  color: 'var(--fg)', whiteSpace: 'nowrap',
+  fontSize: 11, padding: '2px 8px', background: 'var(--bg)',
+  border: '1px solid var(--border)', borderRadius: 4,
+  color: 'var(--fg)', whiteSpace: 'nowrap', boxShadow: '0 1px 3px var(--shadow)',
 };
 
 interface Props {
@@ -32,6 +32,7 @@ export function WorktreeTable({ worktrees, loading, onSelect }: Props): React.JS
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [sortKey, setSortKey] = useState('repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const handleSort = useCallback((key: string): void => {
     setSortDir((d) => (sortKey === key ? (d === 'asc' ? 'desc' : 'asc') : 'asc'));
@@ -95,74 +96,68 @@ export function WorktreeTable({ worktrees, loading, onSelect }: Props): React.JS
               <th style={TH}>Last commit</th>
               <th style={TH}>Sessions</th>
               <th style={TH}>PR</th>
-              <th style={TH}>Actions</th>
+              <th style={{ ...TH, width: 0, padding: 0 }} />
             </tr>
           </thead>
           <tbody>
-            {filtered.map((w) => (
-              <tr
-                key={w.id}
-              >
-                <td style={TD} title={w.repo.path}>{w.repo.name}</td>
-                <td style={TD} title={w.path}>{w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}</td>
-                <td style={{ ...TD, maxWidth: 'none' }}>
-                  {w.isDirty && <span style={{ color: 'var(--warn)', marginRight: 4 }}>dirty</span>}
-                  {w.ahead > 0 && <span style={{ color: 'var(--ok)', marginRight: 4 }}>↑{w.ahead}</span>}
-                  {w.behind > 0 && <span style={{ color: 'var(--danger)', marginRight: 4 }}>↓{w.behind}</span>}
-                  {w.isLocked && <span style={{ color: 'var(--fg-muted)', marginRight: 4 }}>🔒</span>}
-                  {w.isPrunable && <span style={{ color: 'var(--fg-muted)', marginRight: 4 }}>prunable</span>}
-                  {(w.upstreamGone || w.pr?.state === 'MERGED') && <span style={{ color: 'var(--ok)' }}>✓ safe</span>}
-                </td>
-                <td style={TD} title={w.lastCommitDate}>{w.lastCommitSubject || '—'}</td>
-                <td style={TD}>
-                  {w.sessions.length > 0 ? (
-                    <span title={w.sessions[0]?.title ?? undefined}>
-                      {w.sessions.length} {w.sessions[0]?.title ? `· ${w.sessions[0].title.slice(0, 30)}` : ''}
-                    </span>
-                  ) : '—'}
-                </td>
-                <td style={TD}>
-                  <PrBadge
-                    pr={w.pr}
-                    {...(w.pr ? { onClick: () => { void window.api.open.url(w.pr!.url); } } : {})}
-                  />
-                </td>
-                <td style={{ ...TD, maxWidth: 'none' }} onClick={(e) => e.stopPropagation()}>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    <button
-                      onClick={() => onSelect(w)}
-                      style={ROW_BTN}
-                      title="View commits and diff"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => window.api.open.editor(w.path).catch(() => {})}
-                      style={ROW_BTN}
-                      title="Open in editor"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => window.api.open.finder(w.path).catch(() => {})}
-                      style={ROW_BTN}
-                      title="Reveal in Finder"
-                    >
-                      Finder
-                    </button>
-                    {w.repo.remoteUrl && (
-                      <button
-                        onClick={() => window.api.open.url(w.repo.remoteUrl!).catch(() => {})}
-                        style={ROW_BTN}
-                        title="Open repo on GitHub"
-                      >
-                        GitHub
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {filtered.map((w) => {
+              const hovered = hoveredId === w.id;
+              const rowBg = hovered ? 'var(--bg-secondary)' : undefined;
+              return (
+                <tr
+                  key={w.id}
+                  style={{ background: rowBg }}
+                  onMouseEnter={() => setHoveredId(w.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                >
+                  <td style={TD} title={w.repo.path}>{w.repo.name}</td>
+                  <td style={TD} title={w.path}>{w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}</td>
+                  <td style={{ ...TD, maxWidth: 'none' }}>
+                    {w.isDirty && <span style={{ color: 'var(--warn)', marginRight: 4 }}>dirty</span>}
+                    {w.ahead > 0 && <span style={{ color: 'var(--ok)', marginRight: 4 }}>↑{w.ahead}</span>}
+                    {w.behind > 0 && <span style={{ color: 'var(--danger)', marginRight: 4 }}>↓{w.behind}</span>}
+                    {w.isLocked && <span style={{ color: 'var(--fg-muted)', marginRight: 4 }}>🔒</span>}
+                    {w.isPrunable && <span style={{ color: 'var(--fg-muted)', marginRight: 4 }}>prunable</span>}
+                    {(w.upstreamGone || w.pr?.state === 'MERGED') && <span style={{ color: 'var(--ok)' }}>✓ safe</span>}
+                  </td>
+                  <td style={TD} title={w.lastCommitDate}>{w.lastCommitSubject || '—'}</td>
+                  <td style={TD}>
+                    {w.sessions.length > 0 ? (
+                      <span title={w.sessions[0]?.title ?? undefined}>
+                        {w.sessions.length} {w.sessions[0]?.title ? `· ${w.sessions[0].title.slice(0, 30)}` : ''}
+                      </span>
+                    ) : '—'}
+                  </td>
+                  <td style={TD}>
+                    <PrBadge
+                      pr={w.pr}
+                      {...(w.pr ? { onClick: () => { void window.api.open.url(w.pr!.url); } } : {})}
+                    />
+                  </td>
+                  {/* Floating actions — sticky right, fade in on row hover */}
+                  <td style={{
+                    ...TD, maxWidth: 'none', padding: '0 8px',
+                    position: 'sticky', right: 0,
+                    background: rowBg ?? 'var(--bg)',
+                    transition: 'background 0.1s',
+                  }}>
+                    <div style={{
+                      display: 'flex', gap: 4, alignItems: 'center',
+                      opacity: hovered ? 1 : 0,
+                      transition: 'opacity 0.15s',
+                      pointerEvents: hovered ? 'auto' : 'none',
+                    }}>
+                      <button onClick={() => onSelect(w)} style={ROW_BTN} title="View commits and diff">View</button>
+                      <button onClick={() => void window.api.open.editor(w.path)} style={ROW_BTN} title="Open in editor">Edit</button>
+                      <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} title="Reveal in Finder">Finder</button>
+                      {w.repo.remoteUrl && (
+                        <button onClick={() => void window.api.open.url(w.repo.remoteUrl!)} style={ROW_BTN} title="Open on GitHub">GitHub</button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

@@ -380,6 +380,12 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                         title="Delete worktree"
                       >🗑</button>
                       <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} title="Reveal in Finder">📂</button>
+                      <button
+                        onClick={() => window.api.terminals.openDir({ terminal: defaultTerminal, dir: w.path })
+                          .then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false))}
+                        style={ROW_BTN}
+                        title={`Open in ${defaultTerminal}`}
+                      >&gt;_</button>
                       {w.repo.remoteUrl && (
                         <button onClick={() => void window.api.open.url(w.repo.remoteUrl!)} style={ROW_BTN} title="Open on GitHub">↗</button>
                       )}

@@ -104,11 +104,6 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   const [sortKey, setSortKey] = useState(persisted.sortKey ?? 'repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.sortDir ?? 'asc');
 
-  // Persist filter + sort + colWidths whenever they change
-  useEffect(() => {
-    savePersistedState({ filters, sortKey, sortDir, colWidths });
-  }, [filters, sortKey, sortDir, colWidths]);
-
   // Drop repo selections that no longer exist in the current worktree list
   useEffect(() => {
     if (filters.repo.length === 0) return;
@@ -127,6 +122,11 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     persisted.colWidths?.length === COL_COUNT ? persisted.colWidths : Array(COL_COUNT).fill(null)
   );
   const [renameState, setRenameState] = useState<{ wt: WorktreeRow; value: string } | null>(null);
+
+  // Persist filter + sort + colWidths whenever they change (after all state is declared)
+  useEffect(() => {
+    savePersistedState({ filters, sortKey, sortDir, colWidths });
+  }, [filters, sortKey, sortDir, colWidths]);
   const [deleteState, setDeleteState] = useState<{ wt: WorktreeRow; deleteRemote: boolean } | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const dragging = useRef<{ idx: number; startX: number; startW: number } | null>(null);

@@ -2,6 +2,20 @@ import { app, BrowserWindow } from 'electron';
 import { join } from 'node:path';
 import { registerIpc } from './ipc';
 
+// Augment PATH so execFile can find homebrew/nix/system binaries that aren't
+// in the minimal PATH Electron inherits on macOS.
+const EXTRA_PATHS = [
+  '/opt/homebrew/bin',   // Apple Silicon Homebrew
+  '/usr/local/bin',      // Intel Homebrew / nix
+  '/opt/homebrew/sbin',
+  '/usr/local/sbin',
+];
+for (const p of EXTRA_PATHS) {
+  if (!process.env.PATH?.includes(p)) {
+    process.env.PATH = `${p}:${process.env.PATH ?? ''}`;
+  }
+}
+
 function createWindow(): void {
   const win = new BrowserWindow({
     width: 1280,

@@ -24,7 +24,7 @@ const CHIP_STYLE: React.CSSProperties = {
   userSelect: 'none',
 };
 const CHIP_ACTIVE: React.CSSProperties = {
-  ...CHIP_STYLE, background: 'var(--accent)', color: 'var(--bg)', borderColor: 'var(--accent)',
+  ...CHIP_STYLE, background: 'var(--accent)', color: 'var(--bg)', border: '1px solid var(--accent)',
 };
 
 export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onSort }: Props): React.JSX.Element {

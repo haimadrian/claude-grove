@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import type { WorktreeRow, TerminalKind } from '../../shared/types';
 import { PrBadge } from './PrBadge';
 import { SearchBar } from './SearchBar';
@@ -80,6 +80,17 @@ interface Props {
 export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, onMessage }: Props): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+
+  // Drop repo selections that no longer exist in the current worktree list
+  useEffect(() => {
+    if (filters.repo.length === 0) return;
+    const names = new Set(worktrees.map((w) => w.repo.name));
+    const valid = filters.repo.filter((r) => names.has(r));
+    if (valid.length !== filters.repo.length) {
+      setFilters((f) => ({ ...f, repo: valid }));
+    }
+  }, [worktrees]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [sortKey, setSortKey] = useState('repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [hoveredId, setHoveredId] = useState<string | null>(null);

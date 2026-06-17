@@ -4,7 +4,7 @@
   "description": "A macOS desktop app to view and manage all your local git worktrees - PR status, Claude Code sessions, and GitHub-style diffs in one place.",
   "author": {
     "name": "Haim Adrian",
-    "email": "haim@honeybook.com"
+    "email": "haimadrian@gmail.com"
   },
   "repository": {
     "type": "git",

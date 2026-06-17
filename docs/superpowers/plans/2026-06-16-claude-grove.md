@@ -62,7 +62,7 @@ cp "$T"/src/main/logger.ts src/main/logger.ts
   "name": "claude-grove",
   "version": "0.1.0",
   "description": "A macOS desktop app to view and manage all your local git worktrees - PR status, Claude Code sessions, and GitHub-style diffs in one place.",
-  "author": { "name": "Haim Adrian", "email": "haim@honeybook.com" },
+  "author": { "name": "Haim Adrian", "email": "haimadrian@gmail.com" },
   "repository": { "type": "git", "url": "https://github.com/haimadrian/claude-grove.git" },
   "license": "MIT",
   "private": true,

@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('api', {
     create: (input: { repoPath: string; branch: string; base: string }): Promise<OpResult> =>
       ipcRenderer.invoke(CH.worktreesCreate, input),
     sync: (path: string, action: SyncAction): Promise<OpResult> => ipcRenderer.invoke(CH.worktreesSync, path, action),
+    renameBranch: (path: string, newBranch: string): Promise<OpResult> =>
+      ipcRenderer.invoke(CH.worktreesRenameBranch, path, newBranch),
   },
   pr: {
     get: (ownerRepo: string, branch: string): Promise<PrInfo | null> => ipcRenderer.invoke(CH.prGet, ownerRepo, branch),

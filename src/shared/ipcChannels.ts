@@ -9,6 +9,7 @@ export const CH = {
   worktreesDeleteRemote: 'worktrees:deleteRemoteBranch',
   worktreesCreate: 'worktrees:create',
   worktreesSync: 'worktrees:sync',
+  worktreesRenameBranch: 'worktrees:renameBranch',
   prGet: 'pr:get',
   ghStatus: 'gh:status',
   terminalsAvailable: 'terminals:available',

@@ -59,6 +59,33 @@ export async function createWorktree(
   return ok(`Created worktree at ${targetDir}`);
 }
 
+export async function renameBranch(
+  worktreePath: string,
+  repoRoot: string,
+  oldBranch: string,
+  newBranch: string,
+  hasUpstream: boolean,
+  runner: Runner = git
+): Promise<OpResult> {
+  if (!isValidBranchName(newBranch)) return fail(`Invalid branch name: ${newBranch}`);
+
+  // 1. Rename locally
+  const local = await runner.run(['-C', worktreePath, 'branch', '-m', oldBranch, newBranch]);
+  if (local.code !== 0) return fail('Failed to rename local branch', local.stderr);
+
+  // 2. Push new branch and set upstream
+  const push = await runner.run(['-C', worktreePath, 'push', 'origin', '-u', newBranch]);
+  if (push.code !== 0) return { success: true, message: `Renamed locally to ${newBranch}. Remote push failed: ${push.stderr}` };
+
+  // 3. Delete old remote branch (only if it had an upstream — i.e. existed on remote)
+  if (hasUpstream) {
+    const del = await runner.run(['-C', worktreePath, 'push', 'origin', '--delete', oldBranch]);
+    if (del.code !== 0) return { success: true, message: `Renamed to ${newBranch} and pushed. Old remote branch deletion failed: ${del.stderr}` };
+  }
+
+  return ok(`Branch renamed to ${newBranch}`);
+}
+
 export async function syncWorktree(
   worktreePath: string,
   action: SyncAction,

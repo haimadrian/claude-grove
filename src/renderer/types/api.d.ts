@@ -16,6 +16,7 @@ declare global {
         deleteRemoteBranch(path: string): Promise<OpResult>;
         create(input: { repoPath: string; branch: string; base: string }): Promise<OpResult>;
         sync(path: string, action: SyncAction): Promise<OpResult>;
+        renameBranch(path: string, newBranch: string): Promise<OpResult>;
       };
       pr: {
         get(ownerRepo: string, branch: string): Promise<PrInfo | null>;

@@ -22,6 +22,10 @@ const ROW_BTN: React.CSSProperties = {
   border: '1px solid var(--border)', borderRadius: 4,
   color: 'var(--fg)', whiteSpace: 'nowrap', boxShadow: '0 1px 3px var(--shadow)',
 };
+const DIALOG_BTN: React.CSSProperties = {
+  padding: '6px 14px', fontSize: 13, borderRadius: 6,
+  background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--fg)',
+};
 const RESIZE_HANDLE: React.CSSProperties = {
   position: 'absolute', right: 0, top: 0, bottom: 0, width: 6,
   cursor: 'col-resize', zIndex: 2,
@@ -42,6 +46,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   // null = auto-sized by browser; number = user-set pixel width
   const [colWidths, setColWidths] = useState<(number | null)[]>(Array(COL_COUNT).fill(null));
+  const [renameState, setRenameState] = useState<{ wt: WorktreeRow; value: string } | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const dragging = useRef<{ idx: number; startX: number; startW: number } | null>(null);
 
@@ -83,6 +88,14 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
   }, [colWidths]);
+
+  const doRename = useCallback((): void => {
+    if (!renameState) return;
+    const { wt, value } = renameState;
+    if (!value.trim() || value === wt.branch) { setRenameState(null); return; }
+    setRenameState(null);
+    void window.api.worktrees.renameBranch(wt.path, value.trim());
+  }, [renameState]);
 
   const hasFixed = colWidths.some((w) => w !== null);
 
@@ -222,6 +235,15 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
                         </button>
                       )}
                       <button onClick={() => void window.api.open.editor(w.path)} style={ROW_BTN} title="Open in editor">Edit</button>
+                      {w.branch && (
+                        <button
+                          onClick={() => setRenameState({ wt: w, value: w.branch! })}
+                          style={ROW_BTN}
+                          title="Rename branch locally and on remote"
+                        >
+                          Rename
+                        </button>
+                      )}
                       <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} title="Reveal in Finder">Finder</button>
                       {w.repo.remoteUrl && (
                         <button onClick={() => void window.api.open.url(w.repo.remoteUrl!)} style={ROW_BTN} title="Open on GitHub">GitHub</button>
@@ -233,6 +255,46 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
             })}
           </tbody>
         </table>
+      )}
+      {renameState && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10,
+            padding: 24, maxWidth: 400, width: '90%', boxShadow: '0 8px 32px var(--shadow)',
+          }}>
+            <h3 style={{ marginBottom: 12, fontSize: 15 }}>Rename branch</h3>
+            <p style={{ fontSize: 12, color: 'var(--fg-muted)', marginBottom: 16 }}>
+              Current: <code>{renameState.wt.branch}</code><br />
+              Renames locally and on remote.
+            </p>
+            <input
+              autoFocus
+              value={renameState.value}
+              onChange={(e) => setRenameState((s) => s ? { ...s, value: e.target.value } : null)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') doRename();
+                if (e.key === 'Escape') setRenameState(null);
+              }}
+              style={{
+                width: '100%', padding: '6px 10px', marginBottom: 16,
+                background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                borderRadius: 6, color: 'var(--fg)', fontSize: 13,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setRenameState(null)} style={DIALOG_BTN}>Cancel</button>
+              <button
+                onClick={doRename}
+                style={{ ...DIALOG_BTN, background: 'var(--accent)', color: 'var(--bg)', borderColor: 'transparent' }}
+              >
+                Rename
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

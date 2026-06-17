@@ -6,7 +6,7 @@ import { scanRepos } from './git/repoScanner';
 import { listAllWorktrees } from './git/worktrees';
 import { listCommits, commitDiff, fullDiff } from './git/diff';
 import { resolveBaseBranch } from './git/baseBranch';
-import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree } from './git/operations';
+import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree, renameBranch } from './git/operations';
 import { getPr } from './gh/pr';
 import { ghStatus } from './gh/ghRunner';
 import { isPathWithinRoots } from './security/validate';
@@ -109,6 +109,20 @@ export function registerIpc(): void {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
     return syncWorktree(wtPath, action, settings.defaultBaseBranch);
+  });
+
+  ipcMain.handle(CH.worktreesRenameBranch, async (_e, wtPath: string, newBranch: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
+    const repos = await getRepos(settings);
+    const repoRoot = repos.find((r) => wtPath.startsWith(r + '/')) ?? '';
+    if (!repoRoot) return { success: false, message: 'Cannot find repo root for worktree' };
+    const wts = await listAllWorktrees(repos);
+    const wt = wts.find((w) => w.path === wtPath);
+    if (!wt?.branch) return { success: false, message: 'Worktree has no branch (detached HEAD)' };
+    const result = await renameBranch(wtPath, repoRoot, wt.branch, newBranch, wt.upstream !== null);
+    if (result.success) invalidateRepoCache();
+    return result;
   });
 
   // PR

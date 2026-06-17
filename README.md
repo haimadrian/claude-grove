@@ -12,24 +12,24 @@ A macOS desktop app to view and manage local git worktrees across multiple repos
 
 ```bash
 pnpm install
+```
+
+```bash
 pnpm dev        # hot-reload dev mode
+```
+
+```bash
 pnpm typecheck  # TypeScript check
+```
+
+```bash
 pnpm test       # vitest unit tests
+```
+
+```bash
 pnpm package    # build .dmg -> release/
 ```
 
 ## First run
 
 On first launch, add a root folder (e.g. `~/Documents/GIT`) to scan for git repos. Claude Grove discovers all git repos and worktrees under the configured roots.
-
-## Local co-author hook
-
-Commits in this repo auto-append a co-author trailer via a local `prepare-commit-msg` hook. Re-create it on fresh clones:
-
-```bash
-cat > .git/hooks/prepare-commit-msg << 'EOF'
-#!/bin/sh
-echo "\nCo-Authored-By: Haim Adrian <haim@honeybook.com>" >> "$1"
-EOF
-chmod +x .git/hooks/prepare-commit-msg
-```

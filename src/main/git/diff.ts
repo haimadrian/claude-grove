@@ -13,10 +13,13 @@ export async function listCommits(worktreePath: string, base: string, runner: Ru
 }
 
 export async function commitDiff(worktreePath: string, sha: string, runner: Runner = git): Promise<string> {
-  const result = await runner.run([
-    '-C', worktreePath, 'show', sha, '--no-color', '--format=', '--patch',
-  ]);
-  return result.stdout;
+  // Use git diff parent..commit for a standard 2-way diff (works for merge commits too).
+  // git show produces combined diff format for merges which react-diff-view cannot parse.
+  const result = await runner.run(['-C', worktreePath, 'diff', '--no-color', `${sha}^1`, sha]);
+  if (result.code === 0 && result.stdout.trim()) return result.stdout;
+  // Fallback for root commits (no parent) or other edge cases
+  const fallback = await runner.run(['-C', worktreePath, 'show', sha, '--no-color', '--format=', '--patch']);
+  return fallback.stdout;
 }
 
 export async function fullDiff(worktreePath: string, base: string, runner: Runner = git): Promise<string> {

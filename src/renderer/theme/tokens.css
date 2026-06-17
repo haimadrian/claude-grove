@@ -68,3 +68,18 @@ button:not(:disabled):hover {
 ::-webkit-scrollbar-corner {
   background: var(--bg-secondary);
 }
+
+/* react-diff-view dark mode overrides.
+   The library uses CSS custom properties for all diff colors, so overriding
+   the variables here is sufficient — no class-level !important needed. */
+[data-theme="dark"] {
+  --diff-background-color: var(--bg-secondary);
+  --diff-text-color: var(--fg);
+  --diff-gutter-insert-background-color: rgba(70, 200, 70, 0.18);
+  --diff-gutter-delete-background-color: rgba(255, 80, 80, 0.18);
+  --diff-code-insert-background-color: rgba(70, 200, 70, 0.12);
+  --diff-code-delete-background-color: rgba(255, 80, 80, 0.12);
+  --diff-code-insert-edit-background-color: rgba(70, 200, 70, 0.35);
+  --diff-code-delete-edit-background-color: rgba(255, 80, 80, 0.35);
+  --diff-selection-background-color: rgba(56, 139, 253, 0.3);
+}

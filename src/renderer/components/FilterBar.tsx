@@ -2,7 +2,7 @@ import React from 'react';
 import type { WorktreeRow } from '../../shared/types';
 
 export interface Filters {
-  repo: string | null;
+  repo: string[];
   dirty: boolean;
   safeToDelete: boolean;
   hasPr: boolean;
@@ -38,8 +38,13 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
       {repos.map((r) => (
         <span
           key={r}
-          style={filters.repo === r ? CHIP_ACTIVE : CHIP_STYLE}
-          onClick={() => onFilters({ ...filters, repo: filters.repo === r ? null : r })}
+          style={filters.repo.includes(r) ? CHIP_ACTIVE : CHIP_STYLE}
+          onClick={() => {
+            const next = filters.repo.includes(r)
+              ? filters.repo.filter((x) => x !== r)
+              : [...filters.repo, r];
+            onFilters({ ...filters, repo: next });
+          }}
         >
           {r}
         </span>

@@ -4,7 +4,7 @@ import { PrBadge } from './PrBadge';
 import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 
-const DEFAULT_FILTERS: Filters = { repo: null, dirty: false, safeToDelete: false, hasPr: false, locked: false };
+const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
 const COL_COUNT = 7; // Repo, Branch, State, Last commit, Modified, Sessions, PR
 
 const TH: React.CSSProperties = {
@@ -155,7 +155,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     const q = search.toLowerCase();
     return worktrees
       .filter((w) => {
-        if (filters.repo && w.repo.name !== filters.repo) return false;
+        if (filters.repo.length > 0 && !filters.repo.includes(w.repo.name)) return false;
         if (filters.dirty && !w.isDirty) return false;
         if (filters.safeToDelete && !(w.upstreamGone || w.pr?.state === 'MERGED')) return false;
         if (filters.hasPr && !w.pr) return false;

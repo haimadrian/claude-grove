@@ -7,6 +7,7 @@ import { GhMissingNotice } from './components/GhMissingNotice';
 import { SettingsPage } from './components/SettingsPage';
 import { Onboarding } from './components/Onboarding';
 import { Toast, useToast } from './components/Toast';
+import { AboutModal } from './components/AboutModal';
 import { useSettings } from './hooks/useSettings';
 import { useWorktrees } from './hooks/useWorktrees';
 
@@ -17,6 +18,7 @@ export function App(): React.JSX.Element {
   const [ghAuthed, setGhAuthed] = useState<boolean | null>(null);
   const [selected, setSelected] = useState<WorktreeRow | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
 
@@ -61,6 +63,12 @@ export function App(): React.JSX.Element {
             Refresh
           </button>
           <button
+            onClick={() => setAboutOpen(true)}
+            style={{ fontSize: 12, padding: '4px 10px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)' }}
+          >
+            About
+          </button>
+          <button
             onClick={() => setSettingsOpen(true)}
             style={{
               fontSize: 12, padding: '4px 10px', background: 'var(--bg-secondary)',
@@ -98,6 +106,7 @@ export function App(): React.JSX.Element {
             onClose={() => setSettingsOpen(false)}
           />
         )}
+        {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}
         {toast !== null && (
           <Toast message={toast.message} type={toast.type} onDone={clearToast} />
         )}

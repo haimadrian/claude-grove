@@ -36,9 +36,10 @@ interface Props {
   loading: boolean;
   defaultTerminal: TerminalKind;
   onSelect: (wt: WorktreeRow) => void;
+  onMessage: (msg: string, ok: boolean) => void;
 }
 
-export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }: Props): React.JSX.Element {
+export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, onMessage }: Props): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [sortKey, setSortKey] = useState('repo');
@@ -226,11 +227,13 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect }:
                       <button onClick={() => onSelect(w)} style={ROW_BTN} title="View commits and diff">View</button>
                       {w.sessions[0] && (
                         <button
-                          onClick={() => void window.api.terminals.resumeSession({
-                            terminal: defaultTerminal,
-                            launchDir: w.sessions[0]!.launchDir,
-                            sessionId: w.sessions[0]!.sessionId,
-                          })}
+                          onClick={() => {
+                            window.api.terminals.resumeSession({
+                              terminal: defaultTerminal,
+                              launchDir: w.sessions[0]!.launchDir,
+                              sessionId: w.sessions[0]!.sessionId,
+                            }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
+                          }}
                           style={{ ...ROW_BTN, color: 'var(--accent)' }}
                           title={`Resume Claude session: ${w.sessions[0].title ?? w.sessions[0].sessionId}`}
                         >

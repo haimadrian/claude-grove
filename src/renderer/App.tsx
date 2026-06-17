@@ -19,8 +19,6 @@ export function App(): React.JSX.Element {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
-  // showToast is available for future use (e.g. pass to WorktreeDetail)
-  void showToast;
 
   React.useEffect(() => {
     window.api.gh.status().then((s) => {
@@ -79,7 +77,13 @@ export function App(): React.JSX.Element {
           ) : selected !== null ? (
             <WorktreeDetail worktree={selected} onBack={() => setSelected(null)} />
           ) : (
-            <WorktreeTable worktrees={worktrees} loading={loading} defaultTerminal={settings.defaultTerminal} onSelect={setSelected} />
+            <WorktreeTable
+              worktrees={worktrees}
+              loading={loading}
+              defaultTerminal={settings.defaultTerminal}
+              onSelect={setSelected}
+              onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
+            />
           )}
         </main>
         {settingsOpen && (

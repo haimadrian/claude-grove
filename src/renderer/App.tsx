@@ -7,7 +7,7 @@ import { GhMissingNotice } from './components/GhMissingNotice';
 import { SettingsPage } from './components/SettingsPage';
 import { Onboarding } from './components/Onboarding';
 import { Toast, useToast } from './components/Toast';
-import { AboutModal } from './components/AboutModal';
+import { HelpModal } from './components/HelpModal';
 import { useSettings } from './hooks/useSettings';
 import { useWorktrees } from './hooks/useWorktrees';
 
@@ -18,7 +18,7 @@ export function App(): React.JSX.Element {
   const [ghAuthed, setGhAuthed] = useState<boolean | null>(null);
   const [selected, setSelected] = useState<WorktreeRow | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
+  const [helpOpen, setAboutOpen] = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
 
@@ -106,7 +106,7 @@ export function App(): React.JSX.Element {
             onClose={() => setSettingsOpen(false)}
           />
         )}
-        {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}
+        {helpOpen && <HelpModal onClose={() => setAboutOpen(false)} />}
         {toast !== null && (
           <Toast message={toast.message} type={toast.type} onDone={clearToast} />
         )}

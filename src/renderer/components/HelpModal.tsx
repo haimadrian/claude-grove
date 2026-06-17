@@ -10,7 +10,7 @@ const TABLE_STYLE: React.CSSProperties = { width: '100%', borderCollapse: 'separ
 const TH_STYLE: React.CSSProperties = { textAlign: 'left', padding: '5px 10px', fontSize: 11, fontWeight: 600, color: 'var(--fg-muted)', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' };
 const TD_STYLE: React.CSSProperties = { padding: '6px 10px', borderBottom: '1px solid var(--bg-tertiary)', verticalAlign: 'top' };
 
-export function AboutModal({ onClose }: Props): React.JSX.Element {
+export function HelpModal({ onClose }: Props): React.JSX.Element {
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 800,

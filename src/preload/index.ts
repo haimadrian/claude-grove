@@ -26,6 +26,8 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke(CH.worktreesWorkingFileDiff, path, filePath),
     commitFiles: (path: string, files: string[], message: string): Promise<OpResult> =>
       ipcRenderer.invoke(CH.worktreesCommitFiles, path, files, message),
+    rollbackFile: (path: string, filePath: string, status: string): Promise<OpResult> =>
+      ipcRenderer.invoke(CH.worktreesRollbackFile, path, filePath, status),
   },
   pr: {
     get: (ownerRepo: string, branch: string): Promise<PrInfo | null> => ipcRenderer.invoke(CH.prGet, ownerRepo, branch),

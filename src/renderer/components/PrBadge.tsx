@@ -19,7 +19,14 @@ export function PrBadge({ pr, onClick }: Props): React.JSX.Element {
         #{pr.number} {pr.state}
       </span>
       {pr.isDraft && <span style={{ color: 'var(--fg-muted)', fontSize: 11 }}>draft</span>}
-      {checksIcon && <span style={{ color: checksColor, fontSize: 12 }}>{checksIcon}</span>}
+      {checksIcon && (
+        <span
+          style={{ color: checksColor, fontSize: 12 }}
+          {...(pr.checksDetail.length > 0 ? { title: pr.checksDetail.join('\n') } : {})}
+        >
+          {checksIcon}
+        </span>
+      )}
       {pr.reviewDecision === 'APPROVED' && <span style={{ color: 'var(--ok)', fontSize: 12 }}>✓rev</span>}
       {pr.reviewDecision === 'CHANGES_REQUESTED' && <span style={{ color: 'var(--danger)', fontSize: 12 }}>✗rev</span>}
     </span>

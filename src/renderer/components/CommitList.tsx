@@ -111,6 +111,30 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
                 background: f.label === 'deleted' ? 'var(--danger)' : f.label === 'added' ? 'var(--ok)' : 'var(--warn)',
                 color: 'var(--bg)', flexShrink: 0,
               }}>{f.label[0]!.toUpperCase()}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.api.worktrees.rollbackFile(worktreePath, f.path, f.status)
+                    .then((r) => {
+                      onMessage(r.message, r.success);
+                      if (r.success) {
+                        window.api.worktrees.workingFiles(worktreePath).then((files) => {
+                          setWorkingFiles(files);
+                          setSelectedFiles(new Set(files.filter((wf) => wf.status !== '??').map((wf) => wf.path)));
+                        });
+                      }
+                    })
+                    .catch((e2) => onMessage(String(e2), false));
+                }}
+                title={`Rollback changes to ${f.path}`}
+                style={{
+                  fontSize: 11, padding: '1px 5px', background: 'transparent',
+                  border: '1px solid var(--border)', borderRadius: 3, cursor: 'pointer',
+                  color: 'var(--fg-muted)', marginLeft: 'auto', flexShrink: 0,
+                }}
+              >
+                ↩
+              </button>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--fg)' }} title={f.path}>
                 {f.path.split('/').pop() ?? f.path}
               </span>

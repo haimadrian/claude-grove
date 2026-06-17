@@ -61,6 +61,15 @@ export async function getPr(
     : reviewDecisionRaw === 'REVIEW_REQUIRED' ? 'REVIEW_REQUIRED'
     : null;
 
+  const FAIL_CONCLUSIONS = new Set(['FAILURE', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED']);
+  const checksDetail = (raw['statusCheckRollup'] as { name?: string; status?: string | null; conclusion?: string | null; state?: string | null }[] ?? [])
+    .filter((c) => (c.conclusion != null && FAIL_CONCLUSIONS.has(c.conclusion)) || c.state === 'FAILURE' || (c.status != null && c.status !== 'COMPLETED'))
+    .map((c) => {
+      const name = c.name ?? 'unknown';
+      if ((c.conclusion != null && FAIL_CONCLUSIONS.has(c.conclusion)) || c.state === 'FAILURE') return `✗ ${name}`;
+      return `○ ${name} (pending)`;
+    });
+
   const prInfo: PrInfo = {
     number: raw['number'] as number,
     url: raw['url'] as string,
@@ -68,6 +77,7 @@ export async function getPr(
     isDraft: raw['isDraft'] as boolean,
     reviewDecision,
     checksState: mapChecksState((raw['statusCheckRollup'] as { status?: string; conclusion?: string; state?: string }[]) ?? []),
+    checksDetail,
     baseRefName: raw['baseRefName'] as string,
     title: raw['title'] as string,
   };

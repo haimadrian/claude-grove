@@ -123,6 +123,29 @@ export async function syncWorktree(
   return fail(`Unknown sync action: ${action as string}`);
 }
 
+export async function rollbackFile(
+  worktreePath: string,
+  filePath: string,
+  status: string,
+  runner: Runner = git
+): Promise<OpResult> {
+  // Untracked files: git clean -f
+  if (status === '??') {
+    const abs = filePath.startsWith('/') ? filePath : `${worktreePath}/${filePath}`;
+    const result = await runner.run(['-C', worktreePath, 'clean', '-f', '--', abs]);
+    if (result.code !== 0) return fail(`Failed to remove untracked file`, result.stderr);
+    return ok(`Removed untracked file ${filePath}`);
+  }
+  // Staged changes: reset first
+  if (status[0] !== ' ' && status[0] !== '?') {
+    await runner.run(['-C', worktreePath, 'reset', 'HEAD', '--', filePath]);
+  }
+  // Checkout from HEAD to discard changes
+  const checkout = await runner.run(['-C', worktreePath, 'checkout', 'HEAD', '--', filePath]);
+  if (checkout.code !== 0) return fail(`Failed to rollback file`, checkout.stderr);
+  return ok(`Rolled back ${filePath}`);
+}
+
 export async function commitFiles(
   worktreePath: string,
   files: string[],

@@ -20,6 +20,7 @@ declare global {
         workingFiles(path: string): Promise<Array<{ path: string; status: string; label: string }>>;
         workingFileDiff(path: string, filePath: string): Promise<string>;
         commitFiles(path: string, files: string[], message: string): Promise<OpResult>;
+        rollbackFile(path: string, filePath: string, status: string): Promise<OpResult>;
       };
       pr: {
         get(ownerRepo: string, branch: string): Promise<PrInfo | null>;

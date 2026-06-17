@@ -13,6 +13,7 @@ export const CH = {
   worktreesWorkingFiles: 'worktrees:workingFiles',
   worktreesWorkingFileDiff: 'worktrees:workingFileDiff',
   worktreesCommitFiles: 'worktrees:commitFiles',
+  worktreesRollbackFile: 'worktrees:rollbackFile',
   prGet: 'pr:get',
   ghStatus: 'gh:status',
   terminalsAvailable: 'terminals:available',

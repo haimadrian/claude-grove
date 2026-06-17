@@ -38,6 +38,7 @@ export interface PrInfo {
   isDraft: boolean;
   reviewDecision: 'APPROVED' | 'CHANGES_REQUESTED' | 'REVIEW_REQUIRED' | null;
   checksState: 'PASSING' | 'FAILING' | 'PENDING' | 'NONE';
+  checksDetail: string[];
   baseRefName: string;
   title: string;
 }

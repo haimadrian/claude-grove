@@ -53,7 +53,12 @@ export async function workingFileDiff(worktreePath: string, filePath: string, ru
   // For tracked files: diff HEAD vs working tree
   const result = await runner.run(['-C', worktreePath, 'diff', 'HEAD', '--no-color', '--', filePath]);
   if (result.code === 0 && result.stdout.trim()) return result.stdout;
-  // Fallback: diff --cached (staged-only, e.g. for newly added files with no HEAD ref)
+  // For staged-only (new file staged): diff --cached
   const staged = await runner.run(['-C', worktreePath, 'diff', '--cached', '--no-color', '--', filePath]);
-  return staged.stdout;
+  if (staged.code === 0 && staged.stdout.trim()) return staged.stdout;
+  // For untracked files: show full content as new file via --no-index
+  const abs = filePath.startsWith('/') ? filePath : `${worktreePath}/${filePath}`;
+  const noIndex = await runner.run(['-C', worktreePath, 'diff', '--no-color', '--no-index', '--', '/dev/null', abs]);
+  // git diff --no-index returns exit code 1 when files differ (which is always for new files) - that's OK
+  return noIndex.stdout;
 }

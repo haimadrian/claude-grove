@@ -78,6 +78,17 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
           >
             Reveal in Finder
           </button>
+          <button
+            onClick={() =>
+              window.api.terminals.openDir({ terminal: defaultTerminal, dir: worktree.path })
+                .then((r) => onMessage(r.message, r.success))
+                .catch((e) => onMessage(String(e), false))
+            }
+            style={ACTION_BTN}
+            title={`Open worktree in ${defaultTerminal}`}
+          >
+            Terminal
+          </button>
           {worktree.repo.remoteUrl && (
             <button
               onClick={() => window.api.open.url(worktree.repo.remoteUrl!)}

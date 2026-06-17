@@ -28,3 +28,32 @@ export async function fullDiff(worktreePath: string, base: string, runner: Runne
   ]);
   return result.stdout;
 }
+
+export interface WorkingFile {
+  path: string;       // relative file path
+  status: string;     // short status like 'M', 'A', 'D', '??', 'MM'
+  label: string;      // human-readable: 'modified', 'added', 'deleted', 'untracked'
+}
+
+export async function listWorkingFiles(worktreePath: string, runner: Runner = git): Promise<WorkingFile[]> {
+  const result = await runner.run(['-C', worktreePath, 'status', '--porcelain']);
+  if (result.code !== 0 || !result.stdout.trim()) return [];
+  return result.stdout.split('\n').filter((l) => l.length >= 4).map((line) => {
+    const xy = line.slice(0, 2);
+    const filePath = line.slice(3).trim().replace(/^"(.*)"$/, '$1'); // strip git quoting
+    const label = xy === '??' ? 'untracked'
+      : xy.includes('D') ? 'deleted'
+      : xy.includes('A') ? 'added'
+      : 'modified';
+    return { path: filePath, status: xy, label };
+  });
+}
+
+export async function workingFileDiff(worktreePath: string, filePath: string, runner: Runner = git): Promise<string> {
+  // For tracked files: diff HEAD vs working tree
+  const result = await runner.run(['-C', worktreePath, 'diff', 'HEAD', '--no-color', '--', filePath]);
+  if (result.code === 0 && result.stdout.trim()) return result.stdout;
+  // Fallback: diff --cached (staged-only, e.g. for newly added files with no HEAD ref)
+  const staged = await runner.run(['-C', worktreePath, 'diff', '--cached', '--no-color', '--', filePath]);
+  return staged.stdout;
+}

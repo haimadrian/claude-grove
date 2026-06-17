@@ -111,3 +111,20 @@ export async function syncWorktree(
   }
   return fail(`Unknown sync action: ${action as string}`);
 }
+
+export async function commitFiles(
+  worktreePath: string,
+  files: string[],
+  message: string,
+  runner: Runner = git
+): Promise<OpResult> {
+  if (!files.length) return fail('No files selected');
+  if (!message.trim()) return fail('Commit message is required');
+  // Stage the selected files
+  const add = await runner.run(['-C', worktreePath, 'add', '--', ...files]);
+  if (add.code !== 0) return fail('Failed to stage files', add.stderr);
+  // Commit
+  const commit = await runner.run(['-C', worktreePath, 'commit', '-m', message.trim()]);
+  if (commit.code !== 0) return fail('Commit failed', commit.stderr);
+  return ok(`Committed ${files.length} file${files.length !== 1 ? 's' : ''}`);
+}

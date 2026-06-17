@@ -121,8 +121,10 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
         <div style={{ width: 300, flexShrink: 0, overflowY: 'auto' }}>
           <CommitList
             worktreePath={worktree.path}
+            isDirty={worktree.isDirty}
             onDiff={setDiff}
             onFullDiff={loadFullDiff}
+            onMessage={onMessage}
           />
         </div>
         {/* Right: diff viewer */}

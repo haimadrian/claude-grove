@@ -4,9 +4,9 @@ import { CH } from '../shared/ipcChannels';
 import { loadSettings, updateSettings } from './settings/settings';
 import { scanRepos } from './git/repoScanner';
 import { listAllWorktrees } from './git/worktrees';
-import { listCommits, commitDiff, fullDiff } from './git/diff';
+import { listCommits, commitDiff, fullDiff, listWorkingFiles, workingFileDiff } from './git/diff';
 import { resolveBaseBranch } from './git/baseBranch';
-import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree, renameBranch } from './git/operations';
+import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree, renameBranch, commitFiles } from './git/operations';
 import { getPr } from './gh/pr';
 import { ghStatus } from './gh/ghRunner';
 import { isPathWithinRoots } from './security/validate';
@@ -121,6 +121,26 @@ export function registerIpc(): void {
     const wt = wts.find((w) => w.path === wtPath);
     if (!wt?.branch) return { success: false, message: 'Worktree has no branch (detached HEAD)' };
     const result = await renameBranch(wtPath, repoRoot, wt.branch, newBranch, wt.upstream !== null);
+    if (result.success) invalidateRepoCache();
+    return result;
+  });
+
+  ipcMain.handle(CH.worktreesWorkingFiles, async (_e, wtPath: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return [];
+    return listWorkingFiles(wtPath);
+  });
+
+  ipcMain.handle(CH.worktreesWorkingFileDiff, async (_e, wtPath: string, filePath: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return '';
+    return workingFileDiff(wtPath, filePath);
+  });
+
+  ipcMain.handle(CH.worktreesCommitFiles, async (_e, wtPath: string, files: string[], message: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
+    const result = await commitFiles(wtPath, files, message);
     if (result.success) invalidateRepoCache();
     return result;
   });

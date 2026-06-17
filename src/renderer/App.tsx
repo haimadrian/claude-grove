@@ -18,7 +18,7 @@ export function App(): React.JSX.Element {
   const [ghAuthed, setGhAuthed] = useState<boolean | null>(null);
   const [selected, setSelected] = useState<WorktreeRow | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [helpOpen, setAboutOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
 
@@ -54,28 +54,24 @@ export function App(): React.JSX.Element {
           <span style={{ fontWeight: 600, fontSize: 15 }}>Claude Grove</span>
           <button
             onClick={refresh}
-            style={{
-              marginLeft: 'auto', fontSize: 12, padding: '4px 10px',
-              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-              borderRadius: 6, cursor: 'pointer', color: 'var(--fg)',
-            }}
+            title="Refresh"
+            style={{ marginLeft: 'auto', fontSize: 16, padding: '2px 8px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', lineHeight: 1 }}
           >
-            Refresh
+            ↺
           </button>
           <button
-            onClick={() => setAboutOpen(true)}
-            style={{ fontSize: 12, padding: '4px 10px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)' }}
+            onClick={() => setHelpOpen(true)}
+            title="Help"
+            style={{ fontSize: 14, fontWeight: 600, padding: '2px 9px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', lineHeight: 1 }}
           >
-            About
+            ?
           </button>
           <button
             onClick={() => setSettingsOpen(true)}
-            style={{
-              fontSize: 12, padding: '4px 10px', background: 'var(--bg-secondary)',
-              border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', color: 'var(--fg)',
-            }}
+            title="Settings"
+            style={{ fontSize: 15, padding: '2px 8px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', lineHeight: 1 }}
           >
-            Settings
+            ⚙
           </button>
         </header>
         <main style={{ flex: 1, overflow: 'hidden', padding: '12px 16px', display: 'flex', flexDirection: 'column' }}>
@@ -106,7 +102,7 @@ export function App(): React.JSX.Element {
             onClose={() => setSettingsOpen(false)}
           />
         )}
-        {helpOpen && <HelpModal onClose={() => setAboutOpen(false)} />}
+        {helpOpen && <HelpModal onClose={() => setHelpOpen(false)} />}
         {toast !== null && (
           <Toast message={toast.message} type={toast.type} onDone={clearToast} />
         )}

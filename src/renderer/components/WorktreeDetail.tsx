@@ -67,12 +67,14 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
           <button
             onClick={() => window.api.open.editor(worktree.path)}
             style={ACTION_BTN}
+            title="Open worktree folder in your configured editor"
           >
             Open in editor
           </button>
           <button
             onClick={() => window.api.open.finder(worktree.path)}
             style={ACTION_BTN}
+            title="Reveal worktree folder in Finder"
           >
             Reveal in Finder
           </button>
@@ -80,6 +82,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
             <button
               onClick={() => window.api.open.url(worktree.repo.remoteUrl!)}
               style={ACTION_BTN}
+              title="Open repository on GitHub in your browser"
             >
               View on GitHub
             </button>
@@ -94,6 +97,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
                 }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false))
               }
               style={{ ...ACTION_BTN, color: 'var(--accent)' }}
+              title={`Resume Claude Code session in ${defaultTerminal}: ${worktree.sessions[0].title ?? worktree.sessions[0].sessionId}`}
             >
               Resume
             </button>
@@ -102,6 +106,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
             <button
               onClick={() => setRenameState({ value: worktree.branch! })}
               style={ACTION_BTN}
+              title="Rename branch locally and on remote"
             >
               Rename
             </button>
@@ -109,6 +114,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
           <button
             onClick={() => setShowDeleteConfirm(true)}
             style={{ ...ACTION_BTN, color: 'var(--danger)' }}
+            title="Remove this worktree (optionally also delete remote branch)"
           >
             Delete
           </button>

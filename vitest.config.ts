@@ -5,15 +5,14 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts"],
     exclude: ["node_modules/**", "out/**"],
-    reporters: process.env.CI ? ["default", "junit", "html"] : ["default"],
+    reporters: process.env.CI ? ["default", "junit"] : ["default"],
     outputFile: {
       junit: "reports/unit-junit.xml",
-      html: "reports/unit-html/index.html"
     },
     coverage: {
       enabled: !!process.env.CI,
       provider: "v8",
-      reporter: ["text", "html", "lcov", "json-summary"],
+      reporter: ["text", "lcov", "json-summary"],
       reportsDirectory: "reports/coverage",
       include: ["src/main/**/*.ts", "src/shared/**/*.ts"],
       exclude: ["**/*.d.ts", "**/*.test.ts", "src/main/index.ts", "src/main/logger.ts"]

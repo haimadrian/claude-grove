@@ -31,6 +31,18 @@ const RESIZE_HANDLE: React.CSSProperties = {
   cursor: 'col-resize', zIndex: 2,
 };
 
+function buildStateLines(w: WorktreeRow): string[] {
+  const lines: string[] = [];
+  if (w.isDirty) lines.push('dirty — uncommitted changes present');
+  if (w.ahead > 0) lines.push(`↑${w.ahead} — ${w.ahead} commit${w.ahead !== 1 ? 's' : ''} ahead of upstream`);
+  if (w.behind > 0) lines.push(`↓${w.behind} — ${w.behind} commit${w.behind !== 1 ? 's' : ''} behind upstream`);
+  if (w.isLocked) lines.push(`🔒 locked${w.lockedReason ? ` — ${w.lockedReason}` : ''}`);
+  if (w.isPrunable) lines.push(`prunable${w.prunableReason ? ` — ${w.prunableReason}` : ' — worktree can be pruned'}`);
+  if (w.upstreamGone) lines.push('✓ safe — upstream branch is gone (merged and deleted on remote)');
+  else if (w.pr?.state === 'MERGED') lines.push('✓ safe — PR is merged');
+  return lines;
+}
+
 function formatDate(iso: string): string {
   if (!iso) return '—';
   try {
@@ -58,6 +70,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [prHoveredId, setPrHoveredId] = useState<string | null>(null);
+  const [stateTooltip, setStateTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
   // null = auto-sized by browser; number = user-set pixel width
   const [colWidths, setColWidths] = useState<(number | null)[]>(Array(COL_COUNT).fill(null));
   const [renameState, setRenameState] = useState<{ wt: WorktreeRow; value: string } | null>(null);
@@ -210,7 +223,12 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                 >
                   <td style={TD} title={w.repo.path}>{w.repo.name}</td>
                   <td style={TD} title={w.path}>{w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}</td>
-                  <td style={{ ...TD, overflow: 'visible', whiteSpace: 'normal' }}>
+                  <td
+                    style={{ ...TD, overflow: 'visible', whiteSpace: 'normal' }}
+                    onMouseEnter={(e) => { if (buildStateLines(w).length > 0) setStateTooltip({ id: w.id, x: e.clientX, y: e.clientY }); }}
+                    onMouseMove={(e) => { if (stateTooltip?.id === w.id) setStateTooltip({ id: w.id, x: e.clientX, y: e.clientY }); }}
+                    onMouseLeave={() => setStateTooltip(null)}
+                  >
                     {w.isDirty && <span style={{ color: 'var(--warn)', marginRight: 4 }}>dirty</span>}
                     {w.ahead > 0 && <span style={{ color: 'var(--ok)', marginRight: 4 }}>↑{w.ahead}</span>}
                     {w.behind > 0 && <span style={{ color: 'var(--danger)', marginRight: 4 }}>↓{w.behind}</span>}
@@ -302,6 +320,22 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
         </table>
       )}
       </div>
+      {stateTooltip && (() => {
+        const row = filtered.find((w) => w.id === stateTooltip.id);
+        const lines = row ? buildStateLines(row) : [];
+        if (lines.length === 0) return null;
+        return (
+          <div style={{
+            position: 'fixed', left: stateTooltip.x + 14, top: stateTooltip.y + 14,
+            background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+            borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--fg)',
+            boxShadow: '0 4px 14px var(--shadow)', zIndex: 1000, pointerEvents: 'none',
+            maxWidth: 320, lineHeight: 1.9,
+          }}>
+            {lines.map((line, i) => <div key={i}>{line}</div>)}
+          </div>
+        );
+      })()}
       {renameState && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900,

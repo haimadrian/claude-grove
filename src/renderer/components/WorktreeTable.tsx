@@ -349,7 +349,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                       boxShadow: hovered ? '0 2px 8px var(--shadow)' : 'none',
                       whiteSpace: 'nowrap', zIndex: 10,
                     }}>
-                      <button onClick={() => onSelect(w)} style={ROW_BTN} title="View commits and diff">👁</button>
+                      <button onClick={() => onSelect(w)} style={ROW_BTN} data-tip="View commits and diff">👁</button>
                       {w.sessions[0] && (
                         <button
                           onClick={() => {
@@ -360,34 +360,34 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                             }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
                           }}
                           style={{ ...ROW_BTN, color: 'var(--accent)' }}
-                          title={`Resume Claude session: ${w.sessions[0].title ?? w.sessions[0].sessionId}`}
+                          data-tip={`Resume Claude session: ${w.sessions[0].title ?? w.sessions[0].sessionId}`}
                         >▶</button>
                       )}
                       <button
                         onClick={() => window.api.open.editor(w.path).then((r) => { if (!r.success) onMessage(r.message, false); }).catch((e) => onMessage(String(e), false))}
-                        style={ROW_BTN} title="Open in editor"
+                        style={ROW_BTN} data-tip="Open in editor"
                       >✏</button>
                       {w.branch && (
                         <button
                           onClick={() => setRenameState({ wt: w, value: w.branch! })}
                           style={ROW_BTN}
-                          title="Rename branch locally and on remote"
+                          data-tip="Rename branch locally and on remote"
                         >✎</button>
                       )}
                       <button
                         onClick={() => setDeleteState({ wt: w, deleteRemote: false })}
                         style={{ ...ROW_BTN, color: 'var(--danger)' }}
-                        title="Delete worktree"
+                        data-tip="Delete worktree"
                       >🗑</button>
-                      <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} title="Reveal in Finder">📂</button>
+                      <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} data-tip="Reveal in Finder">📂</button>
                       <button
                         onClick={() => window.api.terminals.openDir({ terminal: defaultTerminal, dir: w.path })
                           .then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false))}
                         style={ROW_BTN}
-                        title={`Open in ${defaultTerminal}`}
+                        data-tip={`Open in ${defaultTerminal}`}
                       >&gt;_</button>
                       {w.repo.remoteUrl && (
-                        <button onClick={() => void window.api.open.url(w.repo.remoteUrl!)} style={ROW_BTN} title="Open on GitHub">↗</button>
+                        <button onClick={() => void window.api.open.url(w.repo.remoteUrl!)} style={ROW_BTN} data-tip="Open on GitHub">↗</button>
                       )}
                     </div>
                   </td>

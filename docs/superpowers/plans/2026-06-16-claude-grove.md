@@ -1,6 +1,6 @@
 # Claude Grove Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build Claude Grove, a macOS Electron desktop app to view and manage local git worktrees across repos, with PR status, Claude Code session linkage, an in-app GitHub-style diff viewer, and worktree lifecycle operations.
 
@@ -44,7 +44,7 @@ Test files live beside source as `<name>.test.ts` under `src/`, picked up by vit
 - Create: `package.json`, `electron.vite.config.ts`, `electron-builder.yml`, `tsconfig.base.json`, `tsconfig.node.json`, `tsconfig.web.json`, `vitest.config.ts`, `eslint.config.js`, `.prettierrc`, `.npmrc`
 - Create: `src/main/index.ts`, `src/main/logger.ts`, `src/preload/index.ts`, `src/renderer/index.html`, `src/renderer/main.tsx`, `src/renderer/App.tsx`
 
-- [ ] **Step 1: Copy config files from the template**
+- [x] **Step 1: Copy config files from the template**
 
 ```bash
 cd ~/Documents/GIT/claude-grove
@@ -55,7 +55,7 @@ cp "$T"/electron.vite.config.ts "$T"/tsconfig.base.json "$T"/tsconfig.node.json 
 cp "$T"/src/main/logger.ts src/main/logger.ts
 ```
 
-- [ ] **Step 2: Write `package.json`**
+- [x] **Step 2: Write `package.json`**
 
 ```jsonc
 {
@@ -110,7 +110,7 @@ cp "$T"/src/main/logger.ts src/main/logger.ts
 }
 ```
 
-- [ ] **Step 3: Write `electron-builder.yml`**
+- [x] **Step 3: Write `electron-builder.yml`**
 
 ```yaml
 appId: com.haimadrian.claude-grove
@@ -124,7 +124,7 @@ mac:
   target: dmg
 ```
 
-- [ ] **Step 4: Minimal main/preload/renderer so the app boots**
+- [x] **Step 4: Minimal main/preload/renderer so the app boots**
 
 `src/main/index.ts`:
 ```ts
@@ -195,13 +195,13 @@ export function App(): React.JSX.Element {
 }
 ```
 
-- [ ] **Step 5: Install and verify boot**
+- [x] **Step 5: Install and verify boot**
 
 Run: `pnpm install && pnpm typecheck`
 Expected: install succeeds, typecheck passes (0 errors).
 Run: `pnpm dev` (manual) — expected: a window titled Claude Grove shows "Claude Grove". Close it.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A
@@ -217,12 +217,12 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 **Files:**
 - Create: `src/shared/types.ts`, `src/shared/ipcChannels.ts`
 
-- [ ] **Step 1: Copy the type contract verbatim from spec §3**
+- [x] **Step 1: Copy the type contract verbatim from spec §3**
 
 Copy every interface/type from `DESIGN.md` §3 into `src/shared/types.ts` exactly:
 `Theme, TerminalKind, SyncAction, Settings, RepoRef, SessionLink, PrInfo, WorktreeRow, Commit, OpResult, GhStatus`.
 
-- [ ] **Step 2: Write `src/shared/ipcChannels.ts`**
+- [x] **Step 2: Write `src/shared/ipcChannels.ts`**
 
 ```ts
 export const CH = {
@@ -248,7 +248,7 @@ export const CH = {
 } as const;
 ```
 
-- [ ] **Step 3: Verify + commit**
+- [x] **Step 3: Verify + commit**
 
 Run: `pnpm typecheck` — Expected: PASS.
 ```bash
@@ -269,7 +269,7 @@ All Phase 1 modules are runner-agnostic pure functions (or take a `GitRunner`/`G
 **Files:**
 - Create: `src/main/git/remoteUrl.ts`, `src/main/git/remoteUrl.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -307,12 +307,12 @@ describe('normalizeRemote', () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect fail**
+- [x] **Step 2: Run, expect fail**
 
 Run: `pnpm vitest run src/main/git/remoteUrl.test.ts`
 Expected: FAIL (`normalizeRemote` not exported).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 export interface NormalizedRemote { browseUrl: string | null; ownerRepo: string | null; }
@@ -335,11 +335,11 @@ export function normalizeRemote(raw: string): NormalizedRemote {
 }
 ```
 
-- [ ] **Step 4: Run, expect pass**
+- [x] **Step 4: Run, expect pass**
 
 Run: `pnpm vitest run src/main/git/remoteUrl.test.ts` — Expected: PASS (6 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/main/git/remoteUrl.ts src/main/git/remoteUrl.test.ts
@@ -357,7 +357,7 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 
 This is the pure parser for `git worktree list --porcelain` (spec §4.3 step 1). `worktrees.ts` (Task 11) will call git and feed the raw stdout here.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -398,9 +398,9 @@ describe('parseWorktreePorcelain', () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect fail.** `pnpm vitest run src/main/git/parseWorktrees.test.ts` → FAIL.
+- [x] **Step 2: Run, expect fail.** `pnpm vitest run src/main/git/parseWorktrees.test.ts` → FAIL.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 export interface ParsedWorktree {
@@ -442,8 +442,8 @@ export function parseWorktreePorcelain(stdout: string, repoRoot: string): Parsed
 }
 ```
 
-- [ ] **Step 4: Run, expect pass** (4 tests).
-- [ ] **Step 5: Commit** `feat: parse git worktree list --porcelain output`
+- [x] **Step 4: Run, expect pass** (4 tests).
+- [x] **Step 5: Commit** `feat: parse git worktree list --porcelain output`
 
 ---
 
@@ -453,7 +453,7 @@ export function parseWorktreePorcelain(stdout: string, repoRoot: string): Parsed
 
 Parses the `%(upstream:short)\t%(upstream:track)` line from spec §4.3 step 2.
 
-- [ ] **Step 1: Failing test**
+- [x] **Step 1: Failing test**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -475,9 +475,9 @@ describe('parseUpstream', () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect fail.**
+- [x] **Step 2: Run, expect fail.**
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 export interface UpstreamInfo { upstream: string | null; ahead: number; behind: number; upstreamGone: boolean; }
@@ -492,8 +492,8 @@ export function parseUpstream(line: string): UpstreamInfo {
 }
 ```
 
-- [ ] **Step 4: Run, expect pass** (6 tests).
-- [ ] **Step 5: Commit** `feat: parse upstream tracking (ahead/behind/gone)`
+- [x] **Step 4: Run, expect pass** (6 tests).
+- [x] **Step 5: Commit** `feat: parse upstream tracking (ahead/behind/gone)`
 
 ---
 
@@ -503,7 +503,7 @@ export function parseUpstream(line: string): UpstreamInfo {
 
 Parses output of `git log <base>..HEAD --format=%H%x1f%h%x1f%an%x1f%cI%x1f%s` (spec §4.6).
 
-- [ ] **Step 1: Failing test**
+- [x] **Step 1: Failing test**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -525,9 +525,9 @@ describe('parseCommits', () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect fail.**
+- [x] **Step 2: Run, expect fail.**
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 import type { Commit } from '../../shared/types';
@@ -541,8 +541,8 @@ export function parseCommits(stdout: string): Commit[] {
 }
 ```
 
-- [ ] **Step 4: Run, expect pass** (2 tests).
-- [ ] **Step 5: Commit** `feat: parse git log commit rows`
+- [x] **Step 4: Run, expect pass** (2 tests).
+- [x] **Step 5: Commit** `feat: parse git log commit rows`
 
 ---
 
@@ -552,7 +552,7 @@ export function parseCommits(stdout: string): Commit[] {
 
 Implements the `statusCheckRollup -> checksState` rule from spec §5.2.
 
-- [ ] **Step 1: Failing test**
+- [x] **Step 1: Failing test**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -571,9 +571,9 @@ describe('mapChecksState', () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect fail.**
+- [x] **Step 2: Run, expect fail.**
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 import type { PrInfo } from '../../shared/types';
@@ -594,8 +594,8 @@ export function mapChecksState(rollup: RollupItem[]): PrInfo['checksState'] {
 }
 ```
 
-- [ ] **Step 4: Run, expect pass** (5 tests).
-- [ ] **Step 5: Commit** `feat: map gh statusCheckRollup to checks state`
+- [x] **Step 4: Run, expect pass** (5 tests).
+- [x] **Step 5: Commit** `feat: map gh statusCheckRollup to checks state`
 
 ---
 
@@ -605,7 +605,7 @@ export function mapChecksState(rollup: RollupItem[]): PrInfo['checksState'] {
 
 Pure merge logic is separated from disk IO (the IO wrapper is Task 13).
 
-- [ ] **Step 1: Failing test**
+- [x] **Step 1: Failing test**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -629,9 +629,9 @@ describe('mergeSettings', () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect fail.**
+- [x] **Step 2: Run, expect fail.**
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/main/settings/defaults.ts`:
 ```ts
@@ -661,8 +661,8 @@ export function mergeSettings(base: Settings, patch: Partial<Settings>): Setting
 }
 ```
 
-- [ ] **Step 4: Run, expect pass** (2 tests).
-- [ ] **Step 5: Commit** `feat: settings defaults and merge`
+- [x] **Step 4: Run, expect pass** (2 tests).
+- [x] **Step 5: Commit** `feat: settings defaults and merge`
 
 ---
 
@@ -672,7 +672,7 @@ export function mergeSettings(base: Settings, patch: Partial<Settings>): Setting
 
 Implements spec §0.5 / §5-renderer guard: a path must be inside a configured root; branch names restricted.
 
-- [ ] **Step 1: Failing test**
+- [x] **Step 1: Failing test**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -693,9 +693,9 @@ describe('isValidBranchName', () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect fail.**
+- [x] **Step 2: Run, expect fail.**
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 import { resolve, sep } from 'node:path';
@@ -713,8 +713,8 @@ export function isValidBranchName(name: string): boolean {
 }
 ```
 
-- [ ] **Step 4: Run, expect pass** (7 tests).
-- [ ] **Step 5: Commit** `feat: path-within-roots and branch-name validation`
+- [x] **Step 4: Run, expect pass** (7 tests).
+- [x] **Step 5: Commit** `feat: path-within-roots and branch-name validation`
 
 ---
 
@@ -724,7 +724,7 @@ export function isValidBranchName(name: string): boolean {
 
 Implements the validated linkage model (spec §6): `cwd` = launch dir; worktree inferred by path-reference tally.
 
-- [ ] **Step 1: Failing test**
+- [x] **Step 1: Failing test**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -768,9 +768,9 @@ describe('linkSessions', () => {
 
 > Impl note for the hit count: count **each occurrence** of a worktree path across the file (not lines). The line `edited ${WT}/a.ts and ${WT}/b.ts` contains 2 occurrences, plus 1 in the toolUseResult line = 3.
 
-- [ ] **Step 2: Run, expect fail.**
+- [x] **Step 2: Run, expect fail.**
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/main/sessions/parseSession.ts`:
 ```ts
@@ -837,8 +837,8 @@ export function linkSessions(worktrees: WorktreeRow[], sessions: (ParsedSession 
 }
 ```
 
-- [ ] **Step 4: Run, expect pass.**
-- [ ] **Step 5: Commit** `feat: parse claude session jsonl and link to worktrees by path tally`
+- [x] **Step 4: Run, expect pass.**
+- [x] **Step 5: Commit** `feat: parse claude session jsonl and link to worktrees by path tally`
 
 ---
 
@@ -850,7 +850,7 @@ These wrap real processes around the Phase 1 parsers. Verified by `pnpm typechec
 
 **Files:** Create `src/main/git/gitRunner.ts`, `src/main/gh/ghRunner.ts`, `src/main/git/repoScanner.ts`, `src/main/git/worktrees.ts`
 
-- [ ] **Step 1: `gitRunner.ts` and `ghRunner.ts`**
+- [x] **Step 1: `gitRunner.ts` and `ghRunner.ts`**
 
 ```ts
 // gitRunner.ts
@@ -882,18 +882,18 @@ export async function ghStatus(force = false) {
 }
 ```
 
-- [ ] **Step 2: `repoScanner.ts`** — implement spec §4.2 (BFS walk, `.git` file OR dir = repo, don't descend into repos, skip `node_modules`/dotdirs, depth ≤ 5). Use `fs.promises.readdir(dir, { withFileTypes: true })`.
+- [x] **Step 2: `repoScanner.ts`** — implement spec §4.2 (BFS walk, `.git` file OR dir = repo, don't descend into repos, skip `node_modules`/dotdirs, depth ≤ 5). Use `fs.promises.readdir(dir, { withFileTypes: true })`.
 
-- [ ] **Step 3: `worktrees.ts`** — implement spec §4.3: call `git.run(['-C', repoRoot, 'worktree', 'list', '--porcelain'])`, feed stdout to `parseWorktreePorcelain`. For each parsed worktree, enrich via runner calls:
+- [x] **Step 3: `worktrees.ts`** — implement spec §4.3: call `git.run(['-C', repoRoot, 'worktree', 'list', '--porcelain'])`, feed stdout to `parseWorktreePorcelain`. For each parsed worktree, enrich via runner calls:
   - dirty: `['-C', wt.path, 'status', '--porcelain']` → dirty if stdout trimmed non-empty.
   - upstream: `['-C', wt.path, 'for-each-ref', "--format=%(upstream:short)%09%(upstream:track)", 'refs/heads/' + branch]` → `parseUpstream(stdout.trim())` (skip when detached).
   - last commit: `['-C', wt.path, 'log', '-1', '--format=%cI\x1f%s']` → split on `\x1f`.
   - remote (per repoRoot, computed once): `['-C', repoRoot, 'remote', 'get-url', 'origin']` (fallback first remote) → `normalizeRemote`.
   Assemble `WorktreeRow` (spec §3). Export `listAllWorktrees(repoRoots: string[]): Promise<WorktreeRow[]>` that flattens across repos.
 
-- [ ] **Step 4: Verify** `pnpm typecheck` → PASS. Smoke (manual, temporary script ok): log `listAllWorktrees(['~/Documents/GIT/MainApp'])` and confirm worktree paths/branches look right.
+- [x] **Step 4: Verify** `pnpm typecheck` → PASS. Smoke (manual, temporary script ok): log `listAllWorktrees(['~/Documents/GIT/MainApp'])` and confirm worktree paths/branches look right.
 
-- [ ] **Step 5: Commit** `feat: git/gh runners, repo scanner, worktree enrichment`
+- [x] **Step 5: Commit** `feat: git/gh runners, repo scanner, worktree enrichment`
 
 ---
 
@@ -901,11 +901,11 @@ export async function ghStatus(force = false) {
 
 **Files:** Create `src/main/git/baseBranch.ts`, `src/main/git/diff.ts`, `src/main/git/operations.ts`, `src/main/gh/pr.ts`
 
-- [ ] **Step 1: `baseBranch.ts`** — implement spec §4.5 resolution order using the runner; prefer `origin/<base>` when it verifies (`rev-parse --verify --quiet`).
-- [ ] **Step 2: `diff.ts`** — implement the three commands in spec §4.6 (`listCommits` feeds `parseCommits`; `commitDiff` and `fullDiff` return raw strings).
-- [ ] **Step 3: `operations.ts`** — implement spec §10 (`remove`, `deleteRemoteBranch`, `create`, `sync`). Each returns `OpResult` mapping runner `{code,stdout,stderr}`: `success = code === 0`; `message` human summary; include `stderr` on failure. Validate branch names with `isValidBranchName` before any branch op; throw/return failure if invalid.
-- [ ] **Step 4: `pr.ts`** — implement spec §5.2: TTL cache keyed `${ownerRepo}#${branch}`; run `gh pr list ... --json ...`; first element → `PrInfo` via JSON.parse + `mapChecksState`; null on no PR / gh unavailable.
-- [ ] **Step 5: Verify** `pnpm typecheck` → PASS. **Commit** `feat: base-branch resolution, diff, worktree operations, pr lookup`
+- [x] **Step 1: `baseBranch.ts`** — implement spec §4.5 resolution order using the runner; prefer `origin/<base>` when it verifies (`rev-parse --verify --quiet`).
+- [x] **Step 2: `diff.ts`** — implement the three commands in spec §4.6 (`listCommits` feeds `parseCommits`; `commitDiff` and `fullDiff` return raw strings).
+- [x] **Step 3: `operations.ts`** — implement spec §10 (`remove`, `deleteRemoteBranch`, `create`, `sync`). Each returns `OpResult` mapping runner `{code,stdout,stderr}`: `success = code === 0`; `message` human summary; include `stderr` on failure. Validate branch names with `isValidBranchName` before any branch op; throw/return failure if invalid.
+- [x] **Step 4: `pr.ts`** — implement spec §5.2: TTL cache keyed `${ownerRepo}#${branch}`; run `gh pr list ... --json ...`; first element → `PrInfo` via JSON.parse + `mapChecksState`; null on no PR / gh unavailable.
+- [x] **Step 5: Verify** `pnpm typecheck` → PASS. **Commit** `feat: base-branch resolution, diff, worktree operations, pr lookup`
 
 ---
 
@@ -915,15 +915,15 @@ export async function ghStatus(force = false) {
 
 **Files:** Create `src/main/settings/settings.ts`, `src/main/ipc.ts`; Modify `src/main/index.ts`, `src/preload/index.ts`; Create `src/renderer/types/api.d.ts`
 
-- [ ] **Step 1: `settings.ts`** — disk IO around the pure merge (Task 8): `load()` reads `join(app.getPath('userData'),'settings.json')`, `mergeSettings(DEFAULT_SETTINGS, parsed)`; `update(patch)` merges current+patch, writes pretty JSON, returns full. Wrap read in try/catch (missing file → defaults).
+- [x] **Step 1: `settings.ts`** — disk IO around the pure merge (Task 8): `load()` reads `join(app.getPath('userData'),'settings.json')`, `mergeSettings(DEFAULT_SETTINGS, parsed)`; `update(patch)` merges current+patch, writes pretty JSON, returns full. Wrap read in try/catch (missing file → defaults).
 
-- [ ] **Step 2: `ipc.ts`** — register one `ipcMain.handle` per `CH` channel, delegating to the services. Guard every path arg with `isPathWithinRoots(path, settings.roots)` (also allow known discovered worktree paths); reject otherwise. Include `dialog:pickDirectory` → `dialog.showOpenDialog({ properties: ['openDirectory'] })`. `open:editor` → `execFile(settings.editorCommand, [path])`; `open:finder` → `shell.openPath`; `open:url` → `shell.openExternal`.
+- [x] **Step 2: `ipc.ts`** — register one `ipcMain.handle` per `CH` channel, delegating to the services. Guard every path arg with `isPathWithinRoots(path, settings.roots)` (also allow known discovered worktree paths); reject otherwise. Include `dialog:pickDirectory` → `dialog.showOpenDialog({ properties: ['openDirectory'] })`. `open:editor` → `execFile(settings.editorCommand, [path])`; `open:finder` → `shell.openPath`; `open:url` → `shell.openExternal`.
 
-- [ ] **Step 3:** Call `registerIpc()` from `app.whenReady()` in `index.ts` before `createWindow()`.
+- [x] **Step 3:** Call `registerIpc()` from `app.whenReady()` in `index.ts` before `createWindow()`.
 
-- [ ] **Step 4: `preload/index.ts`** — expose `window.api` with the exact shape in spec §7, each method calling `ipcRenderer.invoke(CH.x, ...args)`. Add `src/renderer/types/api.d.ts` declaring `interface Window { api: <the spec §7 type> }` importing types from `shared/types`.
+- [x] **Step 4: `preload/index.ts`** — expose `window.api` with the exact shape in spec §7, each method calling `ipcRenderer.invoke(CH.x, ...args)`. Add `src/renderer/types/api.d.ts` declaring `interface Window { api: <the spec §7 type> }` importing types from `shared/types`.
 
-- [ ] **Step 5: Verify** `pnpm typecheck` → PASS. Manual: from devtools console `await window.api.worktrees.list()` returns rows. **Commit** `feat: settings IO, ipc handlers, preload bridge`
+- [x] **Step 5: Verify** `pnpm typecheck` → PASS. Manual: from devtools console `await window.api.worktrees.list()` returns rows. **Commit** `feat: settings IO, ipc handlers, preload bridge`
 
 ---
 
@@ -935,38 +935,38 @@ Verified by running the app (`pnpm dev`) and visual check. Keep each component i
 
 **Files:** Create `src/renderer/theme/tokens.css`, `src/renderer/theme/ThemeProvider.tsx`
 
-- [ ] **Step 1:** `tokens.css` — `:root` light vars (`--bg`, `--fg`, `--border`, `--accent`, `--danger`, `--ok`, `--warn`, `--muted`) + `[data-theme="dark"]` overrides. Import in `main.tsx`.
-- [ ] **Step 2:** `ThemeProvider.tsx` — read `settings.theme`; for `system`, use `matchMedia('(prefers-color-scheme: dark)')` + listener; set `document.documentElement.dataset.theme`. Expose current theme via context.
-- [ ] **Step 3: Verify** dev run toggles light/dark by OS appearance. **Commit** `feat: theme provider and design tokens`
+- [x] **Step 1:** `tokens.css` — `:root` light vars (`--bg`, `--fg`, `--border`, `--accent`, `--danger`, `--ok`, `--warn`, `--muted`) + `[data-theme="dark"]` overrides. Import in `main.tsx`.
+- [x] **Step 2:** `ThemeProvider.tsx` — read `settings.theme`; for `system`, use `matchMedia('(prefers-color-scheme: dark)')` + listener; set `document.documentElement.dataset.theme`. Expose current theme via context.
+- [x] **Step 3: Verify** dev run toggles light/dark by OS appearance. **Commit** `feat: theme provider and design tokens`
 
 ### Task 15: Data hooks + worktree table + search/filter
 
 **Files:** Create `src/renderer/hooks/useSettings.ts`, `src/renderer/hooks/useWorktrees.ts`, `src/renderer/components/WorktreeTable.tsx`, `SearchBar.tsx`, `FilterBar.tsx`, `PrBadge.tsx`, `GhMissingNotice.tsx`; Modify `App.tsx`
 
-- [ ] **Step 1:** `useWorktrees` — calls `api.worktrees.list()`, holds rows, `refresh()`, refresh on `window` focus (debounced ~1s), and lazily calls `api.pr.get(repo.ownerRepo, branch)` per row to fill `pr`.
-- [ ] **Step 2:** `WorktreeTable` — flat table, columns per spec §11, sortable headers (sort by repo→path default). `PrBadge` renders state+checks+review; clicking PR opens `api.open.url`.
-- [ ] **Step 3:** `SearchBar` live substring filter across repo/branch/path/PR title; `FilterBar` chips (dirty, merged/safe, has-PR, locked). Combine AND.
-- [ ] **Step 4:** `GhMissingNotice` shown when `api.gh.status()` reports not installed/authed (copy `brew install gh`, `gh auth login`, link to cli.github.com).
-- [ ] **Step 5: Verify** dev run shows the real worktree list, search/sort/filter work. **Commit** `feat: worktree dashboard table with search, sort, filter`
+- [x] **Step 1:** `useWorktrees` — calls `api.worktrees.list()`, holds rows, `refresh()`, refresh on `window` focus (debounced ~1s), and lazily calls `api.pr.get(repo.ownerRepo, branch)` per row to fill `pr`.
+- [x] **Step 2:** `WorktreeTable` — flat table, columns per spec §11, sortable headers (sort by repo→path default). `PrBadge` renders state+checks+review; clicking PR opens `api.open.url`.
+- [x] **Step 3:** `SearchBar` live substring filter across repo/branch/path/PR title; `FilterBar` chips (dirty, merged/safe, has-PR, locked). Combine AND.
+- [x] **Step 4:** `GhMissingNotice` shown when `api.gh.status()` reports not installed/authed (copy `brew install gh`, `gh auth login`, link to cli.github.com).
+- [x] **Step 5: Verify** dev run shows the real worktree list, search/sort/filter work. **Commit** `feat: worktree dashboard table with search, sort, filter`
 
 ### Task 16: Worktree detail + diff viewer + commit list
 
 **Files:** Create `src/renderer/components/WorktreeDetail.tsx`, `CommitList.tsx`, `DiffViewer.tsx`
 
-- [ ] **Step 1:** `DiffViewer` wraps `react-diff-view`: `parseDiff(rawDiff)` → render per-file (`Diff`/`Hunk`), unified default, add/del counts, collapsible. Import its CSS.
-- [ ] **Step 2:** `CommitList` from `api.worktrees.commits(path)`; click a commit → `api.worktrees.commitDiff(path, sha)` into DiffViewer. A "Full diff vs base" toggle → `api.worktrees.fullDiff(path)`.
-- [ ] **Step 3:** `WorktreeDetail` header (repo/branch/path, PR link) + mounts CommitList + DiffViewer; opened from a table row.
-- [ ] **Step 4: Verify** dev run: selecting a worktree shows commits; clicking renders a GitHub-style diff. **Commit** `feat: worktree detail with commit list and in-app diff viewer`
+- [x] **Step 1:** `DiffViewer` wraps `react-diff-view`: `parseDiff(rawDiff)` → render per-file (`Diff`/`Hunk`), unified default, add/del counts, collapsible. Import its CSS.
+- [x] **Step 2:** `CommitList` from `api.worktrees.commits(path)`; click a commit → `api.worktrees.commitDiff(path, sha)` into DiffViewer. A "Full diff vs base" toggle → `api.worktrees.fullDiff(path)`.
+- [x] **Step 3:** `WorktreeDetail` header (repo/branch/path, PR link) + mounts CommitList + DiffViewer; opened from a table row.
+- [x] **Step 4: Verify** dev run: selecting a worktree shows commits; clicking renders a GitHub-style diff. **Commit** `feat: worktree detail with commit list and in-app diff viewer`
 
 ### Task 17: Operations menu, terminal split button, settings, onboarding
 
 **Files:** Create `src/renderer/components/OperationsMenu.tsx`, `TerminalSplitButton.tsx`, `ConfirmDialog.tsx`, `Toast.tsx`, `SettingsPage.tsx`, `Onboarding.tsx`
 
-- [ ] **Step 1:** `ConfirmDialog` + `Toast` primitives. Destructive ops (remove/deleteRemote/force) require confirm naming exact branch+path (spec §10). Dirty worktree → force checkbox + warning; show green "safe to delete" when `upstreamGone || pr?.state==='MERGED'`.
-- [ ] **Step 2:** `OperationsMenu` wires `api.worktrees.remove/deleteRemoteBranch/sync/create` + `api.open.editor/finder`. Results → toasts; refresh on success.
-- [ ] **Step 3:** `TerminalSplitButton` — primary = `settings.defaultTerminal`; flyout from `api.terminals.available()`. Resume uses primary linked session's `sessionId`+`launchDir` → `api.terminals.resumeSession`. Warp option shows clipboard-limitation tooltip.
-- [ ] **Step 4:** `SettingsPage` edits every `Settings` field (roots via `api dialog:pickDirectory`; editor cmd; default terminal; default base; PR TTL; theme) → `api.settings.update` → triggers refresh. `Onboarding` shown when `roots` empty (folder picker, optional `~/Documents/GIT` suggestion).
-- [ ] **Step 5: Verify** dev run: create/remove/sync work with confirms+toasts; Resume opens the right terminal at launchDir; settings persist across restart. **Commit** `feat: operations, terminal split button, settings page, onboarding`
+- [x] **Step 1:** `ConfirmDialog` + `Toast` primitives. Destructive ops (remove/deleteRemote/force) require confirm naming exact branch+path (spec §10). Dirty worktree → force checkbox + warning; show green "safe to delete" when `upstreamGone || pr?.state==='MERGED'`.
+- [x] **Step 2:** `OperationsMenu` wires `api.worktrees.remove/deleteRemoteBranch/sync/create` + `api.open.editor/finder`. Results → toasts; refresh on success.
+- [x] **Step 3:** `TerminalSplitButton` — primary = `settings.defaultTerminal`; flyout from `api.terminals.available()`. Resume uses primary linked session's `sessionId`+`launchDir` → `api.terminals.resumeSession`. Warp option shows clipboard-limitation tooltip.
+- [x] **Step 4:** `SettingsPage` edits every `Settings` field (roots via `api dialog:pickDirectory`; editor cmd; default terminal; default base; PR TTL; theme) → `api.settings.update` → triggers refresh. `Onboarding` shown when `roots` empty (folder picker, optional `~/Documents/GIT` suggestion).
+- [x] **Step 5: Verify** dev run: create/remove/sync work with confirms+toasts; Resume opens the right terminal at launchDir; settings persist across restart. **Commit** `feat: operations, terminal split button, settings page, onboarding`
 
 ---
 
@@ -976,9 +976,9 @@ Verified by running the app (`pnpm dev`) and visual check. Keep each component i
 
 **Files:** Create `src/main/terminals/adapters.ts`; Modify `src/main/ipc.ts` (wire `terminalsAvailable/Resume/OpenDir`)
 
-- [ ] **Step 1:** Implement spec §9: `available()` by checking `/Applications/iTerm.app`, `/Applications/Warp.app` (Terminal always present). `resume(kind, launchDir, sessionId)` and `openDir(kind, dir)` build `cmd = cd '<dir>' && claude --resume <id>` (resume) with `escapeForAppleScript`. Terminal.app + iTerm2 via `osascript -e <script>`; Warp via `open -a Warp <dir>` + `clipboard.writeText('claude --resume <id>')` returning an explanatory `OpResult`.
-- [ ] **Step 2:** `escapeForAppleScript(s)` escapes `\` and `"`; shell path wrapped in single quotes with `'` → `'\''`.
-- [ ] **Step 3: Verify** dev run: each installed terminal opens correctly at the launch dir; Warp copies the command. **Commit** `feat: macOS terminal adapters (Terminal/iTerm2/Warp)`
+- [x] **Step 1:** Implement spec §9: `available()` by checking `/Applications/iTerm.app`, `/Applications/Warp.app` (Terminal always present). `resume(kind, launchDir, sessionId)` and `openDir(kind, dir)` build `cmd = cd '<dir>' && claude --resume <id>` (resume) with `escapeForAppleScript`. Terminal.app + iTerm2 via `osascript -e <script>`; Warp via `open -a Warp <dir>` + `clipboard.writeText('claude --resume <id>')` returning an explanatory `OpResult`.
+- [x] **Step 2:** `escapeForAppleScript(s)` escapes `\` and `"`; shell path wrapped in single quotes with `'` → `'\''`.
+- [x] **Step 3: Verify** dev run: each installed terminal opens correctly at the launch dir; Warp copies the command. **Commit** `feat: macOS terminal adapters (Terminal/iTerm2/Warp)`
 
 ---
 
@@ -988,10 +988,10 @@ Verified by running the app (`pnpm dev`) and visual check. Keep each component i
 
 **Files:** Create `README.md`; Modify `package.json` if needed
 
-- [ ] **Step 1:** `README.md` — what it is, requirements (`gh` for PR detail, macOS), `pnpm install && pnpm dev`, and the co-author hook note (local-only; re-create on fresh clones, see `DESIGN.md` §"Local hook").
-- [ ] **Step 2:** Run `pnpm lint && pnpm typecheck && pnpm test` → all PASS.
-- [ ] **Step 3:** Run `pnpm package` → produces a `.dmg` under `release/`. Launch it once to confirm it boots.
-- [ ] **Step 4: Commit** `chore: add README and verify packaging`
+- [x] **Step 1:** `README.md` — what it is, requirements (`gh` for PR detail, macOS), `pnpm install && pnpm dev`, and the co-author hook note (local-only; re-create on fresh clones, see `DESIGN.md` §"Local hook").
+- [x] **Step 2:** Run `pnpm lint && pnpm typecheck && pnpm test` → all PASS.
+- [x] **Step 3:** Run `pnpm package` → produces a `.dmg` under `release/`. Launch it once to confirm it boots.
+- [x] **Step 4: Commit** `chore: add README and verify packaging`
 
 ---
 
@@ -1000,3 +1000,134 @@ Verified by running the app (`pnpm dev`) and visual check. Keep each component i
 - **Spec coverage:** §1 stack→Task 1; §2 structure→all tasks; §3 types→Task 2; §4 git→Tasks 3-6,11,12; §5 gh/PR→Tasks 7,12; §6 sessions→Task 10; §7 IPC→Task 13; §8 settings→Tasks 8,13; §9 terminals→Task 18; §10 ops→Task 12,17; §11 UI→Tasks 14-17; §12 tests→Tasks 3-10; §13 non-goals respected (no watcher/e2e/rebase); §14 build→Task 19. No gaps.
 - **Placeholders:** none — pure-logic tasks carry full test+impl code; wiring tasks reference exact spec sections and exact commands/signatures.
 - **Type consistency:** all task code uses the spec §3 names (`WorktreeRow.sessions: SessionLink[]`, `PrInfo.checksState`, `OpResult.success/message/stderr`, `parseUpstream`/`parseCommits`/`mapChecksState`/`normalizeRemote`/`linkSessions`). Runner interface `Runner.run(args, opts)` is consistent across git/gh consumers.
+
+---
+
+## Phase 7 — Post-Launch Improvements (all shipped, 2026-06-17/18)
+
+All items in this phase were implemented after the initial v0.1.0 release based on real usage. Each is committed and pushed to `main`.
+
+---
+
+### UX / Table
+
+- **Sticky headers fix**: `border-collapse: collapse` breaks `position: sticky` in Chromium — changed to `border-separate + border-spacing: 0`. Sticky headers moved to a self-scrolling container (`overflow: auto` inner div); `<main>` changed to `overflow: hidden` so the scroll context is correct.
+- **Floating row actions**: Removed click-to-select from `<tr>`; action buttons appear floating on row hover (`opacity: 0 → 1`), positioned absolutely with `width: 0` last column so they don't cause horizontal scroll.
+- **Row actions as icons** (500ms tooltips): Replaced button text with icons (👁 ▶ ✏ ✎ 🗑 📂 >_ ↗). Native `title` delay (~1s) replaced with a global `data-tip` tooltip system (`src/renderer/tooltip.ts`) that uses `position: fixed` (escapes overflow clipping) with a configurable 500ms delay.
+- **PR column badge hidden during hover**: `prHoveredId` state hides floating actions when mouse is over the PR cell (prevents accidental row-enter when clicking PR link).
+- **Sortable headers**: Column header `<th>` elements are now clickable to sort; resize handle uses `stopPropagation` to avoid triggering sort on drag.
+- **Drag-to-resize columns**: Click-drag on column header right edge; first drag snapshots all widths from DOM and switches to `tableLayout: fixed`.
+- **Modified column**: New sortable column showing last-commit date/time in local timezone.
+- **Multi-select repo chips**: `filters.repo` changed from `string | null` to `string[]`; multiple repos can be active simultaneously.
+- **State column tooltip**: Dynamic hover popup on State cell explaining only the visible badges (dirty/ahead/behind/locked/prunable/remote-gone/merged).
+- **PR column tooltip**: Hover popup explaining PR number/state, title, target branch, CI checks, review decision.
+- **No focus-based refresh**: Removed the 1s debounced window-focus refresh; only the manual Refresh button triggers a reload.
+- **Persist across restarts** (localStorage): `claude-grove:table-state` stores `filters`, `sortKey`, `sortDir`, `colWidths` — fully restored on startup. Stale repo selections auto-cleaned when worktrees change.
+- **Window state persistence**: `userData/window-state.json` stores window size, position, and screen. On startup, validates position is still on a connected display.
+
+---
+
+### Worktree Detail View
+
+- **Working changes panel** (`CommitList.tsx`): Appears when `isDirty`. Lists changed files (tracked modified, added, deleted, untracked) with status badges (M/A/D/U). Features:
+  - Checkboxes per file + select-all toggle
+  - Click file → loads per-file diff (tracked: `git diff HEAD`, untracked: `git diff --no-index /dev/null <file>`)
+  - File tooltip showing full filename + path (both truncated spans)
+  - ↩ rollback button per file (`git checkout HEAD --` or `git clean -f` for untracked)
+  - "Commit N files…" button → modal with textarea for commit message
+- **PR baseRefName for commits**: Passes `pr.baseRefName` to the commits IPC call so the diff is always relative to the actual PR target, not the stale `origin/HEAD` (which pointed to `master` while repo used `main`).
+- **Live selected row**: `selectedId` (string) instead of `selected` (WorktreeRow) in App.tsx — WorktreeDetail always gets the latest row from `worktrees` array, so PR data loaded lazily is visible.
+- **Keep table mounted**: `WorktreeTable` is never unmounted when viewing detail — `display: none` toggle preserves all filter/sort/column state.
+- **Terminal button**: Opens configured terminal at worktree path (`window.api.terminals.openDir`).
+- **Rename branch**: Renames locally (`git branch -m`) + pushes new name + deletes old remote.
+- **Merge commit diffs**: `commitDiff` now uses `git diff <sha>^1 <sha>` instead of `git show` (merge commits produce combined diff format that `parseDiff` can't parse).
+
+---
+
+### State Column Enhancements
+
+- **Remote-gone badge**: `upstreamGone` rows show clickable `🗑 remote gone` badge (amber) that opens the delete dialog pre-set with `deleteRemote: false`. Distinct from `✓ merged` (green, for PR-merged-but-remote-exists).
+- **Stale-selection cleanup**: `useEffect` drops `filters.repo` entries that no longer exist in current worktree list (prevents "No worktrees found" when worktrees are refreshed).
+
+---
+
+### PR / GitHub Integration
+
+- **PR checks detail** (`checksDetail: string[]` on `PrInfo`): When `checksState = FAILING`, hover the ✗ badge to see which checks failed (e.g. `✗ ci/build`, `○ ci/test (pending)`).
+- **`checksDetail` population**: Extracted from `statusCheckRollup` in `pr.ts`; only failing/pending checks included.
+
+---
+
+### Git Operations
+
+- **Rollback file** (`worktrees:rollbackFile`): Reverts a single file from working changes. Tracked files: `git checkout HEAD --`. Untracked files: `git clean -f`. Also handles staged files by resetting first.
+- **Scanner fix**: `repoScanner` stops descending when it finds a `.git` FILE (linked worktree) — previously descended all the way in and spammed "max depth reached" warnings. Only `.git` DIRECTORY registers a new repo.
+
+---
+
+### Settings / Editor
+
+- **Native app picker**: "Choose app…" button opens `dialog.showOpenDialog` filtered to `.app` files at `/Applications`. Selected `.app` path stored in `editorCommand`. Opening logic: `.app` path → `execFile('/usr/bin/open', ['-a', appPath, filePath])`. CLI commands (`code`, `cursor`) → direct `execFile`.
+- **PATH augmentation**: On app startup, `/opt/homebrew/bin`, `/usr/local/bin`, etc. prepended to `process.env.PATH` so `git`, `gh`, editor CLIs are found even when launched from macOS's limited Electron PATH.
+
+---
+
+### Terminal Adapters
+
+- **Warp native notification**: When Resume copies command to clipboard for Warp, fires a macOS native `Notification` (visible even after Warp steals focus) saying "paste to run".
+- **Window close = quit**: `app.on('window-all-closed')` now calls `app.quit()` unconditionally (removed the macOS-specific skip).
+
+---
+
+### Help / Documentation
+
+- **Help modal** (`HelpModal.tsx`): Large scrollable modal (85vw, 82vh) with sections: Overview, Table Columns, Row Actions, Worktree Detail View, Filters and Search, Settings, GitHub/PR Integration, Claude Code Sessions.
+- **Header icon buttons**: Refresh (↺), Help (?), Settings (⚙) — compact square buttons with `title` tooltips.
+
+---
+
+### Theming / Visuals
+
+- **Dark mode diff colors**: `html[data-theme="dark"]` overrides react-diff-view CSS variables. Must use `html[data-theme]` (specificity 0,1,1) to beat react-diff-view's `:root` vars (0,1,0) regardless of stylesheet source order.
+- **Theme-aware scrollbars**: `::-webkit-scrollbar*` rules in `tokens.css` using `--bg-secondary`, `--border`, `--muted`.
+- **Global button hover**: `button:not(:disabled):hover { filter: brightness(0.9) }` in `tokens.css`.
+- **Chip active border fix**: CHIP_ACTIVE uses `border: '1px solid var(--accent)'` (full shorthand) instead of `borderColor` to prevent residue after deselect.
+
+---
+
+### CI / Release
+
+- **GitHub Actions — CI** (`.github/workflows/ci.yml`): lint + typecheck + unit tests on every push/PR.
+- **GitHub Actions — Release** (`.github/workflows/release.yml`): triggered on `v*` tags; builds DMG on `macos-latest`, creates GitHub Release with DMG attached. Also runnable manually.
+- **GitHub Actions — Pages** (`.github/workflows/pages.yml`): deploys unit test HTML report + coverage to GitHub Pages on every push to `main`.
+- **`build-pages.mjs`** (`scripts/`): Builds `_pages/` site with home page, unit test report, and coverage report.
+- **`@vitest/ui`** added as dev dep; vitest config uses `["default", "junit", "html"]` reporters in CI.
+- **v0.1.0 release**: Tagged, DMG pushed to GitHub Releases.
+
+---
+
+### Logging
+
+- **Structured IPC logging**: `logger.info`/`logger.error` added to all mutating IPC handlers (remove, create, sync, rename, commitFiles) + worktrees list (repo/worktree counts).
+- **Operations logging**: Error/warn logs in `renameBranch`, `commitFiles` in `operations.ts`.
+
+---
+
+## Current State (2026-06-18)
+
+- **Tests**: 37/37 passing (8 test files, pure logic only)
+- **Typecheck**: clean (both `tsconfig.node.json` and `tsconfig.web.json`)
+- **Latest tag**: `v0.1.0`
+- **GitHub Pages**: https://haimadrian.github.io/claude-grove/
+- **Repo**: https://github.com/haimadrian/claude-grove
+- **Local path**: `~/Documents/GIT/claude-grove`
+- **Local git config**: `user.email = haimadrian@gmail.com`
+
+### Development commands
+```bash
+pnpm dev          # hot-reload dev
+pnpm test         # 37 unit tests
+pnpm typecheck    # tsc both configs
+pnpm package      # build DMG → release/
+git tag vX.Y.Z && git push origin vX.Y.Z  # trigger release workflow
+```

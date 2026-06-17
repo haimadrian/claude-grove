@@ -13,6 +13,7 @@ interface PersistedTableState {
   filters: Filters;
   sortKey: string;
   sortDir: 'asc' | 'desc';
+  colWidths: (number | null)[];
 }
 
 function loadPersistedState(): Partial<PersistedTableState> {
@@ -37,8 +38,8 @@ const TD: React.CSSProperties = {
   verticalAlign: 'middle', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
 };
 const ROW_BTN: React.CSSProperties = {
-  fontSize: 11, padding: '2px 8px', background: 'var(--bg)',
-  border: '1px solid var(--border)', borderRadius: 4,
+  fontSize: 14, padding: '2px 6px', background: 'var(--bg)',
+  border: '1px solid var(--border)', borderRadius: 4, minWidth: 26, textAlign: 'center' as const,
   color: 'var(--fg)', whiteSpace: 'nowrap', boxShadow: '0 1px 3px var(--shadow)',
 };
 const DIALOG_BTN: React.CSSProperties = {
@@ -103,10 +104,10 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   const [sortKey, setSortKey] = useState(persisted.sortKey ?? 'repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.sortDir ?? 'asc');
 
-  // Persist filter + sort whenever they change
+  // Persist filter + sort + colWidths whenever they change
   useEffect(() => {
-    savePersistedState({ filters, sortKey, sortDir });
-  }, [filters, sortKey, sortDir]);
+    savePersistedState({ filters, sortKey, sortDir, colWidths });
+  }, [filters, sortKey, sortDir, colWidths]);
 
   // Drop repo selections that no longer exist in the current worktree list
   useEffect(() => {
@@ -121,8 +122,10 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   const [prHoveredId, setPrHoveredId] = useState<string | null>(null);
   const [stateTooltip, setStateTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
   const [prTooltip, setPrTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
-  // null = auto-sized by browser; number = user-set pixel width
-  const [colWidths, setColWidths] = useState<(number | null)[]>(Array(COL_COUNT).fill(null));
+  // null = auto-sized by browser; number = user-set pixel width (restored from localStorage)
+  const [colWidths, setColWidths] = useState<(number | null)[]>(
+    persisted.colWidths?.length === COL_COUNT ? persisted.colWidths : Array(COL_COUNT).fill(null)
+  );
   const [renameState, setRenameState] = useState<{ wt: WorktreeRow; value: string } | null>(null);
   const [deleteState, setDeleteState] = useState<{ wt: WorktreeRow; deleteRemote: boolean } | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
@@ -346,7 +349,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                       boxShadow: hovered ? '0 2px 8px var(--shadow)' : 'none',
                       whiteSpace: 'nowrap', zIndex: 10,
                     }}>
-                      <button onClick={() => onSelect(w)} style={ROW_BTN} title="View commits and diff">View</button>
+                      <button onClick={() => onSelect(w)} style={ROW_BTN} title="View commits and diff">👁</button>
                       {w.sessions[0] && (
                         <button
                           onClick={() => {
@@ -358,33 +361,27 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                           }}
                           style={{ ...ROW_BTN, color: 'var(--accent)' }}
                           title={`Resume Claude session: ${w.sessions[0].title ?? w.sessions[0].sessionId}`}
-                        >
-                          Resume
-                        </button>
+                        >▶</button>
                       )}
                       <button
                         onClick={() => window.api.open.editor(w.path).then((r) => { if (!r.success) onMessage(r.message, false); }).catch((e) => onMessage(String(e), false))}
                         style={ROW_BTN} title="Open in editor"
-                      >Edit</button>
+                      >✏</button>
                       {w.branch && (
                         <button
                           onClick={() => setRenameState({ wt: w, value: w.branch! })}
                           style={ROW_BTN}
                           title="Rename branch locally and on remote"
-                        >
-                          Rename
-                        </button>
+                        >✎</button>
                       )}
                       <button
                         onClick={() => setDeleteState({ wt: w, deleteRemote: false })}
                         style={{ ...ROW_BTN, color: 'var(--danger)' }}
                         title="Delete worktree"
-                      >
-                        Delete
-                      </button>
-                      <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} title="Reveal in Finder">Finder</button>
+                      >🗑</button>
+                      <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} title="Reveal in Finder">📂</button>
                       {w.repo.remoteUrl && (
-                        <button onClick={() => void window.api.open.url(w.repo.remoteUrl!)} style={ROW_BTN} title="Open on GitHub">GitHub</button>
+                        <button onClick={() => void window.api.open.url(w.repo.remoteUrl!)} style={ROW_BTN} title="Open on GitHub">↗</button>
                       )}
                     </div>
                   </td>

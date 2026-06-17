@@ -130,6 +130,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   const [deleteState, setDeleteState] = useState<{ wt: WorktreeRow; deleteRemote: boolean } | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const dragging = useRef<{ idx: number; startX: number; startW: number } | null>(null);
+  const dragMoved = useRef(false); // true if mouse moved during resize — suppresses sort click
 
   const handleSort = useCallback((key: string): void => {
     setSortDir((d) => (sortKey === key ? (d === 'asc' ? 'desc' : 'asc') : 'asc'));
@@ -150,10 +151,12 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     };
     const startW = getStartWidth();
     dragging.current = { idx, startX: e.clientX, startW };
+    dragMoved.current = false;
 
     const onMove = (ev: MouseEvent): void => {
       if (!dragging.current) return;
       const delta = ev.clientX - dragging.current.startX;
+      if (Math.abs(delta) > 2) dragMoved.current = true;
       const newW = Math.max(60, dragging.current.startW + delta);
       setColWidths((prev) => {
         const next = [...prev];
@@ -261,7 +264,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                 <th
                   key={label}
                   style={{ ...thStyle(idx), cursor: sk ? 'pointer' : 'default' }}
-                  onClick={() => { if (sk) handleSort(sk); }}
+                  onClick={() => { if (dragMoved.current) { dragMoved.current = false; return; } if (sk) handleSort(sk); }}
                 >
                   {label}{sk && sortKey === sk ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
                   <div style={RESIZE_HANDLE} onMouseDown={(e) => { e.stopPropagation(); handleResizeStart(e, idx); }} />

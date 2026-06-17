@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import type { WorktreeRow, TerminalKind } from '../../shared/types';
 import { PrBadge } from './PrBadge';
 import { CommitList } from './CommitList';
@@ -13,6 +13,8 @@ interface Props {
 
 export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }: Props): React.JSX.Element {
   const [diff, setDiff] = useState<string>('');
+  const [leftWidth, setLeftWidth] = useState(300);
+  const splitterDragging = useRef(false);
   const [renameState, setRenameState] = useState<{ value: string } | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteRemote, setDeleteRemote] = useState(false);
@@ -132,10 +134,10 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
         </div>
       </div>
 
-      {/* Body: two-column layout */}
-      <div style={{ display: 'flex', gap: 16, flex: 1, overflow: 'hidden' }}>
+      {/* Body: two-column layout with draggable splitter */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Left: commit list */}
-        <div style={{ width: 300, flexShrink: 0, overflowY: 'auto' }}>
+        <div style={{ width: leftWidth, flexShrink: 0, overflowY: 'auto', minWidth: 150 }}>
           <CommitList
             worktreePath={worktree.path}
             isDirty={worktree.isDirty}
@@ -145,8 +147,33 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
             onMessage={onMessage}
           />
         </div>
+        {/* Splitter */}
+        <div
+          style={{ width: 5, flexShrink: 0, cursor: 'col-resize', background: 'var(--border)', transition: 'background 0.1s' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'var(--accent)'; }}
+          onMouseLeave={(e) => { if (!splitterDragging.current) (e.currentTarget as HTMLDivElement).style.background = 'var(--border)'; }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            splitterDragging.current = true;
+            const startX = e.clientX;
+            const startW = leftWidth;
+            const el = e.currentTarget as HTMLDivElement;
+            el.style.background = 'var(--accent)';
+            const onMove = (ev: MouseEvent): void => {
+              setLeftWidth(Math.max(150, Math.min(700, startW + ev.clientX - startX)));
+            };
+            const onUp = (): void => {
+              splitterDragging.current = false;
+              el.style.background = 'var(--border)';
+              document.removeEventListener('mousemove', onMove);
+              document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+          }}
+        />
         {/* Right: diff viewer */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
           <DiffViewer rawDiff={diff} />
         </div>
       </div>

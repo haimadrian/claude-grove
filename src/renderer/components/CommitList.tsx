@@ -24,6 +24,8 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [commitMsg, setCommitMsg] = useState('');
   const [showCommitModal, setShowCommitModal] = useState(false);
+  // rollbackTarget: null = hidden; string[] = specific file(s) to rollback
+  const [rollbackTarget, setRollbackTarget] = useState<{ files: Array<{ path: string; status: string }>; label: string } | null>(null);
   const [committing, setCommitting] = useState(false);
 
   useEffect(() => {
@@ -60,6 +62,19 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
     });
   };
 
+  const doRollback = async (): Promise<void> => {
+    if (!rollbackTarget) return;
+    const { files } = rollbackTarget;
+    setRollbackTarget(null);
+    try {
+      await Promise.all(files.map((f) => window.api.worktrees.rollbackFile(worktreePath, f.path, f.status)));
+      onMessage(`Rolled back ${files.length} file${files.length !== 1 ? 's' : ''}`, true);
+      const updated = await window.api.worktrees.workingFiles(worktreePath);
+      setWorkingFiles(updated);
+      setSelectedFiles(new Set(updated.filter((f) => f.status !== '??').map((f) => f.path)));
+    } catch (e) { onMessage(String(e), false); }
+  };
+
   const doCommit = async (): Promise<void> => {
     if (!commitMsg.trim() || selectedFiles.size === 0) return;
     setCommitting(true);
@@ -86,12 +101,24 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
               WORKING CHANGES ({workingFiles.length})
             </label>
             {selectedFiles.size > 0 && (
-              <button
-                onClick={() => setShowCommitModal(true)}
-                style={{ marginLeft: 'auto', fontSize: 11, padding: '2px 10px', background: 'var(--accent)', border: 'none', borderRadius: 4, color: 'var(--bg)', cursor: 'pointer' }}
-              >
-                Commit {selectedFiles.size} file{selectedFiles.size !== 1 ? 's' : ''}…
-              </button>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                <button
+                  onClick={() => setRollbackTarget({
+                    files: workingFiles.filter((f) => selectedFiles.has(f.path)),
+                    label: `${selectedFiles.size} selected file${selectedFiles.size !== 1 ? 's' : ''}`,
+                  })}
+                  style={{ fontSize: 11, padding: '2px 10px', background: 'var(--danger)', border: 'none', borderRadius: 4, color: 'var(--bg)', cursor: 'pointer' }}
+                  title={`Rollback ${selectedFiles.size} selected file${selectedFiles.size !== 1 ? 's' : ''}`}
+                >
+                  ↩ Rollback {selectedFiles.size}…
+                </button>
+                <button
+                  onClick={() => setShowCommitModal(true)}
+                  style={{ fontSize: 11, padding: '2px 10px', background: 'var(--accent)', border: 'none', borderRadius: 4, color: 'var(--bg)', cursor: 'pointer' }}
+                >
+                  Commit {selectedFiles.size} file{selectedFiles.size !== 1 ? 's' : ''}…
+                </button>
+              </div>
             )}
           </div>
           {workingFiles.map((f) => (
@@ -114,17 +141,7 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.api.worktrees.rollbackFile(worktreePath, f.path, f.status)
-                    .then((r) => {
-                      onMessage(r.message, r.success);
-                      if (r.success) {
-                        window.api.worktrees.workingFiles(worktreePath).then((files) => {
-                          setWorkingFiles(files);
-                          setSelectedFiles(new Set(files.filter((wf) => wf.status !== '??').map((wf) => wf.path)));
-                        });
-                      }
-                    })
-                    .catch((e2) => onMessage(String(e2), false));
+                  setRollbackTarget({ files: [f], label: f.path.split('/').pop() ?? f.path });
                 }}
                 title={`Rollback changes to ${f.path}`}
                 style={{
@@ -217,6 +234,25 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
               >
                 {committing ? 'Committing…' : 'Commit'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {rollbackTarget && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: 24, maxWidth: 420, width: '90%', boxShadow: '0 8px 32px var(--shadow)' }}>
+            <h3 style={{ marginBottom: 12, fontSize: 15 }}>Rollback changes?</h3>
+            <p style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 16 }}>
+              This will discard all changes to <strong style={{ color: 'var(--fg)' }}>{rollbackTarget.label}</strong>. This cannot be undone.
+            </p>
+            <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginBottom: 16, maxHeight: 120, overflowY: 'auto' }}>
+              {rollbackTarget.files.map((f) => (
+                <div key={f.path} style={{ padding: '1px 0' }}>{f.path}</div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setRollbackTarget(null)} style={MODAL_BTN}>Cancel</button>
+              <button onClick={doRollback} style={{ ...MODAL_BTN, background: 'var(--danger)', color: 'var(--bg)', borderColor: 'transparent' }}>Rollback</button>
             </div>
           </div>
         </div>

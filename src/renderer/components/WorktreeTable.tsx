@@ -9,6 +9,7 @@ const DEFAULT_FILTERS: Filters = { repo: null, dirty: false, safeToDelete: false
 const TH: React.CSSProperties = {
   padding: '6px 10px', textAlign: 'left', fontSize: 12, fontWeight: 600,
   color: 'var(--fg-muted)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
+  position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 1,
 };
 const TD: React.CSSProperties = {
   padding: '6px 10px', fontSize: 13, borderBottom: '1px solid var(--bg-tertiary)',

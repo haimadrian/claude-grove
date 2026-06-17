@@ -106,7 +106,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
 
   // Drop repo selections that no longer exist in the current worktree list
   useEffect(() => {
-    if (filters.repo.length === 0) return;
+    if (filters.repo.length === 0 || worktrees.length === 0) return; // skip while loading
     const names = new Set(worktrees.map((w) => w.repo.name));
     const valid = filters.repo.filter((r) => names.has(r));
     if (valid.length !== filters.repo.length) {

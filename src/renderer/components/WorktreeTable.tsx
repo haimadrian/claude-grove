@@ -10,7 +10,7 @@ const COL_COUNT = 6; // Repo, Branch, State, Last commit, Sessions, PR
 const TH: React.CSSProperties = {
   padding: '6px 10px', textAlign: 'left', fontSize: 12, fontWeight: 600,
   color: 'var(--fg-muted)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
-  position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 1,
+  position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 20,
   userSelect: 'none', overflow: 'hidden',
 };
 const TD: React.CSSProperties = {

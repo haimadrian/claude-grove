@@ -5,7 +5,7 @@ import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 
 const DEFAULT_FILTERS: Filters = { repo: null, dirty: false, safeToDelete: false, hasPr: false, locked: false };
-const COL_COUNT = 6; // Repo, Branch, State, Last commit, Sessions, PR
+const COL_COUNT = 7; // Repo, Branch, State, Last commit, Modified, Sessions, PR
 
 const TH: React.CSSProperties = {
   padding: '6px 10px', textAlign: 'left', fontSize: 12, fontWeight: 600,
@@ -30,6 +30,18 @@ const RESIZE_HANDLE: React.CSSProperties = {
   position: 'absolute', right: 0, top: 0, bottom: 0, width: 6,
   cursor: 'col-resize', zIndex: 2,
 };
+
+function formatDate(iso: string): string {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  } catch {
+    return iso;
+  }
+}
 
 interface Props {
   worktrees: WorktreeRow[];
@@ -131,6 +143,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
         if (sortKey === 'repo') { av = a.repo.name + a.path; bv = b.repo.name + b.path; }
         else if (sortKey === 'branch') { av = a.branch ?? ''; bv = b.branch ?? ''; }
         else if (sortKey === 'lastCommit') { av = a.lastCommitDate; bv = b.lastCommitDate; }
+        else if (sortKey === 'modified') { av = a.lastCommitDate; bv = b.lastCommitDate; }
         else if (sortKey === 'sessions') {
           const cmp = a.sessions.length - b.sessions.length;
           return sortDir === 'asc' ? cmp : -cmp;
@@ -149,7 +162,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     ...(colWidths[idx] !== null ? { width: colWidths[idx] } : {}),
   });
 
-  const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Sessions', 'PR'];
+  const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Modified', 'Sessions', 'PR'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -206,6 +219,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                     {(w.upstreamGone || w.pr?.state === 'MERGED') && <span style={{ color: 'var(--ok)' }}>✓ safe</span>}
                   </td>
                   <td style={TD} title={w.lastCommitDate}>{w.lastCommitSubject || '—'}</td>
+                  <td style={TD} title={w.lastCommitDate}>{formatDate(w.lastCommitDate)}</td>
                   <td style={TD}>
                     {w.sessions.length > 0 ? (
                       <span title={w.sessions[0]?.title ?? undefined}>

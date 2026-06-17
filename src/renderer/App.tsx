@@ -75,7 +75,12 @@ export function App(): React.JSX.Element {
           {noRoots ? (
             <Onboarding onAddRoot={addRoot} />
           ) : selected !== null ? (
-            <WorktreeDetail worktree={selected} onBack={() => setSelected(null)} />
+            <WorktreeDetail
+              worktree={selected}
+              defaultTerminal={settings.defaultTerminal}
+              onBack={() => setSelected(null)}
+              onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
+            />
           ) : (
             <WorktreeTable
               worktrees={worktrees}

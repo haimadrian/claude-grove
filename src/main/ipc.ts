@@ -49,7 +49,9 @@ export function registerIpc(): void {
   ipcMain.handle(CH.worktreesList, async () => {
     const settings = await loadSettings();
     const repos = await getRepos(settings);
+    logger.info(`ipc: scanning ${repos.length} repos`);
     const worktrees = await listAllWorktrees(repos);
+    logger.info(`ipc: found ${worktrees.length} worktrees`);
     const wtPaths = worktrees.map((w) => w.path);
     const sessions = await scanSessions(settings.claudeProjectsDir, wtPaths);
     linkSessions(worktrees, sessions);
@@ -84,9 +86,20 @@ export function registerIpc(): void {
     if (!repoRoot) return { success: false, message: 'Cannot find repo root for worktree' };
     const wts = await listAllWorktrees(repos);
     const branch = wts.find((w) => w.path === wtPath)?.branch ?? null;
-    const result = await removeWorktree(wtPath, repoRoot, { ...opts, branch });
-    if (result.success) invalidateRepoCache();
-    return result;
+    try {
+      logger.info(`ipc: removing worktree ${wtPath}`);
+      const result = await removeWorktree(wtPath, repoRoot, { ...opts, branch });
+      if (result.success) {
+        logger.info(`ipc: removed worktree ${wtPath}`);
+        invalidateRepoCache();
+      } else {
+        logger.error(`ipc: failed to remove worktree ${wtPath}: ${result.stderr ?? result.message}`);
+      }
+      return result;
+    } catch (e) {
+      logger.error(`ipc: unhandled error in worktreesRemove: ${String(e)}`);
+      return { success: false, message: String(e) };
+    }
   });
 
   ipcMain.handle(CH.worktreesDeleteRemote, async (_e, wtPath: string) => {
@@ -100,15 +113,35 @@ export function registerIpc(): void {
   ipcMain.handle(CH.worktreesCreate, async (_e, input: { repoPath: string; branch: string; base: string }) => {
     const settings = await loadSettings();
     if (!guardPath(input.repoPath, settings)) return { success: false, message: 'Path not allowed' };
-    const result = await createWorktree(input, settings.newWorktreeParentDir);
-    if (result.success) invalidateRepoCache();
-    return result;
+    try {
+      logger.info(`ipc: creating worktree branch=${input.branch} base=${input.base}`);
+      const result = await createWorktree(input, settings.newWorktreeParentDir);
+      if (result.success) {
+        logger.info(`ipc: created worktree ${input.branch}`);
+        invalidateRepoCache();
+      } else {
+        logger.error(`ipc: failed to create worktree: ${result.stderr ?? result.message}`);
+      }
+      return result;
+    } catch (e) {
+      logger.error(`ipc: unhandled error in worktreesCreate: ${String(e)}`);
+      return { success: false, message: String(e) };
+    }
   });
 
   ipcMain.handle(CH.worktreesSync, async (_e, wtPath: string, action: SyncAction) => {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
-    return syncWorktree(wtPath, action, settings.defaultBaseBranch);
+    try {
+      const result = await syncWorktree(wtPath, action, settings.defaultBaseBranch);
+      if (!result.success) {
+        logger.error(`ipc: sync failed (${action}) in ${wtPath}: ${result.stderr ?? result.message}`);
+      }
+      return result;
+    } catch (e) {
+      logger.error(`ipc: unhandled error in worktreesSync: ${String(e)}`);
+      return { success: false, message: String(e) };
+    }
   });
 
   ipcMain.handle(CH.worktreesRenameBranch, async (_e, wtPath: string, newBranch: string) => {
@@ -120,9 +153,20 @@ export function registerIpc(): void {
     const wts = await listAllWorktrees(repos);
     const wt = wts.find((w) => w.path === wtPath);
     if (!wt?.branch) return { success: false, message: 'Worktree has no branch (detached HEAD)' };
-    const result = await renameBranch(wtPath, repoRoot, wt.branch, newBranch, wt.upstream !== null);
-    if (result.success) invalidateRepoCache();
-    return result;
+    try {
+      logger.info(`ipc: renaming branch ${wt.branch} -> ${newBranch} in ${wtPath}`);
+      const result = await renameBranch(wtPath, repoRoot, wt.branch, newBranch, wt.upstream !== null);
+      if (result.success) {
+        logger.info(`ipc: renamed branch to ${newBranch}`);
+        invalidateRepoCache();
+      } else {
+        logger.error(`ipc: branch rename failed: ${result.stderr ?? result.message}`);
+      }
+      return result;
+    } catch (e) {
+      logger.error(`ipc: unhandled error in worktreesRenameBranch: ${String(e)}`);
+      return { success: false, message: String(e) };
+    }
   });
 
   ipcMain.handle(CH.worktreesWorkingFiles, async (_e, wtPath: string) => {
@@ -140,9 +184,20 @@ export function registerIpc(): void {
   ipcMain.handle(CH.worktreesCommitFiles, async (_e, wtPath: string, files: string[], message: string) => {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
-    const result = await commitFiles(wtPath, files, message);
-    if (result.success) invalidateRepoCache();
-    return result;
+    try {
+      logger.info(`ipc: committing ${files.length} files in ${wtPath}`);
+      const result = await commitFiles(wtPath, files, message);
+      if (result.success) {
+        logger.info(`ipc: committed: ${message}`);
+        invalidateRepoCache();
+      } else {
+        logger.error(`ipc: commit failed: ${result.stderr ?? result.message}`);
+      }
+      return result;
+    } catch (e) {
+      logger.error(`ipc: unhandled error in worktreesCommitFiles: ${String(e)}`);
+      return { success: false, message: String(e) };
+    }
   });
 
   // PR
@@ -177,8 +232,12 @@ export function registerIpc(): void {
       // .app bundle path → use /usr/bin/open -a
       if (cmd.endsWith('.app')) {
         execFile('/usr/bin/open', ['-a', cmd, p], (err) => {
-          if (err) resolve({ success: false, message: `Failed to open in ${cmd}: ${err.message}` });
-          else resolve({ success: true, message: `Opened in editor` });
+          if (err) {
+            logger.error(`ipc: editor failed (${cmd}): ${err.message}`);
+            resolve({ success: false, message: `Failed to open in ${cmd}: ${err.message}` });
+          } else {
+            resolve({ success: true, message: `Opened in editor` });
+          }
         });
       } else {
         // CLI command — split on spaces, use first token as binary
@@ -186,8 +245,12 @@ export function registerIpc(): void {
         const binary = parts[0] === 'open' ? '/usr/bin/open' : (parts[0] ?? 'code');
         const preArgs = parts[0] === 'open' ? parts.slice(1) : parts.slice(1);
         execFile(binary, [...preArgs, p], (err) => {
-          if (err) resolve({ success: false, message: `Failed to open editor (${binary}): ${err.message}` });
-          else resolve({ success: true, message: `Opened in editor` });
+          if (err) {
+            logger.error(`ipc: editor failed (${binary}): ${err.message}`);
+            resolve({ success: false, message: `Failed to open editor (${binary}): ${err.message}` });
+          } else {
+            resolve({ success: true, message: `Opened in editor` });
+          }
         });
       }
     });
@@ -201,7 +264,10 @@ export function registerIpc(): void {
   });
 
   ipcMain.handle(CH.openUrl, async (_e, url: string) => {
-    if (!/^https?:\/\//i.test(url)) return { success: false, message: 'Only http/https URLs allowed' };
+    if (!/^https?:\/\//i.test(url)) {
+      logger.warn(`ipc: rejected non-http url: ${url}`);
+      return { success: false, message: 'Only http/https URLs allowed' };
+    }
     await shell.openExternal(url);
     return { success: true, message: `Opened ${url}` };
   });

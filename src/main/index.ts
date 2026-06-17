@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import { join } from 'node:path';
 import { registerIpc } from './ipc';
 import { loadWindowState, trackWindowState } from './windowState';
+import { logger } from './logger';
 
 // Augment PATH so execFile can find homebrew/nix/system binaries that aren't
 // in the minimal PATH Electron inherits on macOS.
@@ -42,6 +43,7 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   registerIpc();
+  logger.info('ipc: handlers registered, window opening');
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

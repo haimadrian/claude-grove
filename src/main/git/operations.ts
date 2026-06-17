@@ -4,6 +4,7 @@ import type { Runner } from './gitRunner';
 import { git } from './gitRunner';
 import { isValidBranchName } from '../security/validate';
 import { resolveBaseBranch } from './baseBranch';
+import { logger } from '../logger';
 
 function ok(message: string): OpResult { return { success: true, message }; }
 function fail(message: string, stderr?: string): OpResult {
@@ -71,16 +72,26 @@ export async function renameBranch(
 
   // 1. Rename locally
   const local = await runner.run(['-C', worktreePath, 'branch', '-m', oldBranch, newBranch]);
-  if (local.code !== 0) return fail('Failed to rename local branch', local.stderr);
+  if (local.code !== 0) {
+    logger.error(`operations: rename local failed: ${local.stderr}`);
+    return fail('Failed to rename local branch', local.stderr);
+  }
+  logger.info(`operations: renamed local branch ${oldBranch} -> ${newBranch}`);
 
   // 2. Push new branch and set upstream
   const push = await runner.run(['-C', worktreePath, 'push', 'origin', '-u', newBranch]);
-  if (push.code !== 0) return { success: true, message: `Renamed locally to ${newBranch}. Remote push failed: ${push.stderr}` };
+  if (push.code !== 0) {
+    logger.warn(`operations: push new branch failed: ${push.stderr}`);
+    return { success: true, message: `Renamed locally to ${newBranch}. Remote push failed: ${push.stderr}` };
+  }
 
   // 3. Delete old remote branch (only if it had an upstream — i.e. existed on remote)
   if (hasUpstream) {
     const del = await runner.run(['-C', worktreePath, 'push', 'origin', '--delete', oldBranch]);
-    if (del.code !== 0) return { success: true, message: `Renamed to ${newBranch} and pushed. Old remote branch deletion failed: ${del.stderr}` };
+    if (del.code !== 0) {
+      logger.warn(`operations: delete old remote branch failed: ${del.stderr}`);
+      return { success: true, message: `Renamed to ${newBranch} and pushed. Old remote branch deletion failed: ${del.stderr}` };
+    }
   }
 
   return ok(`Branch renamed to ${newBranch}`);
@@ -122,9 +133,15 @@ export async function commitFiles(
   if (!message.trim()) return fail('Commit message is required');
   // Stage the selected files
   const add = await runner.run(['-C', worktreePath, 'add', '--', ...files]);
-  if (add.code !== 0) return fail('Failed to stage files', add.stderr);
+  if (add.code !== 0) {
+    logger.error(`operations: git add failed: ${add.stderr}`);
+    return fail('Failed to stage files', add.stderr);
+  }
   // Commit
   const commit = await runner.run(['-C', worktreePath, 'commit', '-m', message.trim()]);
-  if (commit.code !== 0) return fail('Commit failed', commit.stderr);
+  if (commit.code !== 0) {
+    logger.error(`operations: git commit failed: ${commit.stderr}`);
+    return fail('Commit failed', commit.stderr);
+  }
   return ok(`Committed ${files.length} file${files.length !== 1 ? 's' : ''}`);
 }

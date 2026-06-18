@@ -37,8 +37,8 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
   }, [worktree, deleteRemote, onMessage, onBack]);
 
   const loadFullDiff = useCallback((): void => {
-    window.api.worktrees.fullDiff(worktree.path).then(setDiff);
-  }, [worktree.path]);
+    window.api.worktrees.fullDiff(worktree.path, worktree.pr?.baseRefName ?? undefined).then(setDiff);
+  }, [worktree.path, worktree.pr?.baseRefName]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>

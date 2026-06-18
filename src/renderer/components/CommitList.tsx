@@ -5,6 +5,7 @@ interface Props {
   worktreePath: string;
   isDirty: boolean;
   prBase?: string;
+  ignoreWhitespace: boolean;
   onDiff: (diff: string) => void;
   onFullDiff: () => void;
   onMessage: (msg: string, ok: boolean) => void;
@@ -15,7 +16,7 @@ const MODAL_BTN: React.CSSProperties = {
   background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--fg)',
 };
 
-export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, onMessage }: Props): React.JSX.Element {
+export function CommitList({ worktreePath, isDirty, prBase, ignoreWhitespace, onDiff, onFullDiff, onMessage }: Props): React.JSX.Element {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
@@ -46,8 +47,13 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
 
   const handleSelect = (commit: Commit): void => {
     setSelected(commit.sha);
-    window.api.worktrees.commitDiff(worktreePath, commit.sha).then(onDiff);
+    window.api.worktrees.commitDiff(worktreePath, commit.sha, ignoreWhitespace).then(onDiff);
   };
+
+  useEffect(() => {
+    if (!selected) return;
+    window.api.worktrees.commitDiff(worktreePath, selected, ignoreWhitespace).then(onDiff);
+  }, [ignoreWhitespace]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const allSelected = workingFiles.length > 0 && selectedFiles.size === workingFiles.length;
   const toggleAll = (): void => {

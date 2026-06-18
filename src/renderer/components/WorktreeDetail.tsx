@@ -4,6 +4,11 @@ import { PrBadge } from './PrBadge';
 import { CommitList } from './CommitList';
 import { DiffViewer } from './DiffViewer';
 
+const LS_DIFF_OPTIONS = 'claude-grove:diff-options';
+function loadIgnoreWs(): boolean {
+  try { return JSON.parse(localStorage.getItem(LS_DIFF_OPTIONS) ?? '{}').ignoreWhitespace === true; } catch { return false; }
+}
+
 interface Props {
   worktree: WorktreeRow;
   defaultTerminal: TerminalKind;
@@ -18,6 +23,10 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
   const [renameState, setRenameState] = useState<{ value: string } | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteRemote, setDeleteRemote] = useState(false);
+  const [ignoreWhitespace, setIgnoreWhitespace] = useState(loadIgnoreWs);
+  useEffect(() => {
+    try { localStorage.setItem(LS_DIFF_OPTIONS, JSON.stringify({ ignoreWhitespace })); } catch { /* ignore */ }
+  }, [ignoreWhitespace]);
 
   const doRename = useCallback((): void => {
     if (!renameState) return;
@@ -37,10 +46,10 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
   }, [worktree, deleteRemote, onMessage, onBack]);
 
   const loadFullDiff = useCallback((): void => {
-    window.api.worktrees.fullDiff(worktree.path, worktree.pr?.baseRefName ?? undefined).then(setDiff);
-  }, [worktree.path, worktree.pr?.baseRefName]);
+    window.api.worktrees.fullDiff(worktree.path, worktree.pr?.baseRefName ?? undefined, ignoreWhitespace).then(setDiff);
+  }, [worktree.path, worktree.pr?.baseRefName, ignoreWhitespace]);
 
-  useEffect(() => { loadFullDiff(); }, [worktree.path]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadFullDiff(); }, [worktree.path, ignoreWhitespace]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -143,6 +152,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
           <CommitList
             worktreePath={worktree.path}
             isDirty={worktree.isDirty}
+            ignoreWhitespace={ignoreWhitespace}
             {...(worktree.pr?.baseRefName ? { prBase: worktree.pr.baseRefName } : {})}
             onDiff={setDiff}
             onFullDiff={loadFullDiff}
@@ -176,7 +186,11 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
         />
         {/* Right: diff viewer */}
         <div style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
-          <DiffViewer rawDiff={diff} />
+          <DiffViewer
+            rawDiff={diff}
+            ignoreWhitespace={ignoreWhitespace}
+            onIgnoreWhitespaceChange={setIgnoreWhitespace}
+          />
         </div>
       </div>
       {renameState && (

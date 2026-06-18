@@ -10,8 +10,8 @@ contextBridge.exposeInMainWorld('api', {
   worktrees: {
     list: (): Promise<WorktreeRow[]> => ipcRenderer.invoke(CH.worktreesList),
     commits: (path: string, base?: string): Promise<Commit[]> => ipcRenderer.invoke(CH.worktreesCommits, path, base),
-    commitDiff: (path: string, sha: string): Promise<string> => ipcRenderer.invoke(CH.worktreesCommitDiff, path, sha),
-    fullDiff: (path: string, base?: string): Promise<string> => ipcRenderer.invoke(CH.worktreesFullDiff, path, base),
+    commitDiff: (path: string, sha: string, ignoreWhitespace?: boolean): Promise<string> => ipcRenderer.invoke(CH.worktreesCommitDiff, path, sha, ignoreWhitespace),
+    fullDiff: (path: string, base?: string, ignoreWhitespace?: boolean): Promise<string> => ipcRenderer.invoke(CH.worktreesFullDiff, path, base, ignoreWhitespace),
     remove: (path: string, opts: { force: boolean; deleteLocalBranch: boolean }): Promise<OpResult> =>
       ipcRenderer.invoke(CH.worktreesRemove, path, opts),
     deleteRemoteBranch: (path: string): Promise<OpResult> => ipcRenderer.invoke(CH.worktreesDeleteRemote, path),

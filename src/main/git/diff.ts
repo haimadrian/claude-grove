@@ -12,27 +12,29 @@ export async function listCommits(worktreePath: string, base: string, runner: Ru
   return parseCommits(result.stdout.trim());
 }
 
-export async function commitDiff(worktreePath: string, sha: string, runner: Runner = git): Promise<string> {
+export async function commitDiff(worktreePath: string, sha: string, ignoreWhitespace = false, runner: Runner = git): Promise<string> {
   // Detect merge commits (sha^2 exists = has a second parent)
   const mergeCheck = await runner.run(['-C', worktreePath, 'rev-parse', '--verify', '--quiet', `${sha}^2`]);
-  if (mergeCheck.code === 0) {
-    // Return a sentinel so the renderer can show a friendly message
-    return '\x00MERGE\x00';
-  }
+  if (mergeCheck.code === 0) return '\x00MERGE\x00';
 
-  // Use git diff parent..commit for a standard 2-way diff.
-  // git show produces combined diff format which react-diff-view cannot parse.
-  const result = await runner.run(['-C', worktreePath, 'diff', '--no-color', `${sha}^1`, sha]);
+  const diffArgs = ['-C', worktreePath, 'diff', '--no-color'];
+  if (ignoreWhitespace) diffArgs.push('-w');
+  diffArgs.push(`${sha}^1`, sha);
+  const result = await runner.run(diffArgs);
   if (result.code === 0 && result.stdout.trim()) return result.stdout;
-  // Fallback for root commits (no parent) or other edge cases
-  const fallback = await runner.run(['-C', worktreePath, 'show', sha, '--no-color', '--format=', '--patch']);
+
+  // Fallback for root commits
+  const showArgs = ['-C', worktreePath, 'show', sha, '--no-color', '--format=', '--patch'];
+  if (ignoreWhitespace) showArgs.push('-w');
+  const fallback = await runner.run(showArgs);
   return fallback.stdout;
 }
 
-export async function fullDiff(worktreePath: string, base: string, runner: Runner = git): Promise<string> {
-  const result = await runner.run([
-    '-C', worktreePath, 'diff', '--no-color', `${base}...HEAD`,
-  ]);
+export async function fullDiff(worktreePath: string, base: string, ignoreWhitespace = false, runner: Runner = git): Promise<string> {
+  const args = ['-C', worktreePath, 'diff', '--no-color'];
+  if (ignoreWhitespace) args.push('-w');
+  args.push(`${base}...HEAD`);
+  const result = await runner.run(args);
   return result.stdout;
 }
 

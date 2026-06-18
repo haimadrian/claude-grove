@@ -10,8 +10,8 @@ declare global {
       worktrees: {
         list(): Promise<WorktreeRow[]>;
         commits(path: string, base?: string): Promise<Commit[]>;
-        commitDiff(path: string, sha: string): Promise<string>;
-        fullDiff(path: string, base?: string): Promise<string>;
+        commitDiff(path: string, sha: string, ignoreWhitespace?: boolean): Promise<string>;
+        fullDiff(path: string, base?: string, ignoreWhitespace?: boolean): Promise<string>;
         remove(path: string, opts: { force: boolean; deleteLocalBranch: boolean }): Promise<OpResult>;
         deleteRemoteBranch(path: string): Promise<OpResult>;
         create(input: { repoPath: string; branch: string; base: string }): Promise<OpResult>;

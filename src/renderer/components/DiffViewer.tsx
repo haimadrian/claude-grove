@@ -11,9 +11,13 @@ function loadLayout(): ViewType {
   return 'unified';
 }
 
-interface Props { rawDiff: string; }
+interface Props {
+  rawDiff: string;
+  ignoreWhitespace?: boolean;
+  onIgnoreWhitespaceChange?: (v: boolean) => void;
+}
 
-export function DiffViewer({ rawDiff }: Props): React.JSX.Element {
+export function DiffViewer({ rawDiff, ignoreWhitespace, onIgnoreWhitespaceChange }: Props): React.JSX.Element {
   const [viewType, setViewType] = useState<ViewType>(loadLayout);
   useEffect(() => { try { localStorage.setItem(LS_LAYOUT_KEY, viewType); } catch { /* ignore */ } }, [viewType]);
 
@@ -48,22 +52,33 @@ export function DiffViewer({ rawDiff }: Props): React.JSX.Element {
           <span style={{ color: 'var(--ok)' }}>+{totalAdds}</span>
           <span style={{ color: 'var(--danger)' }}>−{totalDels}</span>
         </div>
-        <div style={{ display: 'flex', borderRadius: 5, border: '1px solid var(--border)', overflow: 'hidden' }}>
-          {(['unified', 'split'] as ViewType[]).map((vt) => (
-            <button
-              key={vt}
-              onClick={() => setViewType(vt)}
-              style={{
-                fontSize: 11, padding: '3px 10px', border: 'none', cursor: 'pointer',
-                borderLeft: vt === 'split' ? '1px solid var(--border)' : undefined,
-                background: viewType === vt ? 'var(--accent)' : 'var(--bg-secondary)',
-                color: viewType === vt ? 'var(--bg)' : 'var(--fg)',
-                textTransform: 'capitalize',
-              }}
-            >
-              {vt}
-            </button>
-          ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              checked={ignoreWhitespace ?? false}
+              onChange={(e) => onIgnoreWhitespaceChange?.(e.target.checked)}
+              style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
+            />
+            Ignore whitespace
+          </label>
+          <div style={{ display: 'flex', borderRadius: 5, border: '1px solid var(--border)', overflow: 'hidden' }}>
+            {(['unified', 'split'] as ViewType[]).map((vt) => (
+              <button
+                key={vt}
+                onClick={() => setViewType(vt)}
+                style={{
+                  fontSize: 11, padding: '3px 10px', border: 'none', cursor: 'pointer',
+                  borderLeft: vt === 'split' ? '1px solid var(--border)' : undefined,
+                  background: viewType === vt ? 'var(--accent)' : 'var(--bg-secondary)',
+                  color: viewType === vt ? 'var(--bg)' : 'var(--fg)',
+                  textTransform: 'capitalize',
+                }}
+              >
+                {vt}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       {files.map((file, i) => (

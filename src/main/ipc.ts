@@ -67,19 +67,19 @@ export function registerIpc(): void {
     return listCommits(wtPath, resolvedBase);
   });
 
-  ipcMain.handle(CH.worktreesCommitDiff, async (_e, wtPath: string, sha: string) => {
+  ipcMain.handle(CH.worktreesCommitDiff, async (_e, wtPath: string, sha: string, ignoreWhitespace?: boolean) => {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) return '';
-    return commitDiff(wtPath, sha);
+    return commitDiff(wtPath, sha, ignoreWhitespace ?? false);
   });
 
-  ipcMain.handle(CH.worktreesFullDiff, async (_e, wtPath: string, base?: string) => {
+  ipcMain.handle(CH.worktreesFullDiff, async (_e, wtPath: string, base?: string, ignoreWhitespace?: boolean) => {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) return '';
     const resolvedBase = base
       ? await preferOrigin(wtPath, base)
       : await resolveBaseBranch(wtPath, { pr: null, defaultBaseBranch: settings.defaultBaseBranch });
-    return fullDiff(wtPath, resolvedBase);
+    return fullDiff(wtPath, resolvedBase, ignoreWhitespace ?? false);
   });
 
   ipcMain.handle(CH.worktreesRemove, async (_e, wtPath: string, opts: { force: boolean; deleteLocalBranch: boolean }) => {

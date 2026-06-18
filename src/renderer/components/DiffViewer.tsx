@@ -46,7 +46,7 @@ export function DiffViewer({ rawDiff, ignoreWhitespace, onIgnoreWhitespaceChange
 
   return (
     <div style={{ fontSize: 13, fontFamily: 'monospace' }}>
-      <div style={{ padding: '4px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ padding: '4px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)' }}>
         <div style={{ fontSize: 12, color: 'var(--fg-muted)', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span>{files.length} file{files.length !== 1 ? 's' : ''}</span>
           <span style={{ color: 'var(--ok)' }}>+{totalAdds}</span>

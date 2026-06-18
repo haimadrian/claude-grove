@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { parseDiff, Diff, Hunk } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
 import type { FileData, HunkData } from 'react-diff-view';
 
 type ViewType = 'unified' | 'split';
 
+const LS_LAYOUT_KEY = 'claude-grove:diff-layout';
+function loadLayout(): ViewType {
+  try { const v = localStorage.getItem(LS_LAYOUT_KEY); if (v === 'split' || v === 'unified') return v; } catch { /* ignore */ }
+  return 'unified';
+}
+
 interface Props { rawDiff: string; }
 
 export function DiffViewer({ rawDiff }: Props): React.JSX.Element {
-  const [viewType, setViewType] = useState<ViewType>('unified');
+  const [viewType, setViewType] = useState<ViewType>(loadLayout);
+  useEffect(() => { try { localStorage.setItem(LS_LAYOUT_KEY, viewType); } catch { /* ignore */ } }, [viewType]);
 
   if (!rawDiff.trim()) {
     return <div style={{ padding: 16, color: 'var(--fg-muted)', fontSize: 13 }}>No diff available.</div>;

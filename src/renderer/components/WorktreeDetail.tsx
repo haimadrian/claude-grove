@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import type { WorktreeRow, TerminalKind } from '../../shared/types';
 import { PrBadge } from './PrBadge';
 import { CommitList } from './CommitList';
@@ -39,6 +39,8 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
   const loadFullDiff = useCallback((): void => {
     window.api.worktrees.fullDiff(worktree.path, worktree.pr?.baseRefName ?? undefined).then(setDiff);
   }, [worktree.path, worktree.pr?.baseRefName]);
+
+  useEffect(() => { loadFullDiff(); }, [worktree.path]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>

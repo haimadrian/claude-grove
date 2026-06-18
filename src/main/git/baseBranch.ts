@@ -31,7 +31,7 @@ export async function resolveBaseBranch(worktreePath: string, opts: BaseBranchOp
   return opts.defaultBaseBranch;
 }
 
-async function preferOrigin(worktreePath: string, base: string, runner: Runner): Promise<string> {
+export async function preferOrigin(worktreePath: string, base: string, runner: Runner = git): Promise<string> {
   const remote = `origin/${base}`;
   const verify = await runner.run(['-C', worktreePath, 'rev-parse', '--verify', '--quiet', remote]);
   return verify.code === 0 ? remote : base;

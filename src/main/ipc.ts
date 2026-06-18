@@ -5,7 +5,7 @@ import { loadSettings, updateSettings } from './settings/settings';
 import { scanRepos } from './git/repoScanner';
 import { listAllWorktrees } from './git/worktrees';
 import { listCommits, commitDiff, fullDiff, listWorkingFiles, workingFileDiff } from './git/diff';
-import { resolveBaseBranch } from './git/baseBranch';
+import { resolveBaseBranch, preferOrigin } from './git/baseBranch';
 import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree, renameBranch, commitFiles, rollbackFile } from './git/operations';
 import { getPr } from './gh/pr';
 import { ghStatus } from './gh/ghRunner';
@@ -61,7 +61,9 @@ export function registerIpc(): void {
   ipcMain.handle(CH.worktreesCommits, async (_e, wtPath: string, base?: string) => {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) { logger.warn(`ipc: rejected path ${wtPath}`); return []; }
-    const resolvedBase = base ?? await resolveBaseBranch(wtPath, { pr: null, defaultBaseBranch: settings.defaultBaseBranch });
+    const resolvedBase = base
+      ? await preferOrigin(wtPath, base)
+      : await resolveBaseBranch(wtPath, { pr: null, defaultBaseBranch: settings.defaultBaseBranch });
     return listCommits(wtPath, resolvedBase);
   });
 
@@ -74,7 +76,9 @@ export function registerIpc(): void {
   ipcMain.handle(CH.worktreesFullDiff, async (_e, wtPath: string, base?: string) => {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) return '';
-    const resolvedBase = base ?? await resolveBaseBranch(wtPath, { pr: null, defaultBaseBranch: settings.defaultBaseBranch });
+    const resolvedBase = base
+      ? await preferOrigin(wtPath, base)
+      : await resolveBaseBranch(wtPath, { pr: null, defaultBaseBranch: settings.defaultBaseBranch });
     return fullDiff(wtPath, resolvedBase);
   });
 

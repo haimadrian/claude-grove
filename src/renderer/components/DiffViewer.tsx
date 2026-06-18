@@ -30,9 +30,17 @@ export function DiffViewer({ rawDiff }: Props): React.JSX.Element {
     return <div style={{ padding: 16, color: 'var(--danger)', fontSize: 13 }}>Failed to parse diff.</div>;
   }
 
+  const totalAdds = files.reduce((n, f) => n + f.hunks.reduce((m, h) => m + h.changes.filter((c) => c.type === 'insert').length, 0), 0);
+  const totalDels = files.reduce((n, f) => n + f.hunks.reduce((m, h) => m + h.changes.filter((c) => c.type === 'delete').length, 0), 0);
+
   return (
     <div style={{ fontSize: 13, fontFamily: 'monospace' }}>
-      <div style={{ padding: '4px 10px', display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ padding: '4px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ fontSize: 12, color: 'var(--fg-muted)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span>{files.length} file{files.length !== 1 ? 's' : ''}</span>
+          <span style={{ color: 'var(--ok)' }}>+{totalAdds}</span>
+          <span style={{ color: 'var(--danger)' }}>−{totalDels}</span>
+        </div>
         <div style={{ display: 'flex', borderRadius: 5, border: '1px solid var(--border)', overflow: 'hidden' }}>
           {(['unified', 'split'] as ViewType[]).map((vt) => (
             <button

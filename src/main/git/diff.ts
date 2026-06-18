@@ -13,8 +13,15 @@ export async function listCommits(worktreePath: string, base: string, runner: Ru
 }
 
 export async function commitDiff(worktreePath: string, sha: string, runner: Runner = git): Promise<string> {
-  // Use git diff parent..commit for a standard 2-way diff (works for merge commits too).
-  // git show produces combined diff format for merges which react-diff-view cannot parse.
+  // Detect merge commits (sha^2 exists = has a second parent)
+  const mergeCheck = await runner.run(['-C', worktreePath, 'rev-parse', '--verify', '--quiet', `${sha}^2`]);
+  if (mergeCheck.code === 0) {
+    // Return a sentinel so the renderer can show a friendly message
+    return '\x00MERGE\x00';
+  }
+
+  // Use git diff parent..commit for a standard 2-way diff.
+  // git show produces combined diff format which react-diff-view cannot parse.
   const result = await runner.run(['-C', worktreePath, 'diff', '--no-color', `${sha}^1`, sha]);
   if (result.code === 0 && result.stdout.trim()) return result.stdout;
   // Fallback for root commits (no parent) or other edge cases

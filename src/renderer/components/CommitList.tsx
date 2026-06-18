@@ -206,7 +206,18 @@ export function CommitList({ worktreePath, isDirty, prBase, onDiff, onFullDiff, 
             }}
           >
             <code style={{ fontSize: 11, color: 'var(--accent)', flexShrink: 0 }}>{c.shortSha}</code>
-            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.subject}</span>
+            <span
+              style={{
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                fontStyle: c.subject.startsWith('Merge ') ? 'italic' : undefined,
+                color: c.subject.startsWith('Merge ') ? 'var(--fg-muted)' : undefined,
+              }}
+            >
+              {c.subject.startsWith('Merge ') ? '⤵ ' : ''}{c.subject}
+            </span>
             <span style={{ fontSize: 11, color: 'var(--fg-muted)', flexShrink: 0 }}>{c.author}</span>
           </div>
         ))

@@ -14,6 +14,15 @@ export function DiffViewer({ rawDiff }: Props): React.JSX.Element {
     return <div style={{ padding: 16, color: 'var(--fg-muted)', fontSize: 13 }}>No diff available.</div>;
   }
 
+  if (rawDiff === '\x00MERGE\x00') {
+    return (
+      <div style={{ padding: 16, color: 'var(--fg-muted)', fontSize: 13, lineHeight: 1.6 }}>
+        <div style={{ fontWeight: 600, color: 'var(--fg)', marginBottom: 4 }}>Merge commit</div>
+        Integrates upstream changes into this branch. No feature-specific diff to display.
+      </div>
+    );
+  }
+
   let files: FileData[];
   try {
     files = parseDiff(rawDiff);

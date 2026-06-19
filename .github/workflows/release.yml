@@ -48,8 +48,18 @@ jobs:
       - name: Build app
         run: pnpm build
 
-      - name: Package .dmg
-        run: pnpm package
+      - name: Package .app (unsigned)
+        run: pnpm exec electron-builder --mac dir --publish never
+
+      - name: Ad-hoc sign .app
+        run: |
+          app=$(find release/mac* -maxdepth 1 -name "*.app" | head -1)
+          codesign --deep --force --sign - "$app"
+
+      - name: Create .dmg from signed .app
+        run: |
+          app=$(find release/mac* -maxdepth 1 -name "*.app" | head -1)
+          pnpm exec electron-builder --mac dmg --prepackaged "$app" --publish never
 
       - name: Locate DMG
         id: dmg

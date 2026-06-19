@@ -25,12 +25,6 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "electron",
-      "esbuild"
-    ]
-  },
   "dependencies": {
     "electron-log": "^5.4.3",
     "gitdiff-parser": "^0.3.1",

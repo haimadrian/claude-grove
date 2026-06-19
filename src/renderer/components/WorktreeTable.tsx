@@ -5,7 +5,7 @@ import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 
 const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
-const COL_COUNT = 7; // Repo, Branch, State, Last commit, Modified, Sessions, PR
+const COL_COUNT = 6; // Repo, Branch, State, Last commit, Modified, Sessions, PR
 
 const LS_KEY = 'claude-grove:table-state';
 
@@ -113,8 +113,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
       setFilters((f) => ({ ...f, repo: valid }));
     }
   }, [worktrees]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [prHoveredId, setPrHoveredId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null); // for row background only
+  const [actionInfo, setActionInfo] = useState<{ id: string; midY: number } | null>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [stateTooltip, setStateTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
   const [prTooltip, setPrTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
   // null = auto-sized by browser; number = user-set pixel width (restored from localStorage)
@@ -131,6 +132,20 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   const tableRef = useRef<HTMLTableElement>(null);
   const dragging = useRef<{ idx: number; startX: number; startW: number } | null>(null);
   const dragMoved = useRef(false); // true if mouse moved during resize — suppresses sort click
+
+  const showActions = (id: string, rect: DOMRect): void => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    setActionInfo({ id, midY: rect.top + rect.height / 2 });
+  };
+  const hideActions = (): void => {
+    hideTimerRef.current = setTimeout(() => setActionInfo(null), 80);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, []);
 
   const handleSort = useCallback((key: string): void => {
     setSortDir((d) => (sortKey === key ? (d === 'asc' ? 'desc' : 'asc') : 'asc'));
@@ -231,9 +246,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     ...(colWidths[idx] !== null ? { width: colWidths[idx] } : {}),
   });
 
-  const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Modified', 'Sessions', 'PR'];
+  const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Modified', 'Sessions'];
   // Sort key per header (empty string = not sortable, e.g. State)
-  const HEADER_SORT_KEYS = ['repo', 'branch', '', 'lastCommit', 'modified', 'sessions', 'pr'];
+  const HEADER_SORT_KEYS = ['repo', 'branch', '', 'lastCommit', 'modified', 'sessions'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -271,8 +286,6 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                 </th>
                 );
               })}
-              {/* Zero-width th — actions float absolutely, no layout contribution */}
-              <th style={{ ...TH, width: 0, padding: 0, overflow: 'visible' }} />
             </tr>
           </thead>
           <tbody>
@@ -283,8 +296,14 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                 <tr
                   key={w.id}
                   style={{ background: rowBg }}
-                  onMouseEnter={() => setHoveredId(w.id)}
-                  onMouseLeave={() => setHoveredId(null)}
+                  onMouseEnter={(e) => {
+                    setHoveredId(w.id);
+                    showActions(w.id, (e.currentTarget as HTMLElement).getBoundingClientRect());
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredId(null);
+                    hideActions();
+                  }}
                 >
                   <td style={TD} title={w.repo.path}>{w.repo.name}</td>
                   <td style={TD} title={w.path}>{w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}</td>
@@ -324,75 +343,15 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                   <td
                     style={TD}
                     onMouseEnter={(e) => {
-                      setPrHoveredId(w.id);
                       if (w.pr) setPrTooltip({ id: w.id, x: e.clientX, y: e.clientY });
                     }}
                     onMouseMove={(e) => { if (prTooltip?.id === w.id) setPrTooltip({ id: w.id, x: e.clientX, y: e.clientY }); }}
-                    onMouseLeave={() => { setPrHoveredId(null); setPrTooltip(null); }}
+                    onMouseLeave={() => { setPrTooltip(null); }}
                   >
                     <PrBadge
                       pr={w.pr}
                       {...(w.pr ? { onClick: () => { void window.api.open.url(w.pr!.url); } } : {})}
                     />
-                  </td>
-                  {/* Floating actions — absolutely positioned so they don't affect table width */}
-                  <td style={{
-                    padding: 0, width: 0,
-                    borderBottom: '1px solid var(--bg-tertiary)',
-                    position: 'relative', overflow: 'visible',
-                  }}>
-                    <div style={{
-                      position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                      display: 'flex', gap: 4, alignItems: 'center',
-                      opacity: (hovered && prHoveredId !== w.id) ? 1 : 0,
-                      transition: 'opacity 0.15s',
-                      pointerEvents: (hovered && prHoveredId !== w.id) ? 'auto' : 'none',
-                      background: rowBg ?? 'var(--bg)',
-                      padding: '2px 4px', borderRadius: 6,
-                      boxShadow: hovered ? '0 2px 8px var(--shadow)' : 'none',
-                      whiteSpace: 'nowrap', zIndex: 10,
-                    }}>
-                      <button onClick={() => onSelect(w)} style={ROW_BTN} data-tip="View commits and diff">👁</button>
-                      {w.sessions[0] && (
-                        <button
-                          onClick={() => {
-                            window.api.terminals.resumeSession({
-                              terminal: defaultTerminal,
-                              launchDir: w.sessions[0]!.launchDir,
-                              sessionId: w.sessions[0]!.sessionId,
-                            }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
-                          }}
-                          style={{ ...ROW_BTN, color: 'var(--accent)' }}
-                          data-tip={`Resume Claude session: ${w.sessions[0].title ?? w.sessions[0].sessionId}`}
-                        >▶</button>
-                      )}
-                      <button
-                        onClick={() => window.api.open.editor(w.path).then((r) => { if (!r.success) onMessage(r.message, false); }).catch((e) => onMessage(String(e), false))}
-                        style={ROW_BTN} data-tip="Open in editor"
-                      >✏</button>
-                      {w.branch && (
-                        <button
-                          onClick={() => setRenameState({ wt: w, value: w.branch! })}
-                          style={ROW_BTN}
-                          data-tip="Rename branch locally and on remote"
-                        >✎</button>
-                      )}
-                      <button
-                        onClick={() => setDeleteState({ wt: w, deleteRemote: false })}
-                        style={{ ...ROW_BTN, color: 'var(--danger)' }}
-                        data-tip="Delete worktree"
-                      >🗑</button>
-                      <button onClick={() => void window.api.open.finder(w.path)} style={ROW_BTN} data-tip="Reveal in Finder">📂</button>
-                      <button
-                        onClick={() => window.api.terminals.openDir({ terminal: defaultTerminal, dir: w.path })
-                          .then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false))}
-                        style={ROW_BTN}
-                        data-tip={`Open in ${defaultTerminal}`}
-                      >&gt;_</button>
-                      {w.repo.remoteUrl && (
-                        <button onClick={() => void window.api.open.url(w.repo.remoteUrl!)} style={ROW_BTN} data-tip="Open on GitHub">↗</button>
-                      )}
-                    </div>
                   </td>
                 </tr>
               );
@@ -400,6 +359,69 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
           </tbody>
         </table>
       )}
+      {actionInfo && (() => {
+        const row = filtered.find((r) => r.id === actionInfo.id);
+        if (!row) return null;
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              right: 12,
+              top: actionInfo.midY,
+              transform: 'translateY(-50%)',
+              zIndex: 100,
+              display: 'flex', gap: 4, alignItems: 'center',
+              background: 'var(--bg-secondary)',
+              padding: '2px 4px', borderRadius: 6,
+              boxShadow: '0 2px 8px var(--shadow)',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={() => { if (hideTimerRef.current) clearTimeout(hideTimerRef.current); }}
+            onMouseLeave={hideActions}
+          >
+            <button onClick={() => onSelect(row)} style={ROW_BTN} data-tip="View commits and diff">👁</button>
+            {row.sessions[0] && (
+              <button
+                onClick={() => {
+                  window.api.terminals.resumeSession({
+                    terminal: defaultTerminal,
+                    launchDir: row.sessions[0]!.launchDir,
+                    sessionId: row.sessions[0]!.sessionId,
+                  }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
+                }}
+                style={{ ...ROW_BTN, color: 'var(--accent)' }}
+                data-tip={`Resume Claude session: ${row.sessions[0].title ?? row.sessions[0].sessionId}`}
+              >▶</button>
+            )}
+            <button
+              onClick={() => window.api.open.editor(row.path).then((r) => { if (!r.success) onMessage(r.message, false); }).catch((e) => onMessage(String(e), false))}
+              style={ROW_BTN} data-tip="Open in editor"
+            >✏</button>
+            {row.branch && (
+              <button
+                onClick={() => setRenameState({ wt: row, value: row.branch! })}
+                style={ROW_BTN}
+                data-tip="Rename branch locally and on remote"
+              >✎</button>
+            )}
+            <button
+              onClick={() => setDeleteState({ wt: row, deleteRemote: false })}
+              style={{ ...ROW_BTN, color: 'var(--danger)' }}
+              data-tip="Delete worktree"
+            >🗑</button>
+            <button onClick={() => void window.api.open.finder(row.path)} style={ROW_BTN} data-tip="Reveal in Finder">📂</button>
+            <button
+              onClick={() => window.api.terminals.openDir({ terminal: defaultTerminal, dir: row.path })
+                .then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false))}
+              style={ROW_BTN}
+              data-tip={`Open in ${defaultTerminal}`}
+            >&gt;_</button>
+            {row.repo.remoteUrl && (
+              <button onClick={() => void window.api.open.url(row.repo.remoteUrl!)} style={ROW_BTN} data-tip="Open on GitHub">↗</button>
+            )}
+          </div>
+        );
+      })()}
       </div>
       {stateTooltip && (() => {
         const row = filtered.find((w) => w.id === stateTooltip.id);

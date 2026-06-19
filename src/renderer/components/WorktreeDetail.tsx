@@ -3,6 +3,7 @@ import type { WorktreeRow, TerminalKind } from '../../shared/types';
 import { PrBadge } from './PrBadge';
 import { CommitList } from './CommitList';
 import { DiffViewer } from './DiffViewer';
+import { SessionPickerModal } from './SessionPickerModal';
 
 const LS_DIFF_OPTIONS = 'claude-grove:diff-options';
 function loadIgnoreWs(): boolean {
@@ -24,6 +25,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteRemote, setDeleteRemote] = useState(false);
   const [ignoreWhitespace, setIgnoreWhitespace] = useState(loadIgnoreWs);
+  const [showSessionPicker, setShowSessionPicker] = useState(false);
   useEffect(() => {
     try { localStorage.setItem(LS_DIFF_OPTIONS, JSON.stringify({ ignoreWhitespace })); } catch { /* ignore */ }
   }, [ignoreWhitespace]);
@@ -113,17 +115,23 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
           )}
           {worktree.sessions[0] && (
             <button
-              onClick={() =>
-                window.api.terminals.resumeSession({
-                  terminal: defaultTerminal,
-                  launchDir: worktree.sessions[0]!.launchDir,
-                  sessionId: worktree.sessions[0]!.sessionId,
-                }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false))
-              }
+              onClick={() => {
+                if (worktree.sessions.length > 1) {
+                  setShowSessionPicker(true);
+                } else {
+                  window.api.terminals.resumeSession({
+                    terminal: defaultTerminal,
+                    launchDir: worktree.sessions[0]!.launchDir,
+                    sessionId: worktree.sessions[0]!.sessionId,
+                  }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
+                }
+              }}
               style={{ ...ACTION_BTN, color: 'var(--accent)' }}
-              title={`Resume Claude Code session in ${defaultTerminal}: ${worktree.sessions[0].title ?? worktree.sessions[0].sessionId}`}
+              title={worktree.sessions.length > 1
+                ? `${worktree.sessions.length} sessions — click to pick`
+                : `Resume Claude Code session in ${defaultTerminal}: ${worktree.sessions[0].title ?? worktree.sessions[0].sessionId}`}
             >
-              Resume
+              {worktree.sessions.length > 1 ? `Resume (${worktree.sessions.length})` : 'Resume'}
             </button>
           )}
           {worktree.branch && (
@@ -235,6 +243,21 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
             </div>
           </div>
         </div>
+      )}
+      {showSessionPicker && (
+        <SessionPickerModal
+          sessions={worktree.sessions}
+          terminal={defaultTerminal}
+          onResume={(s) => {
+            setShowSessionPicker(false);
+            window.api.terminals.resumeSession({
+              terminal: defaultTerminal,
+              launchDir: s.launchDir,
+              sessionId: s.sessionId,
+            }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
+          }}
+          onClose={() => setShowSessionPicker(false)}
+        />
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import type { WorktreeRow, TerminalKind } from '../../shared/types';
 import { PrBadge } from './PrBadge';
 import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
+import { SessionPickerModal } from './SessionPickerModal';
 
 const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
 const COL_COUNT = 6; // Repo, Branch, State, Last commit, Modified, Sessions, PR
@@ -123,6 +124,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     persisted.colWidths?.length === COL_COUNT ? persisted.colWidths : Array(COL_COUNT).fill(null)
   );
   const [renameState, setRenameState] = useState<{ wt: WorktreeRow; value: string } | null>(null);
+  const [sessionPickerRow, setSessionPickerRow] = useState<WorktreeRow | null>(null);
 
   // Persist filter + sort + colWidths whenever they change (after all state is declared)
   useEffect(() => {
@@ -383,15 +385,21 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
             {row.sessions[0] && (
               <button
                 onClick={() => {
-                  window.api.terminals.resumeSession({
-                    terminal: defaultTerminal,
-                    launchDir: row.sessions[0]!.launchDir,
-                    sessionId: row.sessions[0]!.sessionId,
-                  }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
+                  if (row.sessions.length > 1) {
+                    setSessionPickerRow(row);
+                  } else {
+                    window.api.terminals.resumeSession({
+                      terminal: defaultTerminal,
+                      launchDir: row.sessions[0]!.launchDir,
+                      sessionId: row.sessions[0]!.sessionId,
+                    }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
+                  }
                 }}
                 style={{ ...ROW_BTN, color: 'var(--accent)' }}
-                data-tip={`Resume Claude session: ${row.sessions[0].title ?? row.sessions[0].sessionId}`}
-              >▶</button>
+                data-tip={row.sessions.length > 1
+                  ? `${row.sessions.length} sessions — click to pick`
+                  : `Resume Claude session: ${row.sessions[0].title ?? row.sessions[0].sessionId}`}
+              >{row.sessions.length > 1 ? `▶ ${row.sessions.length}` : '▶'}</button>
             )}
             <button
               onClick={() => window.api.open.editor(row.path).then((r) => { if (!r.success) onMessage(r.message, false); }).catch((e) => onMessage(String(e), false))}
@@ -540,6 +548,21 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
             </div>
           </div>
         </div>
+      )}
+      {sessionPickerRow && (
+        <SessionPickerModal
+          sessions={sessionPickerRow.sessions}
+          terminal={defaultTerminal}
+          onResume={(s) => {
+            setSessionPickerRow(null);
+            window.api.terminals.resumeSession({
+              terminal: defaultTerminal,
+              launchDir: s.launchDir,
+              sessionId: s.sessionId,
+            }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
+          }}
+          onClose={() => setSessionPickerRow(null)}
+        />
       )}
     </div>
   );

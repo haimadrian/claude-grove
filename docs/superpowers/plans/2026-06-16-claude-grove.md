@@ -1113,7 +1113,52 @@ All items in this phase were implemented after the initial v0.1.0 release based 
 
 ---
 
-## Current State (2026-06-18)
+## Phase 8 — Session 2026-06-20 (all shipped)
+
+### Card layout view
+- **`WorktreeCardGrid`** + **`WorktreeCard`**: repo-colored left border (hash → hue), 3×3 responsive grid via `ResizeObserver`, scrollable card bodies, `overflow: hidden` on card root.
+- **Kebab menu (`⋮`)**: `openMenuId` lifted to grid level — only one menu open at a time. `onMouseDown` stopPropagation on the button fixes toggle-close behavior. `transform: translateY` removed from card hover (was breaking `position: fixed` dropdown via CSS stacking context).
+- **Card info rows**: All table columns shown as labeled `InfoRow` components: State, PR, Commit, Modified, Path, Upstream, Sessions.
+- **▶ session button**: In card header — quick resume (single session) or session picker (multiple). Uses `SessionPickerModal`.
+- **⎘ copy buttons**: `CopyButton` component (shows `⎘`, flashes `✓`). Present on: branch (card header + table hover), commit SHA, Path, Upstream.
+- **Commit SHA links**: SHA in both card Commit row and table Last commit column is a clickable link to `{remoteUrl}/commit/{fullSha}` on GitHub.
+- **State + PR tooltips on cards**: Same tooltip content as table (via shared `src/renderer/utils/tooltips.ts`).
+
+### Filter bar
+- **Repos multi-select dropdown**: Replaced individual repo chips. Dropdown has: text search input (auto-focused), Select all / Deselect all checkbox (with indeterminate state), per-repo checkboxes, `position: fixed` for overflow safety.
+- **Sort moved left**: No longer `margin-left: auto` pushed right — flows naturally after the Repos dropdown.
+
+### UI/UX improvements (all screens)
+- **Skeleton loading** (WorktreeTable): 6 shimmer rows with staggered `animationDelay`, replacing bare "Loading…" text.
+- **State badge pills**: Colored tint + matching border + `borderRadius: 10` in both table and card.
+- **Button hierarchy** (WorktreeDetail): Resume = accent primary; Delete = danger outline; others = secondary.
+- **Focus rings**: `.settings-input` and `.detail-rename-input` get `border-color: accent + box-shadow: accent-muted` on focus.
+- **Segmented controls**: Theme and Terminal in Settings use the same segmented control pattern as the header layout toggle.
+- **Save feedback**: Settings Save button shows "✓ Saved" briefly before closing.
+- **Design tokens**: `--radius-sm/md/lg/xl`, `--bg-hover`, `--accent-muted`, `--transition-fast/base`, `--modal-backdrop` added to `tokens.css`. Keyframes: `shimmer`, `fadeInSlide`, `spin`.
+- **Floating action fade-in**: `fadeInSlide` animation on table row hover actions.
+- **"← Back" button** + path `11→12px` in detail view. Splitter `5→8px`.
+
+### Theme
+- `ThemeProvider` is now self-contained: reads `claude-grove:theme` from `localStorage`, falls back to `matchMedia` on first launch. No longer takes a `setting` prop.
+- **☀ / ☾ toggle** added to header. Removed Theme section from Settings.
+
+### Graffiti title
+- **Bangers** Google Font loaded via `@import` in `tokens.css`.
+- Title uses `fontSize: 34, letterSpacing: 0.08em, -webkit-text-stroke: 0.5px accent, text-shadow: 2px/4px flat shadow`.
+- Same style used in HelpModal header.
+
+### Context-aware refresh
+- List view: `refresh()` reloads all worktrees.
+- Detail view: increments `detailRefreshKey` → `WorktreeDetail` reloads diff + remounts `CommitList`. Does NOT reload the full list.
+- Layout toggle hidden in detail view (`display: none` when `selected !== null`).
+
+### HelpModal updated
+- All sections updated to reflect: theme toggle, ▶ card button, ⎘ copy buttons, SHA links, Repos dropdown, refresh behavior, Settings changes.
+
+---
+
+## Current State (2026-06-20)
 
 - **Tests**: 37/37 passing (8 test files, pure logic only)
 - **Typecheck**: clean (both `tsconfig.node.json` and `tsconfig.web.json`)
@@ -1122,6 +1167,20 @@ All items in this phase were implemented after the initial v0.1.0 release based 
 - **Repo**: https://github.com/haimadrian/claude-grove
 - **Local path**: `~/Documents/GIT/claude-grove`
 - **Local git config**: `user.email = haimadrian@gmail.com`
+- **Branch**: `main` (all changes committed, clean working tree)
+
+### Key files added/changed in Phase 8
+- `src/renderer/components/WorktreeCard.tsx` — card component
+- `src/renderer/components/WorktreeCardGrid.tsx` — grid container
+- `src/renderer/components/CopyButton.tsx` — ⎘ copy button
+- `src/renderer/components/FilterBar.tsx` — repos dropdown + sort
+- `src/renderer/components/HelpModal.tsx` — updated docs
+- `src/renderer/utils/tooltips.ts` — shared tooltip builders
+- `src/renderer/theme/ThemeProvider.tsx` — localStorage-based theme
+- `src/renderer/App.tsx` — header controls, context-aware refresh
+- `src/renderer/theme/tokens.css` — new tokens + keyframes + Bangers font
+- `src/shared/types.ts` — `layout: 'table' | 'card'` in Settings
+- `src/main/settings/defaults.ts` — `layout: 'table'` default
 
 ### Development commands
 ```bash

@@ -262,7 +262,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
               }}
               title={`Resume Claude session${row.sessions.length > 1 ? ` (${row.sessions.length} sessions — using primary)` : ''}: ${row.sessions[0]?.title ?? ''}`}
               style={{
-                background: 'var(--accent-muted)',
+                background: 'none',
                 border: 'none',
                 borderRadius: 4,
                 cursor: 'pointer',

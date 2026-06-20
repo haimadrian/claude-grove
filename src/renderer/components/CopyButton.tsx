@@ -21,7 +21,7 @@ export function CopyButton({ text, style }: Props): React.JSX.Element {
       onClick={handleCopy}
       title={copied ? 'Copied!' : 'Copy'}
       style={{
-        background: copied ? 'rgba(26,127,55,0.10)' : 'var(--bg-tertiary)',
+        background: 'none',
         border: 'none',
         borderRadius: 4,
         cursor: 'pointer',

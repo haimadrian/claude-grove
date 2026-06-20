@@ -59,14 +59,14 @@ function AppInner(): React.JSX.Element {
         display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
       }}>
         <span style={{
-          fontWeight: 700,
-          fontSize: 18,
-          letterSpacing: '-0.03em',
+          fontFamily: "'Bangers', cursive",
+          fontSize: 26,
+          letterSpacing: '0.08em',
           userSelect: 'none',
-          background: 'linear-gradient(110deg, var(--fg) 35%, var(--accent))',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          color: 'transparent',
+          color: 'var(--fg)',
+          WebkitTextStroke: '0.5px var(--accent)',
+          textShadow: '2px 2px 0 var(--accent), 4px 4px 0 rgba(0,0,0,0.15)',
+          lineHeight: 1,
         } as React.CSSProperties}>
           Claude Grove
         </span>

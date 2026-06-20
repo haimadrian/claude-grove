@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Settings, TerminalKind, Theme } from '../../shared/types';
+import type { Settings, TerminalKind } from '../../shared/types';
 
 interface Props {
   settings: Settings;
@@ -11,7 +11,6 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
   const [editorCommand, setEditorCommand] = useState(settings.editorCommand);
   const [defaultBaseBranch, setDefaultBaseBranch] = useState(settings.defaultBaseBranch);
   const [prCacheTtl, setPrCacheTtl] = useState(String(settings.prCacheTtlSeconds));
-  const [theme, setThemeLocal] = useState(settings.theme);
   const [terminal, setTerminalLocal] = useState(settings.defaultTerminal);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -33,7 +32,6 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
       editorCommand,
       defaultBaseBranch,
       prCacheTtlSeconds: Number(prCacheTtl) || 60,
-      theme,
       defaultTerminal: terminal,
     });
     setSaving(false);
@@ -72,27 +70,6 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
             </div>
           ))}
           <button onClick={addRoot} style={BTN_SMALL}>+ Add root folder</button>
-        </Section>
-
-        <Section title="Theme">
-          <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden', width: 'fit-content' }}>
-            {(['system', 'light', 'dark'] as Theme[]).map((t, i) => (
-              <button
-                key={t}
-                onClick={() => setThemeLocal(t)}
-                style={{
-                  fontSize: 13, padding: '4px 14px',
-                  background: theme === t ? 'var(--accent)' : 'var(--bg-secondary)',
-                  color: theme === t ? '#fff' : 'var(--fg)',
-                  border: 'none',
-                  borderLeft: i > 0 ? '1px solid var(--border)' : 'none',
-                  borderRadius: 0, cursor: 'pointer',
-                }}
-              >
-                {t.charAt(0).toUpperCase() + t.slice(1)}
-              </button>
-            ))}
-          </div>
         </Section>
 
         <Section title="Default terminal">

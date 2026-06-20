@@ -1,47 +1,34 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { Theme } from '../../shared/types';
+
+const LS_KEY = 'claude-grove:theme';
+
+function getInitialTheme(): 'light' | 'dark' {
+  const saved = localStorage.getItem(LS_KEY);
+  if (saved === 'light' || saved === 'dark') return saved;
+  // First start: follow system preference
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 
 interface ThemeContextValue {
   theme: 'light' | 'dark';
-  setting: Theme;
+  toggle: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue>({ theme: 'light', setting: 'system' });
+const ThemeContext = createContext<ThemeContextValue>({ theme: 'light', toggle: () => {} });
 
 export function useTheme(): ThemeContextValue {
   return useContext(ThemeContext);
 }
 
-interface ThemeProviderProps {
-  setting: Theme;
-  children: React.ReactNode;
-}
-
-export function ThemeProvider({ setting, children }: ThemeProviderProps): React.JSX.Element {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => resolveTheme(setting));
-
-  useEffect(() => {
-    if (setting !== 'system') {
-      setTheme(setting);
-      return;
-    }
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const update = (): void => setTheme(mq.matches ? 'dark' : 'light');
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, [setting]);
+export function ThemeProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
+  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    localStorage.setItem(LS_KEY, theme);
   }, [theme]);
 
-  return <ThemeContext.Provider value={{ theme, setting }}>{children}</ThemeContext.Provider>;
-}
+  const toggle = (): void => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
-function resolveTheme(setting: Theme): 'light' | 'dark' {
-  if (setting === 'system') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  return setting;
+  return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>;
 }

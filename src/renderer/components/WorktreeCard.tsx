@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { WorktreeRow, Settings } from '../../shared/types';
 import { buildStateLines, buildPrLines } from '../utils/tooltips';
 import { PrBadge } from './PrBadge';
+import { CopyButton } from './CopyButton';
 
 const REPO_HUES = [217, 142, 271, 24, 180, 329, 90, 45, 195, 0, 260, 158];
 
@@ -97,10 +98,9 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
         aria-label="Worktree actions"
         onClick={openMenu}
         style={{
-          position: 'absolute', top: 8, right: 8,
           background: 'none', border: 'none', color: 'var(--fg-muted)',
           fontSize: 18, lineHeight: 1, padding: '2px 6px', borderRadius: 4,
-          cursor: 'pointer', zIndex: 1,
+          cursor: 'pointer',
         }}
       >
         ⋮
@@ -148,7 +148,7 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
   );
 }
 
-function InfoRow({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
+function InfoRow({ label, children, copyText }: { label: string; children: React.ReactNode; copyText?: string }): React.JSX.Element {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minHeight: 20 }}>
       <span style={{
@@ -161,6 +161,7 @@ function InfoRow({ label, children }: { label: string; children: React.ReactNode
       <span style={{ flex: 1, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {children}
       </span>
+      {copyText !== undefined && <CopyButton text={copyText} />}
     </div>
   );
 }
@@ -232,11 +233,9 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
         {/* Card header */}
         <div
           style={{
-            position: 'relative',
-            background: repoTint,
-            padding: '8px 40px 8px 12px',
             display: 'flex', alignItems: 'center', gap: 6,
-            flexShrink: 0,
+            padding: '8px 8px 8px 12px', flexShrink: 0, position: 'relative',
+            background: repoTint,
           }}
         >
           <span style={{ fontWeight: 600, fontSize: 13, color: repoColor }}>
@@ -244,11 +243,42 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
           </span>
           <span style={{ color: 'var(--fg-muted)', fontSize: 12 }}>›</span>
           <span style={{
-            fontSize: 13, color: 'var(--fg)',
+            fontSize: 13, color: 'var(--fg)', flex: 1,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {row.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}
           </span>
+          {row.branch && <CopyButton text={row.branch} />}
+          {row.sessions.length > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const s = row.sessions[0]!;
+                window.api.terminals.resumeSession({
+                  terminal: settings.defaultTerminal,
+                  launchDir: s.launchDir,
+                  sessionId: s.sessionId,
+                }).then((r) => onToast(r.message)).catch((e2) => onToast(String(e2)));
+              }}
+              title={`Resume Claude session${row.sessions.length > 1 ? ` (${row.sessions.length} sessions — using primary)` : ''}: ${row.sessions[0]?.title ?? ''}`}
+              style={{
+                background: 'var(--accent-muted)',
+                border: '1px solid var(--accent)',
+                borderRadius: 4,
+                cursor: 'pointer',
+                padding: '1px 6px',
+                fontSize: 12,
+                color: 'var(--accent)',
+                lineHeight: 1,
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 3,
+              }}
+            >
+              ▶
+            </button>
+          )}
           <KebabMenu
             row={row}
             settings={settings}
@@ -313,7 +343,18 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
           {/* Commit row */}
           <InfoRow label="Commit">
             <span style={{ display: 'flex', alignItems: 'baseline', gap: 5, overflow: 'hidden' }}>
-              <code style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--fg-muted)', flexShrink: 0 }}>{sha}</code>
+              {row.repo.remoteUrl ? (
+                <button
+                  onClick={(e) => { e.stopPropagation(); void window.api.open.url(`${row.repo.remoteUrl}/commit/${row.headSha}`); }}
+                  style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0, textDecoration: 'underline' }}
+                  title={`Open commit ${row.headSha} on GitHub`}
+                >
+                  {sha}
+                </button>
+              ) : (
+                <code style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--fg-muted)', flexShrink: 0 }}>{sha}</code>
+              )}
+              <CopyButton text={row.headSha} />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--fg)' }}>
                 {row.lastCommitSubject || '—'}
               </span>
@@ -328,7 +369,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
           </InfoRow>
 
           {/* Path row */}
-          <InfoRow label="Path">
+          <InfoRow label="Path" copyText={row.path}>
             <span title={row.path} style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg-muted)' }}>
               {row.path}
             </span>
@@ -336,7 +377,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
 
           {/* Upstream row — only if upstream is known */}
           {row.upstream && (
-            <InfoRow label="Upstream">
+            <InfoRow label="Upstream" copyText={row.upstream}>
               <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg-muted)' }}>{row.upstream}</span>
             </InfoRow>
           )}

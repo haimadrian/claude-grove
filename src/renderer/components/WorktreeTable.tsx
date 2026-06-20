@@ -5,6 +5,7 @@ import { PrBadge } from './PrBadge';
 import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 import { SessionPickerModal } from './SessionPickerModal';
+import { CopyButton } from './CopyButton';
 
 const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
 const COL_COUNT = 6; // Repo, Branch, State, Last commit, Modified, Sessions, PR
@@ -307,7 +308,14 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                   }}
                 >
                   <td style={TD} title={w.repo.path}>{w.repo.name}</td>
-                  <td style={TD} title={w.path}>{w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}</td>
+                  <td style={{ ...TD, overflow: 'visible' }} title={w.path}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden' }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                        {w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}
+                      </span>
+                      {hovered && w.branch && <CopyButton text={w.branch} />}
+                    </div>
+                  </td>
                   <td
                     style={{ ...TD, overflow: 'visible', whiteSpace: 'normal' }}
                     onMouseEnter={(e) => { if (buildStateLines(w).length > 0) setStateTooltip({ id: w.id, x: e.clientX, y: e.clientY }); }}
@@ -332,7 +340,25 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                       <span style={{ ...BADGE_BASE, background: 'rgba(26, 127, 55, 0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>✓ merged</span>
                     )}
                   </td>
-                  <td style={TD} title={w.lastCommitDate}>{w.lastCommitSubject || '—'}</td>
+                  <td style={{ ...TD, overflow: 'visible' }} title={w.lastCommitDate}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, overflow: 'hidden' }}>
+                      {w.repo.remoteUrl ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); void window.api.open.url(`${w.repo.remoteUrl}/commit/${w.headSha}`); }}
+                          style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--accent)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0, textDecoration: 'underline' }}
+                          title={`Open commit ${w.headSha} on GitHub`}
+                        >
+                          {w.headSha.slice(0, 7)}
+                        </button>
+                      ) : (
+                        <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg-muted)', flexShrink: 0 }}>{w.headSha.slice(0, 7)}</span>
+                      )}
+                      {hovered && <CopyButton text={w.headSha} />}
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {w.lastCommitSubject || ''}
+                      </span>
+                    </div>
+                  </td>
                   <td style={TD} title={w.lastCommitDate}>{formatDate(w.lastCommitDate)}</td>
                   <td style={TD}>
                     {w.sessions.length > 0 ? (

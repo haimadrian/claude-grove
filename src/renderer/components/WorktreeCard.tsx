@@ -219,10 +219,9 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
           borderLeft: `4px solid ${repoColor}`,
           background: 'var(--bg-secondary)',
           boxShadow: hovered
-            ? '0 4px 12px var(--shadow)'
+            ? '0 6px 16px var(--shadow)'
             : '0 1px 3px var(--shadow)',
-          transform: hovered ? 'translateY(-1px)' : 'none',
-          transition: 'all 150ms ease-out',
+          transition: 'box-shadow 150ms ease-out',
           cursor: 'pointer',
           overflow: 'hidden',
           height: cardHeight,

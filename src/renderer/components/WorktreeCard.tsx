@@ -240,23 +240,23 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast }: Wo
           {/* State badges */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, minHeight: 20 }}>
             {row.isDirty && (
-              <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 10, background: 'var(--warn)', color: 'var(--bg)', fontWeight: 500 }}>dirty</span>
+              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)' }}>dirty</span>
             )}
             {row.ahead > 0 && (
-              <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 10, background: 'var(--ok)', color: 'var(--bg)', fontWeight: 500 }}>↑{row.ahead}</span>
+              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>↑{row.ahead}</span>
             )}
             {row.behind > 0 && (
-              <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 10, background: 'var(--danger)', color: 'var(--bg)', fontWeight: 500 }}>↓{row.behind}</span>
+              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(207,34,46,0.10)', color: 'var(--danger)', border: '1px solid rgba(207,34,46,0.2)' }}>↓{row.behind}</span>
             )}
             {row.isLocked && (
-              <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 10, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', fontWeight: 500 }}>locked</span>
+              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>locked</span>
             )}
             {row.isPrunable && (
-              <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 10, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', fontWeight: 500 }}>prunable</span>
+              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>prunable</span>
             )}
             {row.upstreamGone && (
               <span
-                style={{ fontSize: 11, padding: '1px 6px', borderRadius: 10, background: 'var(--warn)', color: 'var(--bg)', fontWeight: 500, cursor: 'pointer' }}
+                style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)', cursor: 'pointer' }}
                 onClick={(e) => { e.stopPropagation(); setDeleteState({ deleteRemote: false }); }}
                 title="Remote branch deleted — click to delete local worktree"
               >
@@ -264,7 +264,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast }: Wo
               </span>
             )}
             {!row.upstreamGone && row.pr?.state === 'MERGED' && (
-              <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 10, background: 'var(--ok)', color: 'var(--bg)', fontWeight: 500 }}>merged</span>
+              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>merged</span>
             )}
           </div>
 

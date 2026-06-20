@@ -3,6 +3,7 @@ import type { WorktreeRow, Settings } from '../../shared/types';
 import { buildStateLines, buildPrLines } from '../utils/tooltips';
 import { PrBadge } from './PrBadge';
 import { CopyButton } from './CopyButton';
+import { SessionPickerModal } from './SessionPickerModal';
 
 const REPO_HUES = [217, 142, 271, 24, 180, 329, 90, 45, 195, 0, 260, 158];
 
@@ -181,6 +182,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
   const [hovered, setHovered] = useState(false);
   const [renameState, setRenameState] = useState<{ value: string } | null>(null);
   const [deleteState, setDeleteState] = useState<{ deleteRemote: boolean } | null>(null);
+  const [showSessionPicker, setShowSessionPicker] = useState(false);
   const [tooltip, setTooltip] = useState<{ lines: string[]; x: number; y: number } | null>(null);
 
   const hueIdx = repoColorIndex(row.repo.name);
@@ -253,14 +255,20 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                const s = row.sessions[0]!;
-                window.api.terminals.resumeSession({
-                  terminal: settings.defaultTerminal,
-                  launchDir: s.launchDir,
-                  sessionId: s.sessionId,
-                }).then((r) => onToast(r.message)).catch((e2) => onToast(String(e2)));
+                if (row.sessions.length > 1) {
+                  setShowSessionPicker(true);
+                } else {
+                  const s = row.sessions[0]!;
+                  window.api.terminals.resumeSession({
+                    terminal: settings.defaultTerminal,
+                    launchDir: s.launchDir,
+                    sessionId: s.sessionId,
+                  }).then((r) => onToast(r.message)).catch((e2) => onToast(String(e2)));
+                }
               }}
-              title={`Resume Claude session${row.sessions.length > 1 ? ` (${row.sessions.length} sessions — using primary)` : ''}: ${row.sessions[0]?.title ?? ''}`}
+              title={row.sessions.length > 1
+                ? `${row.sessions.length} sessions — click to pick`
+                : `Resume Claude session: ${row.sessions[0]?.title ?? row.sessions[0]?.sessionId ?? ''}`}
               style={{
                 background: 'none',
                 border: 'none',
@@ -528,6 +536,21 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
         }}>
           {tooltip.lines.map((line, i) => <div key={i}>{line}</div>)}
         </div>
+      )}
+      {showSessionPicker && (
+        <SessionPickerModal
+          sessions={row.sessions}
+          terminal={settings.defaultTerminal}
+          onResume={(s) => {
+            setShowSessionPicker(false);
+            window.api.terminals.resumeSession({
+              terminal: settings.defaultTerminal,
+              launchDir: s.launchDir,
+              sessionId: s.sessionId,
+            }).then((r) => onToast(r.message)).catch((e) => onToast(String(e)));
+          }}
+          onClose={() => setShowSessionPicker(false)}
+        />
       )}
     </>
   );

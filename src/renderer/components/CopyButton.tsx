@@ -26,7 +26,7 @@ export function CopyButton({ text, style }: Props): React.JSX.Element {
         borderRadius: 4,
         cursor: 'pointer',
         padding: '2px 7px',
-        fontSize: 14,
+        fontSize: 18,
         fontWeight: 600,
         color: copied ? 'var(--ok)' : 'var(--fg-muted)',
         lineHeight: 1,

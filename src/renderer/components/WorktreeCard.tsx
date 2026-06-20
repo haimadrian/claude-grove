@@ -33,15 +33,18 @@ interface KebabMenuProps {
   onToast: (msg: string) => void;
   onRename: () => void;
   onDelete: () => void;
+  openMenuId: string | null;
+  onMenuOpen: (id: string | null) => void;
 }
 
-function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete }: KebabMenuProps): React.JSX.Element {
-  const [open, setOpen] = useState(false);
+function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openMenuId, onMenuOpen }: KebabMenuProps): React.JSX.Element {
+  const open = openMenuId === row.id;
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
   const openMenu = (e: React.MouseEvent): void => {
     e.stopPropagation();
+    if (open) { onMenuOpen(null); return; }
     if (!btnRef.current) return;
     const rect = btnRef.current.getBoundingClientRect();
     const menuW = 200;
@@ -50,13 +53,13 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete }: Keb
       left = rect.left - menuW - 4;
     }
     setMenuPos({ top: rect.bottom + 4, left });
-    setOpen(true);
+    onMenuOpen(row.id);
   };
 
   useEffect(() => {
     if (!open) return;
-    const close = (): void => setOpen(false);
-    const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') setOpen(false); };
+    const close = (): void => onMenuOpen(null);
+    const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') onMenuOpen(null); };
     document.addEventListener('mousedown', close);
     document.addEventListener('keydown', onKey);
     document.addEventListener('scroll', close, true);
@@ -65,13 +68,13 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete }: Keb
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('scroll', close, true);
     };
-  }, [open]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const item = (icon: string, label: string, action: () => void, color?: string): React.JSX.Element => (
     <button
       key={label}
       onMouseDown={(e) => e.stopPropagation()}
-      onClick={(e) => { e.stopPropagation(); setOpen(false); action(); }}
+      onClick={(e) => { e.stopPropagation(); onMenuOpen(null); action(); }}
       style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '0 12px', minHeight: 32, width: '100%', textAlign: 'left',
@@ -92,7 +95,6 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete }: Keb
         ref={btnRef}
         aria-label="Worktree actions"
         onClick={openMenu}
-        onMouseDown={(e) => e.stopPropagation()}
         style={{
           position: 'absolute', top: 8, right: 8,
           background: 'none', border: 'none', color: 'var(--fg-muted)',
@@ -145,15 +147,34 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete }: Keb
   );
 }
 
+function InfoRow({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minHeight: 20 }}>
+      <span style={{
+        width: 68, flexShrink: 0, fontSize: 11, fontWeight: 600,
+        color: 'var(--fg-muted)', textTransform: 'uppercase', letterSpacing: '0.04em',
+        paddingTop: 1,
+      }}>
+        {label}
+      </span>
+      <span style={{ flex: 1, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
 export interface WorktreeCardProps {
   row: WorktreeRow;
   settings: Settings;
   onSelect: (row: WorktreeRow) => void;
   onRefresh: () => void;
   onToast: (msg: string) => void;
+  openMenuId: string | null;
+  onMenuOpen: (id: string | null) => void;
 }
 
-export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast }: WorktreeCardProps): React.JSX.Element {
+export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, openMenuId, onMenuOpen }: WorktreeCardProps): React.JSX.Element {
   const [hovered, setHovered] = useState(false);
   const [renameState, setRenameState] = useState<{ value: string } | null>(null);
   const [deleteState, setDeleteState] = useState<{ deleteRemote: boolean } | null>(null);
@@ -229,6 +250,8 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast }: Wo
             onToast={onToast}
             onRename={() => setRenameState({ value: row.branch ?? '' })}
             onDelete={() => setDeleteState({ deleteRemote: false })}
+            openMenuId={openMenuId}
+            onMenuOpen={onMenuOpen}
           />
         </div>
 
@@ -236,66 +259,91 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast }: Wo
         <div style={{ height: 1, background: 'var(--border)' }} />
 
         {/* Body */}
-        <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {/* State badges */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, minHeight: 20 }}>
-            {row.isDirty && (
-              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)' }}>dirty</span>
-            )}
-            {row.ahead > 0 && (
-              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>↑{row.ahead}</span>
-            )}
-            {row.behind > 0 && (
-              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(207,34,46,0.10)', color: 'var(--danger)', border: '1px solid rgba(207,34,46,0.2)' }}>↓{row.behind}</span>
-            )}
-            {row.isLocked && (
-              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>locked</span>
-            )}
-            {row.isPrunable && (
-              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>prunable</span>
-            )}
-            {row.upstreamGone && (
-              <span
-                style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)', cursor: 'pointer' }}
-                onClick={(e) => { e.stopPropagation(); setDeleteState({ deleteRemote: false }); }}
-                title="Remote branch deleted — click to delete local worktree"
-              >
-                remote gone
-              </span>
-            )}
-            {!row.upstreamGone && row.pr?.state === 'MERGED' && (
-              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>merged</span>
-            )}
-          </div>
-
-          {/* Commit info */}
-          <div style={{ fontSize: 12, color: 'var(--fg-muted)', display: 'flex', gap: 6, alignItems: 'baseline' }}>
-            <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg-muted)' }}>{sha}</span>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
-              {row.lastCommitSubject ? `· ${row.lastCommitSubject}` : ''}
-            </span>
-          </div>
-
-          {/* Modified time */}
-          <div style={{ fontSize: 12, color: 'var(--fg-muted)' }}>
-            Modified: {relTime(row.lastCommitDate)}
-          </div>
-
-          {/* Sessions */}
-          {row.sessions.length > 0 && (
-            <div style={{ fontSize: 12, color: 'var(--fg-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              Sessions: {row.sessions.length}{row.sessions[0]?.title ? ` · ${row.sessions[0].title}` : ''}
+        <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {/* State row */}
+          <InfoRow label="State">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {row.isDirty && (
+                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)' }}>dirty</span>
+              )}
+              {row.ahead > 0 && (
+                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>↑{row.ahead}</span>
+              )}
+              {row.behind > 0 && (
+                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(207,34,46,0.10)', color: 'var(--danger)', border: '1px solid rgba(207,34,46,0.2)' }}>↓{row.behind}</span>
+              )}
+              {row.isLocked && (
+                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>locked</span>
+              )}
+              {row.isPrunable && (
+                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>prunable</span>
+              )}
+              {row.upstreamGone && (
+                <span
+                  style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)', cursor: 'pointer' }}
+                  onClick={(e) => { e.stopPropagation(); setDeleteState({ deleteRemote: false }); }}
+                  title="Remote branch deleted — click to delete local worktree"
+                >
+                  remote gone
+                </span>
+              )}
+              {!row.upstreamGone && row.pr?.state === 'MERGED' && (
+                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>merged</span>
+              )}
+              {!row.isDirty && row.ahead === 0 && row.behind === 0 && !row.isLocked && !row.isPrunable && !row.upstreamGone && row.pr?.state !== 'MERGED' && (
+                <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>clean</span>
+              )}
             </div>
+          </InfoRow>
+
+          {/* Commit row */}
+          <InfoRow label="Commit">
+            <span style={{ display: 'flex', alignItems: 'baseline', gap: 5, overflow: 'hidden' }}>
+              <code style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--fg-muted)', flexShrink: 0 }}>{sha}</code>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--fg)' }}>
+                {row.lastCommitSubject || '—'}
+              </span>
+            </span>
+          </InfoRow>
+
+          {/* Modified row */}
+          <InfoRow label="Modified">
+            <span title={new Date(row.lastCommitDate).toLocaleString()} style={{ color: 'var(--fg-muted)' }}>
+              {relTime(row.lastCommitDate)}
+            </span>
+          </InfoRow>
+
+          {/* Path row */}
+          <InfoRow label="Path">
+            <span title={row.path} style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg-muted)' }}>
+              {row.path}
+            </span>
+          </InfoRow>
+
+          {/* Upstream row — only if upstream is known */}
+          {row.upstream && (
+            <InfoRow label="Upstream">
+              <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg-muted)' }}>{row.upstream}</span>
+            </InfoRow>
           )}
 
-          {/* PR badge */}
+          {/* Sessions row — only if sessions exist */}
+          {row.sessions.length > 0 && (
+            <InfoRow label="Sessions">
+              <span style={{ color: 'var(--fg)' }}>
+                {row.sessions.length}
+                {row.sessions[0]?.title ? <span style={{ color: 'var(--fg-muted)' }}> · {row.sessions[0].title}</span> : null}
+              </span>
+            </InfoRow>
+          )}
+
+          {/* PR row — only if pr is loaded */}
           {row.pr && (
-            <div onClick={(e) => e.stopPropagation()}>
-              <PrBadge
-                pr={row.pr}
-                onClick={() => { void window.api.open.url(row.pr!.url); }}
-              />
-            </div>
+            <InfoRow label="PR">
+              <div onClick={(e) => e.stopPropagation()}>
+                <PrBadge pr={row.pr} onClick={() => { void window.api.open.url(row.pr!.url); }} />
+              </div>
+            </InfoRow>
           )}
         </div>
       </div>

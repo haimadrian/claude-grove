@@ -39,6 +39,7 @@ export function WorktreeCardGrid({ worktrees, settings, onSelect, onRefresh }: W
   const [filters, setFilters] = useState<Filters>(persisted.filters ?? DEFAULT_FILTERS);
   const [sortKey, setSortKey] = useState(persisted.sortKey ?? 'repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.sortDir ?? 'asc');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const { toast, showToast, clearToast } = useToast();
 
   // Drop repo selections that no longer exist in the current worktree list
@@ -128,6 +129,8 @@ export function WorktreeCardGrid({ worktrees, settings, onSelect, onRefresh }: W
               onSelect={onSelect}
               onRefresh={onRefresh}
               onToast={(msg) => showToast(msg, 'ok')}
+              openMenuId={openMenuId}
+              onMenuOpen={setOpenMenuId}
             />
           ))}
         </div>

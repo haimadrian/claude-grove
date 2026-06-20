@@ -138,6 +138,7 @@ function AppInner(): React.JSX.Element {
               <WorktreeCardGrid
                 worktrees={worktrees}
                 settings={settings}
+                loading={loading}
                 onSelect={(w) => setSelectedId(w.id)}
                 onRefresh={refresh}
               />

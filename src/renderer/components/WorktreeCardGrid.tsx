@@ -29,11 +29,58 @@ function savePersistedState(state: PersistedCardState): void {
 export interface WorktreeCardGridProps {
   worktrees: WorktreeRow[];
   settings: Settings;
+  loading?: boolean;
   onSelect: (row: WorktreeRow) => void;
   onRefresh: () => void;
 }
 
-export function WorktreeCardGrid({ worktrees, settings, onSelect, onRefresh }: WorktreeCardGridProps): React.JSX.Element {
+function shimmerBlock(width: number | string, delay: number, height = 13): React.CSSProperties {
+  return {
+    height,
+    width,
+    borderRadius: 4,
+    background: 'linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-hover) 50%, var(--bg-tertiary) 75%)',
+    backgroundSize: '800px 100%',
+    animation: 'shimmer 1.4s ease-in-out infinite',
+    animationDelay: `${delay}ms`,
+    flexShrink: 0,
+  };
+}
+
+function SkeletonCard({ height, delay }: { height: number; delay: number }): React.JSX.Element {
+  const d = (offset: number): number => delay + offset;
+  return (
+    <div style={{
+      borderRadius: 8,
+      border: '1px solid var(--border)',
+      borderLeft: '4px solid var(--bg-tertiary)',
+      background: 'var(--bg-secondary)',
+      boxShadow: '0 1px 3px var(--shadow)',
+      height,
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{ padding: '10px 12px', background: 'var(--bg-tertiary)', flexShrink: 0, display: 'flex', gap: 8 }}>
+        <div style={shimmerBlock(70, d(0))} />
+        <div style={shimmerBlock(110, d(40))} />
+      </div>
+      <div style={{ height: 1, background: 'var(--border)', flexShrink: 0 }} />
+      {/* Body rows */}
+      <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1, overflow: 'hidden' }}>
+        <div style={shimmerBlock(160, d(80))} />
+        <div style={shimmerBlock(200, d(120))} />
+        <div style={shimmerBlock(140, d(160))} />
+        <div style={shimmerBlock(180, d(200))} />
+        <div style={shimmerBlock(120, d(240))} />
+        <div style={shimmerBlock(90, d(280))} />
+      </div>
+    </div>
+  );
+}
+
+export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRefresh }: WorktreeCardGridProps): React.JSX.Element {
   const persisted = loadPersistedState();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Filters>(persisted.filters ?? DEFAULT_FILTERS);
@@ -124,24 +171,33 @@ export function WorktreeCardGrid({ worktrees, settings, onSelect, onRefresh }: W
         onFilters={setFilters}
         onSort={handleSort}
       />
-      {filtered.length === 0 ? (
-        <div style={{ padding: 32, textAlign: 'center', color: 'var(--fg-muted)' }}>
-          No worktrees match the current filters.
-        </div>
-      ) : (
-        <div
-          ref={gridRef}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gridAutoRows: cardHeight,
-            gap: 12,
-            padding: 12,
-            overflowY: 'auto',
-            flex: 1,
-          }}
-        >
-          {filtered.map((row) => (
+      <div
+        ref={gridRef}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridAutoRows: cardHeight,
+          gap: 12,
+          padding: 12,
+          overflowY: 'auto',
+          flex: 1,
+        }}
+      >
+        {loading ? (
+          /* Skeleton cards while loading — 9 to fill the 3×3 grid */
+          Array.from({ length: 9 }).map((_, i) => (
+            <SkeletonCard key={i} height={cardHeight} delay={i * 80} />
+          ))
+        ) : filtered.length === 0 ? (
+          <div style={{
+            gridColumn: '1 / -1',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--fg-muted)', fontSize: 13,
+          }}>
+            No worktrees match the current filters.
+          </div>
+        ) : (
+          filtered.map((row) => (
             <WorktreeCard
               key={row.id}
               row={row}
@@ -153,9 +209,9 @@ export function WorktreeCardGrid({ worktrees, settings, onSelect, onRefresh }: W
               onMenuOpen={setOpenMenuId}
               cardHeight={cardHeight}
             />
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
       {toast !== null && (
         <Toast message={toast.message} type={toast.type} onDone={clearToast} />
       )}

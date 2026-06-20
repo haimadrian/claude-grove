@@ -60,7 +60,7 @@ cp "$T"/src/main/logger.ts src/main/logger.ts
 ```jsonc
 {
   "name": "claude-grove",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "A macOS desktop app to view and manage all your local git worktrees - PR status, Claude Code sessions, and GitHub-style diffs in one place.",
   "author": { "name": "Haim Adrian", "email": "haimadrian@gmail.com" },
   "repository": { "type": "git", "url": "https://github.com/haimadrian/claude-grove.git" },
@@ -1162,7 +1162,7 @@ All items in this phase were implemented after the initial v0.1.0 release based 
 
 - **Tests**: 37/37 passing (8 test files, pure logic only)
 - **Typecheck**: clean (both `tsconfig.node.json` and `tsconfig.web.json`)
-- **Latest tag**: `v0.1.0`
+- **Latest tag**: `v0.3.0`
 - **GitHub Pages**: https://haimadrian.github.io/claude-grove/
 - **Repo**: https://github.com/haimadrian/claude-grove
 - **Local path**: `~/Documents/GIT/claude-grove`

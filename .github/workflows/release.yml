@@ -7,7 +7,7 @@ on:
       tag:
         description: "Tag to publish (e.g. v0.2.0). Created and pushed if missing."
         required: true
-        default: "v0.1.0-dev"
+        default: "v0.1.0"
 
 permissions:
   contents: write

@@ -114,7 +114,7 @@ export function WorktreeCardGrid({ worktrees, settings, onSelect, onRefresh }: W
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(440px, 1fr))',
             gap: 12,
             padding: 12,
             overflowY: 'auto',

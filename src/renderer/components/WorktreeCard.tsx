@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { WorktreeRow, Settings } from '../../shared/types';
+import { buildStateLines, buildPrLines } from '../utils/tooltips';
 import { PrBadge } from './PrBadge';
 
 const REPO_HUES = [217, 142, 271, 24, 180, 329, 90, 45, 195, 0, 260, 158];
@@ -178,6 +179,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
   const [hovered, setHovered] = useState(false);
   const [renameState, setRenameState] = useState<{ value: string } | null>(null);
   const [deleteState, setDeleteState] = useState<{ deleteRemote: boolean } | null>(null);
+  const [tooltip, setTooltip] = useState<{ lines: string[]; x: number; y: number } | null>(null);
 
   const hueIdx = repoColorIndex(row.repo.name);
   const hue = REPO_HUES[hueIdx]!;
@@ -262,7 +264,15 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
         <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 7 }}>
           {/* State row */}
           <InfoRow label="State">
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            <div
+              style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}
+              onMouseEnter={(e) => {
+                const lines = buildStateLines(row);
+                if (lines.length > 0) setTooltip({ lines, x: e.clientX, y: e.clientY });
+              }}
+              onMouseMove={(e) => setTooltip((t) => t ? { ...t, x: e.clientX, y: e.clientY } : null)}
+              onMouseLeave={() => setTooltip(null)}
+            >
               {row.isDirty && (
                 <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)' }}>dirty</span>
               )}
@@ -340,7 +350,12 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
           {/* PR row — only if pr is loaded */}
           {row.pr && (
             <InfoRow label="PR">
-              <div onClick={(e) => e.stopPropagation()}>
+              <div
+                onClick={(e) => e.stopPropagation()}
+                onMouseEnter={(e) => setTooltip({ lines: buildPrLines(row.pr!), x: e.clientX, y: e.clientY })}
+                onMouseMove={(e) => setTooltip((t) => t ? { ...t, x: e.clientX, y: e.clientY } : null)}
+                onMouseLeave={() => setTooltip(null)}
+              >
                 <PrBadge pr={row.pr} onClick={() => { void window.api.open.url(row.pr!.url); }} />
               </div>
             </InfoRow>
@@ -447,6 +462,26 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {tooltip && (
+        <div style={{
+          position: 'fixed',
+          left: tooltip.x + 14,
+          top: tooltip.y + 14,
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
+          borderRadius: 8,
+          padding: '8px 12px',
+          fontSize: 12,
+          color: 'var(--fg)',
+          boxShadow: '0 4px 14px var(--shadow)',
+          zIndex: 1000,
+          pointerEvents: 'none',
+          maxWidth: 320,
+          lineHeight: 1.9,
+        }}>
+          {tooltip.lines.map((line, i) => <div key={i}>{line}</div>)}
         </div>
       )}
     </>

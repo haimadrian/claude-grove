@@ -95,12 +95,6 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
           </div>
         </Section>
 
-        <Section title="Layout">
-          <p style={{ fontSize: 13, color: 'var(--fg-muted)', lineHeight: 1.5 }}>
-            Switch between table and card view using the <strong>≡ / ⊞</strong> toggle in the header. Your preference is saved automatically.
-          </p>
-        </Section>
-
         <Section title="Default terminal">
           <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden', width: 'fit-content' }}>
             {(['Terminal', 'iTerm2', 'Warp'] as TerminalKind[]).map((t, i) => (

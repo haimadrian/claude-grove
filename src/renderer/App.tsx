@@ -66,7 +66,7 @@ export function App(): React.JSX.Element {
           <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
             <button
               onClick={() => void updateSettings({ layout: 'table' })}
-              title="Table view"
+              title="Table view — sortable columns with resizable headers"
               style={{
                 fontSize: 14, padding: '2px 8px', lineHeight: 1,
                 background: settings.layout === 'table' ? 'var(--accent)' : 'var(--bg-secondary)',
@@ -78,7 +78,7 @@ export function App(): React.JSX.Element {
             </button>
             <button
               onClick={() => void updateSettings({ layout: 'card' })}
-              title="Card view"
+              title="Card view — color-coded cards per repository, full detail rows, ⋮ action menu"
               style={{
                 fontSize: 14, padding: '2px 8px', lineHeight: 1,
                 background: settings.layout === 'card' ? 'var(--accent)' : 'var(--bg-secondary)',

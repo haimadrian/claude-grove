@@ -350,6 +350,20 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             </div>
           </InfoRow>
 
+          {/* PR row — second, right after State */}
+          {row.pr && (
+            <InfoRow label="PR">
+              <div
+                onClick={(e) => e.stopPropagation()}
+                onMouseEnter={(e) => setTooltip({ lines: buildPrLines(row.pr!), x: e.clientX, y: e.clientY })}
+                onMouseMove={(e) => setTooltip((t) => t ? { ...t, x: e.clientX, y: e.clientY } : null)}
+                onMouseLeave={() => setTooltip(null)}
+              >
+                <PrBadge pr={row.pr} onClick={() => { void window.api.open.url(row.pr!.url); }} />
+              </div>
+            </InfoRow>
+          )}
+
           {/* Commit row */}
           <InfoRow label="Commit">
             <span style={{ display: 'flex', alignItems: 'baseline', gap: 5, overflow: 'hidden' }}>
@@ -385,14 +399,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             </span>
           </InfoRow>
 
-          {/* Upstream row — only if upstream is known */}
-          {row.upstream && (
-            <InfoRow label="Upstream" copyText={row.upstream}>
-              <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg-muted)' }}>{row.upstream}</span>
-            </InfoRow>
-          )}
-
-          {/* Sessions row — only if sessions exist */}
+          {/* Sessions row — before Upstream */}
           {row.sessions.length > 0 && (
             <InfoRow label="Sessions">
               <span style={{ color: 'var(--fg)' }}>
@@ -402,17 +409,10 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             </InfoRow>
           )}
 
-          {/* PR row — only if pr is loaded */}
-          {row.pr && (
-            <InfoRow label="PR">
-              <div
-                onClick={(e) => e.stopPropagation()}
-                onMouseEnter={(e) => setTooltip({ lines: buildPrLines(row.pr!), x: e.clientX, y: e.clientY })}
-                onMouseMove={(e) => setTooltip((t) => t ? { ...t, x: e.clientX, y: e.clientY } : null)}
-                onMouseLeave={() => setTooltip(null)}
-              >
-                <PrBadge pr={row.pr} onClick={() => { void window.api.open.url(row.pr!.url); }} />
-              </div>
+          {/* Upstream row */}
+          {row.upstream && (
+            <InfoRow label="Upstream" copyText={row.upstream}>
+              <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg-muted)' }}>{row.upstream}</span>
             </InfoRow>
           )}
         </div>

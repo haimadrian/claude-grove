@@ -21,17 +21,19 @@ export function CopyButton({ text, style }: Props): React.JSX.Element {
       onClick={handleCopy}
       title={copied ? 'Copied!' : 'Copy'}
       style={{
-        background: 'none',
-        border: 'none',
+        background: copied ? 'rgba(26,127,55,0.10)' : 'var(--bg-tertiary)',
+        border: `1px solid ${copied ? 'rgba(26,127,55,0.4)' : 'var(--border)'}`,
+        borderRadius: 4,
         cursor: 'pointer',
-        padding: '1px 4px',
-        fontSize: 15,
+        padding: '2px 7px',
+        fontSize: 14,
         fontWeight: 600,
         color: copied ? 'var(--ok)' : 'var(--fg-muted)',
         lineHeight: 1,
         flexShrink: 0,
-        borderRadius: 3,
-        transition: 'color 120ms ease-out',
+        display: 'inline-flex',
+        alignItems: 'center',
+        transition: 'color 120ms ease-out, background 120ms ease-out, border-color 120ms ease-out',
         ...style,
       }}
     >

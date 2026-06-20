@@ -13,11 +13,12 @@ function loadIgnoreWs(): boolean {
 interface Props {
   worktree: WorktreeRow;
   defaultTerminal: TerminalKind;
+  refreshKey?: number;
   onBack: () => void;
   onMessage: (msg: string, ok: boolean) => void;
 }
 
-export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }: Props): React.JSX.Element {
+export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, onMessage }: Props): React.JSX.Element {
   const [diff, setDiff] = useState<string>('');
   const [leftWidth, setLeftWidth] = useState(300);
   const splitterDragging = useRef(false);
@@ -51,7 +52,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
     window.api.worktrees.fullDiff(worktree.path, worktree.pr?.baseRefName ?? undefined, ignoreWhitespace).then(setDiff);
   }, [worktree.path, worktree.pr?.baseRefName, ignoreWhitespace]);
 
-  useEffect(() => { loadFullDiff(); }, [worktree.path, ignoreWhitespace]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadFullDiff(); }, [worktree.path, ignoreWhitespace, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -165,6 +166,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
         {/* Left: commit list */}
         <div style={{ width: leftWidth, flexShrink: 0, overflowY: 'auto', minWidth: 150 }}>
           <CommitList
+            key={refreshKey}
             worktreePath={worktree.path}
             isDirty={worktree.isDirty}
             ignoreWhitespace={ignoreWhitespace}

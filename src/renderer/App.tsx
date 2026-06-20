@@ -22,6 +22,7 @@ function AppInner(): React.JSX.Element {
   const selected = selectedId !== null ? (worktrees.find((w) => w.id === selectedId) ?? null) : null;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const { toast, showToast, clearToast } = useToast();
 
   React.useEffect(() => {
@@ -59,11 +60,15 @@ function AppInner(): React.JSX.Element {
       }}>
         <span style={{ fontWeight: 600, fontSize: 17, letterSpacing: '-0.01em' }}>Claude Grove</span>
         <button
-          onClick={refresh}
-          title="Refresh"
+          onClick={selected !== null
+            ? () => setDetailRefreshKey((k) => k + 1)
+            : refresh}
+          title={selected !== null
+            ? 'Refresh — reload this worktree and its diff'
+            : 'Refresh — reload all worktrees'}
           style={{ ...BTN, marginLeft: 'auto', fontSize: 16 }}
         >
-          <span style={loading ? { display: 'inline-block', animation: 'spin 0.8s linear infinite' } : undefined}>↺</span>
+          <span style={loading && selected === null ? { display: 'inline-block', animation: 'spin 0.8s linear infinite' } : undefined}>↺</span>
         </button>
         {/* Layout toggle — only relevant on the worktree list, hidden in detail view */}
         <div style={{ display: selected !== null ? 'none' : 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
@@ -130,6 +135,7 @@ function AppInner(): React.JSX.Element {
               <WorktreeDetail
                 worktree={selected}
                 defaultTerminal={settings.defaultTerminal}
+                refreshKey={detailRefreshKey}
                 onBack={() => setSelectedId(null)}
                 onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
               />

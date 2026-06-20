@@ -22,7 +22,7 @@ export function CopyButton({ text, style }: Props): React.JSX.Element {
       title={copied ? 'Copied!' : 'Copy'}
       style={{
         background: copied ? 'rgba(26,127,55,0.10)' : 'var(--bg-tertiary)',
-        border: `1px solid ${copied ? 'rgba(26,127,55,0.4)' : 'var(--border)'}`,
+        border: 'none',
         borderRadius: 4,
         cursor: 'pointer',
         padding: '2px 7px',

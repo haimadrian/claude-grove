@@ -173,9 +173,10 @@ export interface WorktreeCardProps {
   onToast: (msg: string) => void;
   openMenuId: string | null;
   onMenuOpen: (id: string | null) => void;
+  cardHeight?: number;
 }
 
-export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, openMenuId, onMenuOpen }: WorktreeCardProps): React.JSX.Element {
+export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, openMenuId, onMenuOpen, cardHeight }: WorktreeCardProps): React.JSX.Element {
   const [hovered, setHovered] = useState(false);
   const [renameState, setRenameState] = useState<{ value: string } | null>(null);
   const [deleteState, setDeleteState] = useState<{ deleteRemote: boolean } | null>(null);
@@ -224,6 +225,9 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
           transition: 'all 150ms ease-out',
           cursor: 'pointer',
           overflow: 'hidden',
+          height: cardHeight,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         {/* Card header */}
@@ -233,6 +237,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             background: repoTint,
             padding: '8px 40px 8px 12px',
             display: 'flex', alignItems: 'center', gap: 6,
+            flexShrink: 0,
           }}
         >
           <span style={{ fontWeight: 600, fontSize: 13, color: repoColor }}>
@@ -258,10 +263,10 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'var(--border)' }} />
+        <div style={{ height: 1, background: 'var(--border)', flexShrink: 0 }} />
 
         {/* Body */}
-        <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 7 }}>
+        <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 7, flex: 1, overflowY: 'auto', minHeight: 0 }}>
           {/* State row */}
           <InfoRow label="State">
             <div

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import type { WorktreeRow, Settings } from '../../shared/types';
 import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
@@ -41,6 +41,24 @@ export function WorktreeCardGrid({ worktrees, settings, onSelect, onRefresh }: W
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.sortDir ?? 'asc');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const { toast, showToast, clearToast } = useToast();
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [cardHeight, setCardHeight] = useState(220);
+
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    const GAP = 12;
+    const PAD = 12;
+    const compute = (): void => {
+      const h = el.clientHeight;
+      const rowH = Math.floor((h - PAD * 2 - GAP * 2) / 3);
+      setCardHeight(Math.max(rowH, 160));
+    };
+    compute();
+    const obs = new ResizeObserver(compute);
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   // Drop repo selections that no longer exist in the current worktree list
   useEffect(() => {
@@ -112,9 +130,11 @@ export function WorktreeCardGrid({ worktrees, settings, onSelect, onRefresh }: W
         </div>
       ) : (
         <div
+          ref={gridRef}
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(440px, 1fr))',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridAutoRows: cardHeight,
             gap: 12,
             padding: 12,
             overflowY: 'auto',
@@ -131,6 +151,7 @@ export function WorktreeCardGrid({ worktrees, settings, onSelect, onRefresh }: W
               onToast={(msg) => showToast(msg, 'ok')}
               openMenuId={openMenuId}
               onMenuOpen={setOpenMenuId}
+              cardHeight={cardHeight}
             />
           ))}
         </div>

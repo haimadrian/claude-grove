@@ -58,7 +58,18 @@ function AppInner(): React.JSX.Element {
         padding: '10px 16px', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
       }}>
-        <span style={{ fontWeight: 600, fontSize: 17, letterSpacing: '-0.01em' }}>Claude Grove</span>
+        <span style={{
+          fontWeight: 700,
+          fontSize: 18,
+          letterSpacing: '-0.03em',
+          userSelect: 'none',
+          background: 'linear-gradient(110deg, var(--fg) 35%, var(--accent))',
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          color: 'transparent',
+        } as React.CSSProperties}>
+          Claude Grove
+        </span>
         <button
           onClick={selected !== null
             ? () => setDetailRefreshKey((k) => k + 1)

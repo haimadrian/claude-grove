@@ -12,4 +12,5 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultTerminal: 'Terminal',
   newWorktreeParentDir: null,
   theme: 'system',
+  layout: 'table',
 };

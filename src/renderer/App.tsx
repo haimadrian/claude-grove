@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { WorktreeRow } from '../shared/types';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { WorktreeTable } from './components/WorktreeTable';
+import { WorktreeCardGrid } from './components/WorktreeCardGrid';
 import { WorktreeDetail } from './components/WorktreeDetail';
 import { GhMissingNotice } from './components/GhMissingNotice';
 import { SettingsPage } from './components/SettingsPage';
@@ -61,6 +62,33 @@ export function App(): React.JSX.Element {
           >
             ↺
           </button>
+          {/* Layout toggle */}
+          <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
+            <button
+              onClick={() => void updateSettings({ layout: 'table' })}
+              title="Table view"
+              style={{
+                fontSize: 14, padding: '2px 8px', lineHeight: 1,
+                background: settings.layout === 'table' ? 'var(--accent)' : 'var(--bg-secondary)',
+                color: settings.layout === 'table' ? 'var(--bg)' : 'var(--fg)',
+                border: 'none', borderRadius: 0,
+              }}
+            >
+              ≡
+            </button>
+            <button
+              onClick={() => void updateSettings({ layout: 'card' })}
+              title="Card view"
+              style={{
+                fontSize: 14, padding: '2px 8px', lineHeight: 1,
+                background: settings.layout === 'card' ? 'var(--accent)' : 'var(--bg-secondary)',
+                color: settings.layout === 'card' ? 'var(--bg)' : 'var(--fg)',
+                border: 'none', borderLeft: '1px solid var(--border)', borderRadius: 0,
+              }}
+            >
+              ⊞
+            </button>
+          </div>
           <button
             onClick={() => setHelpOpen(true)}
             title="Help"
@@ -82,14 +110,22 @@ export function App(): React.JSX.Element {
             <Onboarding onAddRoot={addRoot} />
           ) : (
             <>
-              {/* Keep WorktreeTable mounted so sort/filter/column state persists across navigation */}
-              <div style={{ display: selected !== null ? 'none' : 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+              {/* Keep both views mounted so sort/filter state persists across navigation and layout switches */}
+              <div style={{ display: selected !== null || settings.layout !== 'table' ? 'none' : 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <WorktreeTable
                   worktrees={worktrees}
                   loading={loading}
                   defaultTerminal={settings.defaultTerminal}
                   onSelect={(w) => setSelectedId(w.id)}
                   onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
+                />
+              </div>
+              <div style={{ display: selected !== null || settings.layout !== 'card' ? 'none' : 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                <WorktreeCardGrid
+                  worktrees={worktrees}
+                  settings={settings}
+                  onSelect={(w) => setSelectedId(w.id)}
+                  onRefresh={refresh}
                 />
               </div>
               {selected !== null && (

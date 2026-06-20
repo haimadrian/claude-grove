@@ -12,6 +12,7 @@ export interface Settings {
   defaultTerminal: TerminalKind;
   newWorktreeParentDir: string | null;
   theme: Theme;
+  layout: 'table' | 'card';
 }
 
 export interface RepoRef {

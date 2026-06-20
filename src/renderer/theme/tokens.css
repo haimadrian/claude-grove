@@ -12,6 +12,15 @@
   --warn: #9a6700;
   --muted: #848d97;
   --shadow: rgba(31, 35, 40, 0.12);
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --bg-hover: #f0f3f6;
+  --accent-muted: rgba(9, 105, 218, 0.10);
+  --transition-fast: 120ms ease-out;
+  --transition-base: 200ms ease-out;
+  --modal-backdrop: rgba(0, 0, 0, 0.5);
 }
 
 [data-theme="dark"] {
@@ -28,6 +37,8 @@
   --warn: #d29922;
   --muted: #6e7681;
   --shadow: rgba(0, 0, 0, 0.3);
+  --bg-hover: #1c2128;
+  --accent-muted: rgba(56, 139, 253, 0.12);
 }
 
 * {
@@ -67,6 +78,21 @@ button:not(:disabled):hover {
 }
 ::-webkit-scrollbar-corner {
   background: var(--bg-secondary);
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes fadeInSlide {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 /* react-diff-view dark mode overrides.

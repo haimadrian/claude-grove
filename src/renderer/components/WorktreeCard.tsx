@@ -30,7 +30,6 @@ interface KebabMenuProps {
   row: WorktreeRow;
   settings: Settings;
   onSelect: (row: WorktreeRow) => void;
-  onRefresh: () => void;
   onToast: (msg: string) => void;
   onRename: () => void;
   onDelete: () => void;
@@ -227,7 +226,6 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast }: Wo
             row={row}
             settings={settings}
             onSelect={onSelect}
-            onRefresh={onRefresh}
             onToast={onToast}
             onRename={() => setRenameState({ value: row.branch ?? '' })}
             onDelete={() => setDeleteState({ deleteRemote: false })}
@@ -306,7 +304,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast }: Wo
       {renameState && (
         <div
           style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900,
+            position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
           onClick={() => setRenameState(null)}
@@ -354,7 +352,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast }: Wo
       {deleteState && (
         <div
           style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900,
+            position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
           onClick={() => setDeleteState(null)}

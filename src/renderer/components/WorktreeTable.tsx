@@ -29,7 +29,7 @@ function savePersistedState(state: PersistedTableState): void {
 }
 
 const TH: React.CSSProperties = {
-  padding: '6px 10px', textAlign: 'left', fontSize: 12, fontWeight: 600,
+  padding: '6px 10px', textAlign: 'left', fontSize: 11, fontWeight: 700,
   color: 'var(--fg-muted)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
   position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 20,
   userSelect: 'none', overflow: 'hidden',
@@ -50,6 +50,12 @@ const DIALOG_BTN: React.CSSProperties = {
 const RESIZE_HANDLE: React.CSSProperties = {
   position: 'absolute', right: 0, top: 0, bottom: 0, width: 6,
   cursor: 'col-resize', zIndex: 2,
+};
+
+const BADGE_BASE: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center',
+  borderRadius: 10, padding: '1px 7px', fontSize: 11, fontWeight: 500,
+  marginRight: 4, whiteSpace: 'nowrap',
 };
 
 function buildPrLines(pr: import('../../shared/types').PrInfo): string[] {
@@ -265,7 +271,24 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
       />
       <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
       {loading ? (
-        <div style={{ padding: 32, textAlign: 'center', color: 'var(--fg-muted)' }}>Loading worktrees…</div>
+        <div style={{ padding: '8px 0' }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} style={{
+              display: 'flex', gap: 12, padding: '10px 16px',
+              borderBottom: '1px solid var(--bg-tertiary)',
+            }}>
+              {[90, 120, 80, 200, 100, 80].map((w, j) => (
+                <div key={j} style={{
+                  height: 14, width: w, borderRadius: 'var(--radius-sm)',
+                  background: 'linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-hover) 50%, var(--bg-tertiary) 75%)',
+                  backgroundSize: '800px 100%',
+                  animation: 'shimmer 1.4s ease-in-out infinite',
+                  animationDelay: `${i * 80}ms`,
+                }} />
+              ))}
+            </div>
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div style={{ padding: 32, textAlign: 'center', color: 'var(--fg-muted)' }}>No worktrees found.</div>
       ) : (
@@ -297,7 +320,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
               return (
                 <tr
                   key={w.id}
-                  style={{ background: rowBg }}
+                  style={{ background: rowBg, cursor: 'pointer', transition: 'background var(--transition-fast)' }}
                   onMouseEnter={(e) => {
                     setHoveredId(w.id);
                     showActions(w.id, (e.currentTarget as HTMLElement).getBoundingClientRect());
@@ -315,22 +338,22 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                     onMouseMove={(e) => { if (stateTooltip?.id === w.id) setStateTooltip({ id: w.id, x: e.clientX, y: e.clientY }); }}
                     onMouseLeave={() => setStateTooltip(null)}
                   >
-                    {w.isDirty && <span style={{ color: 'var(--warn)', marginRight: 4 }}>dirty</span>}
-                    {w.ahead > 0 && <span style={{ color: 'var(--ok)', marginRight: 4 }}>↑{w.ahead}</span>}
-                    {w.behind > 0 && <span style={{ color: 'var(--danger)', marginRight: 4 }}>↓{w.behind}</span>}
-                    {w.isLocked && <span style={{ color: 'var(--fg-muted)', marginRight: 4 }}>🔒</span>}
-                    {w.isPrunable && <span style={{ color: 'var(--fg-muted)', marginRight: 4 }}>prunable</span>}
+                    {w.isDirty && <span style={{ ...BADGE_BASE, background: 'rgba(154, 103, 0, 0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)' }}>dirty</span>}
+                    {w.ahead > 0 && <span style={{ ...BADGE_BASE, background: 'rgba(26, 127, 55, 0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>↑{w.ahead}</span>}
+                    {w.behind > 0 && <span style={{ ...BADGE_BASE, background: 'rgba(207, 34, 46, 0.10)', color: 'var(--danger)', border: '1px solid rgba(207,34,46,0.2)' }}>↓{w.behind}</span>}
+                    {w.isLocked && <span style={{ ...BADGE_BASE, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>locked</span>}
+                    {w.isPrunable && <span style={{ ...BADGE_BASE, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>prunable</span>}
                     {w.upstreamGone && (
                       <span
-                        style={{ color: 'var(--warn)', cursor: 'pointer', marginRight: 4 }}
+                        style={{ ...BADGE_BASE, background: 'rgba(154, 103, 0, 0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)', cursor: 'pointer' }}
                         title="Remote branch deleted — click to delete local worktree"
                         onClick={(e) => { e.stopPropagation(); setDeleteState({ wt: w, deleteRemote: false }); }}
                       >
-                        🗑 remote gone
+                        remote gone
                       </span>
                     )}
                     {!w.upstreamGone && w.pr?.state === 'MERGED' && (
-                      <span style={{ color: 'var(--ok)' }}>✓ merged</span>
+                      <span style={{ ...BADGE_BASE, background: 'rgba(26, 127, 55, 0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>✓ merged</span>
                     )}
                   </td>
                   <td style={TD} title={w.lastCommitDate}>{w.lastCommitSubject || '—'}</td>
@@ -377,6 +400,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
               padding: '2px 4px', borderRadius: 6,
               boxShadow: '0 2px 8px var(--shadow)',
               whiteSpace: 'nowrap',
+              animation: 'fadeInSlide var(--transition-fast)',
             }}
             onMouseEnter={() => { if (hideTimerRef.current) clearTimeout(hideTimerRef.current); }}
             onMouseLeave={hideActions}
@@ -465,7 +489,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
       })()}
       {renameState && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900,
+          position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <div style={{
@@ -505,7 +529,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
       )}
       {deleteState && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900,
+          position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <div style={{

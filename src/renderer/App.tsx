@@ -54,13 +54,13 @@ export function App(): React.JSX.Element {
           padding: '10px 16px', borderBottom: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
         }}>
-          <span style={{ fontWeight: 600, fontSize: 15 }}>Claude Grove</span>
+          <span style={{ fontWeight: 600, fontSize: 17, letterSpacing: '-0.01em' }}>Claude Grove</span>
           <button
             onClick={refresh}
             title="Refresh"
-            style={{ marginLeft: 'auto', fontSize: 16, padding: '2px 8px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', lineHeight: 1 }}
+            style={{ marginLeft: 'auto', fontSize: 16, padding: '4px 10px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', lineHeight: 1 }}
           >
-            ↺
+            <span style={loading ? { display: 'inline-block', animation: 'spin 0.8s linear infinite' } : undefined}>↺</span>
           </button>
           {/* Layout toggle */}
           <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
@@ -92,14 +92,14 @@ export function App(): React.JSX.Element {
           <button
             onClick={() => setHelpOpen(true)}
             title="Help"
-            style={{ fontSize: 14, fontWeight: 600, padding: '2px 9px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', lineHeight: 1 }}
+            style={{ fontSize: 14, fontWeight: 600, padding: '4px 10px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', lineHeight: 1 }}
           >
             ?
           </button>
           <button
             onClick={() => setSettingsOpen(true)}
             title="Settings"
-            style={{ fontSize: 15, padding: '2px 8px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', lineHeight: 1 }}
+            style={{ fontSize: 15, padding: '4px 10px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--fg)', lineHeight: 1 }}
           >
             ⚙
           </button>

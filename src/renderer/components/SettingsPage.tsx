@@ -14,6 +14,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
   const [theme, setThemeLocal] = useState(settings.theme);
   const [terminal, setTerminalLocal] = useState(settings.defaultTerminal);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const addRoot = async (): Promise<void> => {
     const res = await window.api.dialog.pickDirectory();
@@ -36,12 +37,21 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
       defaultTerminal: terminal,
     });
     setSaving(false);
-    onClose();
+    setSaved(true);
+    setTimeout(() => onClose(), 600);
   };
 
   return (
+    <>
+    <style>{`
+  .settings-input:focus {
+    outline: none;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent-muted);
+  }
+`}</style>
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 800,
+      position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 800,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <div style={{
@@ -54,7 +64,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
           <button onClick={onClose} style={{ fontSize: 18, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg)' }}>✕</button>
         </div>
 
-        <Section title="Roots">
+        <Section title="Roots" first>
           {settings.roots.map((r) => (
             <div key={r} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <code style={{ flex: 1, fontSize: 12, color: 'var(--fg-muted)' }}>{r}</code>
@@ -65,21 +75,51 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
         </Section>
 
         <Section title="Theme">
-          {(['system', 'light', 'dark'] as Theme[]).map((t) => (
-            <label key={t} style={{ marginRight: 12, fontSize: 13, cursor: 'pointer' }}>
-              <input type="radio" name="theme" value={t} checked={theme === t} onChange={() => setThemeLocal(t)} style={{ marginRight: 4 }} />
-              {t}
-            </label>
-          ))}
+          <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden', width: 'fit-content' }}>
+            {(['system', 'light', 'dark'] as Theme[]).map((t, i) => (
+              <button
+                key={t}
+                onClick={() => setThemeLocal(t)}
+                style={{
+                  fontSize: 13, padding: '4px 14px',
+                  background: theme === t ? 'var(--accent)' : 'var(--bg-secondary)',
+                  color: theme === t ? '#fff' : 'var(--fg)',
+                  border: 'none',
+                  borderLeft: i > 0 ? '1px solid var(--border)' : 'none',
+                  borderRadius: 0, cursor: 'pointer',
+                }}
+              >
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Layout">
+          <p style={{ fontSize: 13, color: 'var(--fg-muted)', lineHeight: 1.5 }}>
+            Switch between table and card view using the <strong>≡ / ⊞</strong> toggle in the header. Your preference is saved automatically.
+          </p>
         </Section>
 
         <Section title="Default terminal">
-          {(['Terminal', 'iTerm2', 'Warp'] as TerminalKind[]).map((t) => (
-            <label key={t} style={{ marginRight: 12, fontSize: 13, cursor: 'pointer' }}>
-              <input type="radio" name="terminal" value={t} checked={terminal === t} onChange={() => setTerminalLocal(t)} style={{ marginRight: 4 }} />
-              {t}
-            </label>
-          ))}
+          <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden', width: 'fit-content' }}>
+            {(['Terminal', 'iTerm2', 'Warp'] as TerminalKind[]).map((t, i) => (
+              <button
+                key={t}
+                onClick={() => setTerminalLocal(t)}
+                style={{
+                  fontSize: 13, padding: '4px 14px',
+                  background: terminal === t ? 'var(--accent)' : 'var(--bg-secondary)',
+                  color: terminal === t ? '#fff' : 'var(--fg)',
+                  border: 'none',
+                  borderLeft: i > 0 ? '1px solid var(--border)' : 'none',
+                  borderRadius: 0, cursor: 'pointer',
+                }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </Section>
 
         <Section title="Editor">
@@ -109,6 +149,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
             )}
           </div>
           <input
+            className="settings-input"
             value={editorCommand.endsWith('.app') ? '' : editorCommand}
             onChange={(e) => setEditorCommand(e.target.value)}
             style={INPUT}
@@ -121,6 +162,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
 
         <Section title="Default base branch">
           <input
+            className="settings-input"
             value={defaultBaseBranch}
             onChange={(e) => setDefaultBaseBranch(e.target.value)}
             style={INPUT}
@@ -130,6 +172,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
 
         <Section title="PR cache TTL (seconds)">
           <input
+            className="settings-input"
             type="number"
             value={prCacheTtl}
             onChange={(e) => setPrCacheTtl(e.target.value)}
@@ -139,19 +182,20 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
 
         <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onClose} style={BTN_SECONDARY}>Close</button>
-          <button onClick={save} disabled={saving} style={{ ...BTN_SECONDARY, background: 'var(--accent)', color: 'var(--bg)', borderColor: 'transparent' }}>
-            {saving ? 'Saving...' : 'Save'}
+          <button onClick={save} disabled={saving} style={{ ...BTN_SECONDARY, background: saved ? 'var(--ok)' : 'var(--accent)', color: 'var(--bg)', borderColor: 'transparent' }}>
+            {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save'}
           </button>
         </div>
       </div>
     </div>
+    </>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }): React.JSX.Element {
+function Section({ title, children, first }: { title: string; children: React.ReactNode; first?: boolean }): React.JSX.Element {
   return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{title}</div>
+    <div style={{ marginBottom: 20, paddingTop: first ? 0 : 16, borderTop: first ? 'none' : '1px solid var(--border)' }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--fg-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</div>
       {children}
     </div>
   );

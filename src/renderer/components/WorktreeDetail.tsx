@@ -55,6 +55,13 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <style>{`
+  .detail-rename-input:focus {
+    outline: none;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent-muted);
+  }
+`}</style>
       {/* Header */}
       <div style={{ padding: '10px 0', borderBottom: '1px solid var(--border)', marginBottom: 12, flexShrink: 0 }}>
         <button
@@ -65,7 +72,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
             color: 'var(--fg)', marginBottom: 8,
           }}
         >
-          Back
+          ← Back
         </button>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 600, fontSize: 15 }}>{worktree.branch ?? 'detached HEAD'}</span>
@@ -75,7 +82,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
             {...(worktree.pr ? { onClick: () => window.api.open.url(worktree.pr!.url) } : {})}
           />
         </div>
-        <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4, fontFamily: 'monospace' }}>
+        <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 4, fontFamily: 'monospace' }}>
           {worktree.path}
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
@@ -126,7 +133,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
                   }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
                 }
               }}
-              style={{ ...ACTION_BTN, color: 'var(--accent)' }}
+              style={{ ...ACTION_BTN, background: 'var(--accent)', color: '#fff', borderColor: 'transparent', fontWeight: 500 }}
               title={worktree.sessions.length > 1
                 ? `${worktree.sessions.length} sessions — click to pick`
                 : `Resume Claude Code session in ${defaultTerminal}: ${worktree.sessions[0].title ?? worktree.sessions[0].sessionId}`}
@@ -145,7 +152,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
           )}
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            style={{ ...ACTION_BTN, color: 'var(--danger)' }}
+            style={{ ...ACTION_BTN, color: 'var(--danger)', borderColor: 'var(--danger)', background: 'transparent' }}
             title="Remove this worktree (optionally also delete remote branch)"
           >
             Delete
@@ -169,7 +176,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
         </div>
         {/* Splitter */}
         <div
-          style={{ width: 5, flexShrink: 0, cursor: 'col-resize', background: 'var(--border)', transition: 'background 0.1s' }}
+          style={{ width: 8, flexShrink: 0, cursor: 'col-resize', background: 'var(--border)', transition: 'background 0.1s' }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'var(--accent)'; }}
           onMouseLeave={(e) => { if (!splitterDragging.current) (e.currentTarget as HTMLDivElement).style.background = 'var(--border)'; }}
           onMouseDown={(e) => {
@@ -202,12 +209,13 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
         </div>
       </div>
       {renameState && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: 24, maxWidth: 400, width: '90%', boxShadow: '0 8px 32px var(--shadow)' }}>
             <h3 style={{ marginBottom: 12, fontSize: 15 }}>Rename branch</h3>
             <p style={{ fontSize: 12, color: 'var(--fg-muted)', marginBottom: 16 }}>Current: <code>{worktree.branch}</code></p>
             <input
               autoFocus
+              className="detail-rename-input"
               value={renameState.value}
               onChange={(e) => setRenameState((s) => s ? { value: e.target.value } : null)}
               onKeyDown={(e) => { if (e.key === 'Enter') doRename(); if (e.key === 'Escape') setRenameState(null); }}
@@ -221,7 +229,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, onBack, onMessage }:
         </div>
       )}
       {showDeleteConfirm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: 24, maxWidth: 420, width: '90%', boxShadow: '0 8px 32px var(--shadow)' }}>
             <h3 style={{ marginBottom: 12, fontSize: 15 }}>Delete worktree</h3>
             <p style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 8 }}>Branch: <code style={{ color: 'var(--fg)' }}>{worktree.branch ?? 'detached'}</code></p>

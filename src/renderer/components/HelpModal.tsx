@@ -26,7 +26,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
         <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: 17 }}>Claude Grove</div>
-            <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 2 }}>Created by Haim Adrian</div>
+            <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 3 }}>Created by Haim Adrian</div>
           </div>
           <button onClick={onClose} style={{ fontSize: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', lineHeight: 1 }}>✕</button>
         </div>
@@ -38,10 +38,11 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
             <div style={H2}>Overview</div>
             <p style={P}>Claude Grove is a macOS desktop app for managing git worktrees across multiple repositories. It shows PR status, links Claude Code sessions to worktrees, and provides an in-app diff viewer — all in one place.</p>
             <p style={P}>Add one or more <strong>root folders</strong> in Settings. Claude Grove scans them for git repositories and lists all their worktrees in the main table.</p>
+            <p style={P}>Use the <strong>≡ / ⊞</strong> toggle in the header to switch between <strong>table view</strong> and <strong>card view</strong>. Cards are color-coded by repository and include a <strong>⋮</strong> action menu. Both views support the same filters, search, and sort.</p>
           </div>
 
           <div style={SECTION}>
-            <div style={H2}>Table Columns</div>
+            <div style={H2}>Table / Card Columns</div>
             <table style={TABLE_STYLE}>
               <thead>
                 <tr>
@@ -70,8 +71,8 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
           </div>
 
           <div style={SECTION}>
-            <div style={H2}>Row Actions</div>
-            <p style={P}>Hover over any row to reveal the floating action buttons on the right:</p>
+            <div style={H2}>Actions</div>
+            <p style={P}>In <strong>table view</strong>, hover any row to reveal floating action buttons on the right. In <strong>card view</strong>, click the <strong>⋮</strong> menu on any card. Both expose the same actions:</p>
             <table style={TABLE_STYLE}>
               <thead>
                 <tr>
@@ -84,6 +85,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
                   ['View', 'Open the worktree detail page showing commit history and in-app GitHub-style diff viewer.'],
                   ['Resume', 'Resume the linked Claude Code session in your configured terminal. For Warp: copies the resume command to clipboard and shows a notification. Only visible when a session is linked.'],
                   ['Edit', 'Open the worktree folder in your configured editor (set in Settings).'],
+                  ['Terminal', 'Open the worktree folder in your configured terminal.'],
                   ['Rename', 'Rename the branch locally and on remote (push new name, delete old remote branch).'],
                   ['Delete', 'Remove the worktree. Optionally also delete the remote branch. Shows a safety warning if the branch may not be merged.'],
                   ['Finder', 'Reveal the worktree folder in Finder.'],
@@ -96,6 +98,13 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div style={SECTION}>
+            <div style={H2}>Card View</div>
+            <p style={P}>Card view shows each worktree as a colored card. Cards are color-coded by repository — all worktrees from the same repo share the same accent color on the left border.</p>
+            <p style={P}>The <strong>⋮</strong> button on each card opens a menu with the same actions available in table view. Click anywhere else on the card to open the detail view.</p>
+            <p style={P}>Card view supports the same search, filter chips, and sort controls as table view. The layout preference and filter state are saved separately for each view and persist across app restarts.</p>
           </div>
 
           <div style={SECTION}>
@@ -152,7 +161,12 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
           <div style={SECTION}>
             <div style={H2}>GitHub / PR Integration</div>
             <p style={P}>PR status requires the <code style={CODE}>gh</code> CLI to be installed and authenticated:</p>
-            <p style={{ ...P, fontFamily: 'monospace', fontSize: 12 }}>brew install gh &amp;&amp; gh auth login</p>
+            <pre style={{
+              fontFamily: 'monospace', fontSize: 12, background: 'var(--bg-tertiary)',
+              border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
+              padding: '8px 12px', marginBottom: 8, overflowX: 'auto',
+              color: 'var(--fg)', lineHeight: 1.6,
+            }}>{'brew install gh && gh auth login'}</pre>
             <p style={P}>PR information is fetched lazily per row and cached for the configured TTL. The Refresh button re-fetches the worktree list but PR cache is only invalidated when the TTL expires.</p>
           </div>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { WorktreeRow } from '../../shared/types';
 
 export interface Filters {
@@ -18,53 +18,142 @@ interface Props {
   onSort: (key: string) => void;
 }
 
-const CHIP_STYLE: React.CSSProperties = {
+const CHIP: React.CSSProperties = {
   padding: '3px 8px', borderRadius: 12, fontSize: 12, cursor: 'pointer',
   border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--fg)',
   userSelect: 'none',
 };
-const CHIP_ACTIVE: React.CSSProperties = {
-  ...CHIP_STYLE, background: 'var(--accent)', color: 'var(--bg)', border: '1px solid var(--accent)',
+const CHIP_ON: React.CSSProperties = {
+  ...CHIP, background: 'var(--accent)', color: 'var(--bg)', border: '1px solid var(--accent)',
+};
+
+const SORT_KEYS = ['repo', 'branch', 'lastCommit', 'modified', 'sessions', 'pr'] as const;
+const SORT_LABEL: Record<string, string> = {
+  repo: 'Repo', branch: 'Branch', lastCommit: 'Last commit',
+  modified: 'Modified', sessions: 'Sessions', pr: 'PR',
 };
 
 export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onSort }: Props): React.JSX.Element {
   const repos = [...new Set(worktrees.map((w) => w.repo.name))].sort();
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   const toggle = (key: keyof Omit<Filters, 'repo'>): void =>
     onFilters({ ...filters, [key]: !filters[key] });
 
+  const toggleRepo = (r: string): void => {
+    const next = filters.repo.includes(r)
+      ? filters.repo.filter((x) => x !== r)
+      : [...filters.repo, r];
+    onFilters({ ...filters, repo: next });
+  };
+
+  const openDropdown = (): void => {
+    if (open) { setOpen(false); return; }
+    if (!btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    setPos({ top: rect.bottom + 4, left: rect.left });
+    setOpen(true);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (): void => setOpen(false);
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  const selectedCount = filters.repo.length;
+  const repoLabel = selectedCount === 0
+    ? 'Repos'
+    : selectedCount === 1
+    ? filters.repo[0]!
+    : `Repos (${selectedCount})`;
+
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', margin: '8px 0' }}>
-      {repos.map((r) => (
-        <span
-          key={r}
-          style={filters.repo.includes(r) ? CHIP_ACTIVE : CHIP_STYLE}
-          onClick={() => {
-            const next = filters.repo.includes(r)
-              ? filters.repo.filter((x) => x !== r)
-              : [...filters.repo, r];
-            onFilters({ ...filters, repo: next });
+
+      {/* Repos multi-select dropdown */}
+      <button
+        ref={btnRef}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={openDropdown}
+        style={{
+          ...CHIP,
+          ...(selectedCount > 0 ? { background: 'var(--accent)', color: 'var(--bg)', border: '1px solid var(--accent)' } : {}),
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+        }}
+      >
+        {repoLabel}
+        <span style={{ fontSize: 9, opacity: 0.7 }}>▾</span>
+      </button>
+
+      {open && pos && (
+        <div
+          onMouseDown={(e) => e.stopPropagation()}
+          style={{
+            position: 'fixed', top: pos.top, left: pos.left,
+            background: 'var(--bg)', border: '1px solid var(--border)',
+            borderRadius: 8, boxShadow: '0 4px 16px var(--shadow)',
+            zIndex: 2000, minWidth: 180, maxHeight: 300, overflowY: 'auto',
+            padding: '4px 0',
           }}
         >
-          {r}
-        </span>
-      ))}
-      <span style={filters.dirty ? CHIP_ACTIVE : CHIP_STYLE} onClick={() => toggle('dirty')}>dirty</span>
-      <span style={filters.safeToDelete ? CHIP_ACTIVE : CHIP_STYLE} onClick={() => toggle('safeToDelete')}>safe to delete</span>
-      <span style={filters.hasPr ? CHIP_ACTIVE : CHIP_STYLE} onClick={() => toggle('hasPr')}>has PR</span>
-      <span style={filters.locked ? CHIP_ACTIVE : CHIP_STYLE} onClick={() => toggle('locked')}>locked</span>
-      <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--fg-muted)' }}>
-        Sort:{' '}
-        {['repo', 'branch', 'lastCommit', 'modified', 'sessions', 'pr'].map((k) => (
-          <span
-            key={k}
-            style={{ ...CHIP_STYLE, display: 'inline', marginLeft: 4 }}
-            onClick={() => onSort(k)}
-          >
-            {k}{sortKey === k ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+          {repos.length === 0 && (
+            <div style={{ padding: '8px 14px', fontSize: 12, color: 'var(--fg-muted)' }}>No repos</div>
+          )}
+          {repos.map((r) => (
+            <label
+              key={r}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, color: 'var(--fg)' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLLabelElement).style.background = 'var(--bg-tertiary)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.background = ''; }}
+            >
+              <input
+                type="checkbox"
+                checked={filters.repo.includes(r)}
+                onChange={() => toggleRepo(r)}
+                style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
+              />
+              {r}
+            </label>
+          ))}
+          {selectedCount > 0 && (
+            <>
+              <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+              <button
+                onClick={() => { onFilters({ ...filters, repo: [] }); setOpen(false); }}
+                style={{
+                  display: 'block', width: '100%', textAlign: 'left',
+                  padding: '6px 14px', fontSize: 12, color: 'var(--fg-muted)',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-tertiary)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = ''; }}
+              >
+                Clear all
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Sort — flows naturally after the dropdown, no longer right-aligned */}
+      <span style={{ fontSize: 12, color: 'var(--fg-muted)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        Sort:
+        {SORT_KEYS.map((k) => (
+          <span key={k} style={{ ...CHIP, padding: '3px 7px' }} onClick={() => onSort(k)}>
+            {SORT_LABEL[k]}{sortKey === k ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
           </span>
         ))}
       </span>
+
+      {/* Boolean filter chips */}
+      <span style={filters.dirty ? CHIP_ON : CHIP} onClick={() => toggle('dirty')}>dirty</span>
+      <span style={filters.safeToDelete ? CHIP_ON : CHIP} onClick={() => toggle('safeToDelete')}>safe to delete</span>
+      <span style={filters.hasPr ? CHIP_ON : CHIP} onClick={() => toggle('hasPr')}>has PR</span>
+      <span style={filters.locked ? CHIP_ON : CHIP} onClick={() => toggle('locked')}>locked</span>
     </div>
   );
 }

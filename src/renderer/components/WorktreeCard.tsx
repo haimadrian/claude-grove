@@ -279,6 +279,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
                 color: 'var(--accent)',
                 lineHeight: 1,
                 flexShrink: 0,
+                alignSelf: 'center',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 3,

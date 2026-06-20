@@ -79,6 +79,21 @@ Configure root folders to scan, your editor (native app picker), default termina
 
 ## First run
 
+### macOS Gatekeeper
+
+The DMG is ad-hoc signed but not notarized (no Apple Developer certificate). macOS will block it on first open. To bypass:
+
+**Option 1 — Terminal (recommended):**
+```bash
+xattr -cr "/Applications/Claude Grove.app"
+```
+Then open the app normally.
+
+**Option 2 — System Settings:**
+System Settings → Privacy & Security → scroll to the "Claude Grove.app was blocked" notice → click **Open Anyway**.
+
+### Initial setup
+
 On first launch, add a root folder (e.g. `~/Documents/GIT`) in Settings. Claude Grove walks the directory tree, finds every git repo, and lists all their worktrees.
 
 ## Development

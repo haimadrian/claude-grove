@@ -37,7 +37,9 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
   const repos = [...new Set(worktrees.map((w) => w.repo.name))].sort();
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [repoSearch, setRepoSearch] = useState('');
   const btnRef = useRef<HTMLButtonElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const toggle = (key: keyof Omit<Filters, 'repo'>): void =>
     onFilters({ ...filters, [key]: !filters[key] });
@@ -54,8 +56,14 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
     if (!btnRef.current) return;
     const rect = btnRef.current.getBoundingClientRect();
     setPos({ top: rect.bottom + 4, left: rect.left });
+    setRepoSearch('');
     setOpen(true);
   };
+
+  // Focus the search input when dropdown opens
+  useEffect(() => {
+    if (open) setTimeout(() => searchRef.current?.focus(), 50);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -66,10 +74,21 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
 
   const selectedCount = filters.repo.length;
   const repoLabel = selectedCount === 0
-    ? 'Repos'
+    ? 'All repos'
     : selectedCount === 1
     ? filters.repo[0]!
-    : `Repos (${selectedCount})`;
+    : `${selectedCount} repos`;
+
+  const visibleRepos = repoSearch.trim()
+    ? repos.filter((r) => r.toLowerCase().includes(repoSearch.toLowerCase()))
+    : repos;
+
+  const allSelected = repos.length > 0 && repos.every((r) => filters.repo.includes(r));
+  const someSelected = selectedCount > 0 && !allSelected;
+
+  const toggleAll = (): void => {
+    onFilters({ ...filters, repo: allSelected ? [] : [...repos] });
+  };
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', margin: '8px 0' }}>
@@ -81,11 +100,12 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
         onClick={openDropdown}
         style={{
           ...CHIP,
+          minWidth: 120,
           ...(selectedCount > 0 ? { background: 'var(--accent)', color: 'var(--bg)', border: '1px solid var(--accent)' } : {}),
-          display: 'inline-flex', alignItems: 'center', gap: 4,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
         }}
       >
-        {repoLabel}
+        <span>{repoLabel}</span>
         <span style={{ fontSize: 9, opacity: 0.7 }}>▾</span>
       </button>
 
@@ -96,50 +116,72 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
             position: 'fixed', top: pos.top, left: pos.left,
             background: 'var(--bg)', border: '1px solid var(--border)',
             borderRadius: 8, boxShadow: '0 4px 16px var(--shadow)',
-            zIndex: 2000, minWidth: 180, maxHeight: 300, overflowY: 'auto',
-            padding: '4px 0',
+            zIndex: 2000, width: 240, padding: '6px 0',
           }}
         >
-          {repos.length === 0 && (
-            <div style={{ padding: '8px 14px', fontSize: 12, color: 'var(--fg-muted)' }}>No repos</div>
-          )}
-          {repos.map((r) => (
+          {/* Search input */}
+          <div style={{ padding: '0 10px 6px' }}>
+            <input
+              ref={searchRef}
+              value={repoSearch}
+              onChange={(e) => setRepoSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}
+              placeholder="Search repos…"
+              style={{
+                width: '100%', padding: '5px 8px', fontSize: 12,
+                background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                borderRadius: 6, color: 'var(--fg)', outline: 'none',
+              }}
+            />
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: 'var(--border)', marginBottom: 4 }} />
+
+          {/* Select all checkbox — only shown when not filtering by text */}
+          {!repoSearch.trim() && repos.length > 0 && (
             <label
-              key={r}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, color: 'var(--fg)' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, color: 'var(--fg-muted)', fontWeight: 500 }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLLabelElement).style.background = 'var(--bg-tertiary)'; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.background = ''; }}
             >
               <input
                 type="checkbox"
-                checked={filters.repo.includes(r)}
-                onChange={() => toggleRepo(r)}
+                checked={allSelected}
+                ref={(el) => { if (el) el.indeterminate = someSelected; }}
+                onChange={toggleAll}
                 style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
               />
-              {r}
+              All repos
             </label>
-          ))}
-          {selectedCount > 0 && (
-            <>
-              <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
-              <button
-                onClick={() => { onFilters({ ...filters, repo: [] }); setOpen(false); }}
-                style={{
-                  display: 'block', width: '100%', textAlign: 'left',
-                  padding: '6px 14px', fontSize: 12, color: 'var(--fg-muted)',
-                  background: 'none', border: 'none', cursor: 'pointer',
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-tertiary)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = ''; }}
-              >
-                Clear all
-              </button>
-            </>
           )}
+
+          {/* Repo list */}
+          <div style={{ maxHeight: 220, overflowY: 'auto' }}>
+            {visibleRepos.length === 0 && (
+              <div style={{ padding: '8px 14px', fontSize: 12, color: 'var(--fg-muted)' }}>No match</div>
+            )}
+            {visibleRepos.map((r) => (
+              <label
+                key={r}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, color: 'var(--fg)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLLabelElement).style.background = 'var(--bg-tertiary)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.background = ''; }}
+              >
+                <input
+                  type="checkbox"
+                  checked={filters.repo.includes(r)}
+                  onChange={() => toggleRepo(r)}
+                  style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
+                />
+                {r}
+              </label>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Sort — flows naturally after the dropdown, no longer right-aligned */}
+      {/* Sort — flows naturally after the dropdown */}
       <span style={{ fontSize: 12, color: 'var(--fg-muted)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
         Sort:
         {SORT_KEYS.map((k) => (

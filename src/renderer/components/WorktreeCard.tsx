@@ -97,6 +97,7 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
       <button
         ref={btnRef}
         aria-label="Worktree actions"
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={openMenu}
         style={{
           background: 'none', border: 'none', color: 'var(--fg-muted)',

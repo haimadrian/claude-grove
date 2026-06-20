@@ -308,45 +308,53 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
         <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 7, flex: 1, overflowY: 'auto', minHeight: 0 }}>
           {/* State row */}
           <InfoRow label="State">
-            <div
-              style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}
-              onMouseEnter={(e) => {
-                const lines = buildStateLines(row);
-                if (lines.length > 0) setTooltip({ lines, x: e.clientX, y: e.clientY });
-              }}
-              onMouseMove={(e) => setTooltip((t) => t ? { ...t, x: e.clientX, y: e.clientY } : null)}
-              onMouseLeave={() => setTooltip(null)}
-            >
-              {row.isDirty && (
-                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)' }}>dirty</span>
-              )}
-              {row.ahead > 0 && (
-                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>↑{row.ahead}</span>
-              )}
-              {row.behind > 0 && (
-                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(207,34,46,0.10)', color: 'var(--danger)', border: '1px solid rgba(207,34,46,0.2)' }}>↓{row.behind}</span>
-              )}
-              {row.isLocked && (
-                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>locked</span>
-              )}
-              {row.isPrunable && (
-                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>prunable</span>
-              )}
-              {row.upstreamGone && (
-                <span
-                  style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)', cursor: 'pointer' }}
-                  onClick={(e) => { e.stopPropagation(); setDeleteState({ deleteRemote: false }); }}
-                  title="Remote branch deleted — click to delete local worktree"
-                >
-                  remote gone
-                </span>
-              )}
-              {!row.upstreamGone && row.pr?.state === 'MERGED' && (
-                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>merged</span>
-              )}
-              {!row.isDirty && row.ahead === 0 && row.behind === 0 && !row.isLocked && !row.isPrunable && !row.upstreamGone && row.pr?.state !== 'MERGED' && (
-                <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>clean</span>
-              )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <div
+                style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}
+                onMouseEnter={(e) => {
+                  const lines = buildStateLines(row);
+                  if (lines.length > 0) setTooltip({ lines, x: e.clientX, y: e.clientY });
+                }}
+                onMouseMove={(e) => setTooltip((t) => t ? { ...t, x: e.clientX, y: e.clientY } : null)}
+                onMouseLeave={() => setTooltip(null)}
+              >
+                {row.isDirty && (
+                  <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)' }}>dirty</span>
+                )}
+                {row.ahead > 0 && (
+                  <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>↑{row.ahead}</span>
+                )}
+                {row.behind > 0 && (
+                  <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(207,34,46,0.10)', color: 'var(--danger)', border: '1px solid rgba(207,34,46,0.2)' }}>↓{row.behind}</span>
+                )}
+                {row.isLocked && (
+                  <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>locked</span>
+                )}
+                {row.isPrunable && (
+                  <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'var(--bg-tertiary)', color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>prunable</span>
+                )}
+                {row.upstreamGone && (
+                  <span
+                    style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(154,103,0,0.12)', color: 'var(--warn)', border: '1px solid rgba(154,103,0,0.25)', cursor: 'pointer' }}
+                    onClick={(e) => { e.stopPropagation(); setDeleteState({ deleteRemote: false }); }}
+                    title="Remote branch deleted — click to delete local worktree"
+                  >
+                    remote gone
+                  </span>
+                )}
+                {!row.upstreamGone && row.pr?.state === 'MERGED' && (
+                  <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, fontWeight: 500, background: 'rgba(26,127,55,0.10)', color: 'var(--ok)', border: '1px solid rgba(26,127,55,0.2)' }}>merged</span>
+                )}
+                {!row.isDirty && row.ahead === 0 && row.behind === 0 && !row.isLocked && !row.isPrunable && !row.upstreamGone && row.pr?.state !== 'MERGED' && (
+                  <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>clean</span>
+                )}
+              </div>
+              <span
+                title={new Date(row.lastCommitDate).toLocaleString()}
+                style={{ fontSize: 11, color: 'var(--fg-muted)', flexShrink: 0 }}
+              >
+                {relTime(row.lastCommitDate)}
+              </span>
             </div>
           </InfoRow>
 
@@ -382,13 +390,6 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--fg)' }}>
                 {row.lastCommitSubject || '—'}
               </span>
-            </span>
-          </InfoRow>
-
-          {/* Modified row */}
-          <InfoRow label="Modified">
-            <span title={new Date(row.lastCommitDate).toLocaleString()} style={{ color: 'var(--fg-muted)' }}>
-              {relTime(row.lastCommitDate)}
             </span>
           </InfoRow>
 

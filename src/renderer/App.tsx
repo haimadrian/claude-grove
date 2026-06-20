@@ -60,7 +60,7 @@ function AppInner(): React.JSX.Element {
       }}>
         <span style={{
           fontFamily: "'Bangers', cursive",
-          fontSize: 26,
+          fontSize: 34,
           letterSpacing: '0.08em',
           userSelect: 'none',
           color: 'var(--fg)',

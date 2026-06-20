@@ -65,8 +65,8 @@ function AppInner(): React.JSX.Element {
         >
           <span style={loading ? { display: 'inline-block', animation: 'spin 0.8s linear infinite' } : undefined}>↺</span>
         </button>
-        {/* Layout toggle */}
-        <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
+        {/* Layout toggle — only relevant on the worktree list, hidden in detail view */}
+        <div style={{ display: selected !== null ? 'none' : 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
           <button
             onClick={() => void updateSettings({ layout: 'table' })}
             title="Table view — sortable columns with resizable headers"

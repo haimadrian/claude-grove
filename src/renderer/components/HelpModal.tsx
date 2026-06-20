@@ -25,7 +25,15 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
         {/* Header */}
         <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 17 }}>Claude Grove</div>
+            <div style={{
+              fontFamily: "'Bangers', cursive",
+              fontSize: 34,
+              letterSpacing: '0.08em',
+              lineHeight: 1,
+              color: 'var(--fg)',
+              WebkitTextStroke: '0.5px var(--accent)',
+              textShadow: '2px 2px 0 var(--accent), 4px 4px 0 rgba(0,0,0,0.15)',
+            } as React.CSSProperties}>Claude Grove</div>
             <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 3 }}>Created by Haim Adrian</div>
           </div>
           <button onClick={onClose} style={{ fontSize: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', lineHeight: 1 }}>✕</button>

@@ -88,15 +88,11 @@ function labelHue(s: string): number {
   return Math.abs(h) % 360;
 }
 
-function GroupHeader({ label, isFirst }: { label: string; isFirst?: boolean }): React.JSX.Element {
+function GroupHeader({ label, lineColor }: { label: string; lineColor: string }): React.JSX.Element {
   const isAll = !label;
   const hue = isAll ? 0 : labelHue(label);
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 10,
-      padding: isFirst ? '0' : '6px 0 0',
-      gridColumn: '1 / -1',
-    }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <span style={{
         fontSize: 13, fontWeight: 600, flexShrink: 0,
         padding: '3px 12px', borderRadius: 12,
@@ -110,7 +106,7 @@ function GroupHeader({ label, isFirst }: { label: string; isFirst?: boolean }): 
       }}>
         {isAll ? 'All' : label}
       </span>
-      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+      <div style={{ flex: 1, height: 1, background: lineColor }} />
     </div>
   );
 }
@@ -238,52 +234,55 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
         onFilters={setFilters}
         onSort={handleSort}
       />
+      {/* Scroll container — gridRef measures height for cardHeight computation */}
       <div
         ref={gridRef}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gridAutoRows: cardHeight,
-          gap: 12,
-          padding: 12,
-          overflowY: 'auto',
-          flex: 1,
-        }}
+        style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: 12 }}
       >
         {loading ? (
-          /* Skeleton cards while loading — 9 to fill the 3×3 grid */
-          Array.from({ length: 9 }).map((_, i) => (
-            <SkeletonCard key={i} height={cardHeight} delay={i * 80} />
-          ))
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridAutoRows: cardHeight, gap: 12 }}>
+            {Array.from({ length: 9 }).map((_, i) => (
+              <SkeletonCard key={i} height={cardHeight} delay={i * 80} />
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
-          <div style={{
-            gridColumn: '1 / -1',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--fg-muted)', fontSize: 13,
-          }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 120, color: 'var(--fg-muted)', fontSize: 13 }}>
             No worktrees match the current filters.
           </div>
         ) : (
-          groups.map(({ label, rows }, gi) => (
-            <React.Fragment key={label || '__all__'}>
-              {hasAnyLabel && <GroupHeader label={label} isFirst={gi === 0} />}
-              {rows.map((row) => (
-                <WorktreeCard
-                  key={row.id}
-                  row={row}
-                  settings={settings}
-                  onSelect={onSelect}
-                  onRefresh={onRefresh}
-                  onToast={(msg) => showToast(msg, 'ok')}
-                  openMenuId={openMenuId}
-                  onMenuOpen={setOpenMenuId}
-                  cardHeight={cardHeight}
-                  selected={selectedIds.has(row.id)}
-                  onShiftClick={handleShiftClick}
-                />
-              ))}
-            </React.Fragment>
-          ))
+          groups.map(({ label, rows }, gi) => {
+            const isAll = !label;
+            const hue = isAll ? 0 : labelHue(label);
+            const lineColor = isAll ? 'var(--border)' : `hsla(${hue}, 60%, 55%, 0.5)`;
+            return (
+              <div key={label || '__all__'} style={{ marginTop: gi === 0 ? 0 : 40 }}>
+                {hasAnyLabel && <GroupHeader label={label} lineColor={lineColor} />}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gridAutoRows: cardHeight,
+                  gap: 12,
+                  marginTop: hasAnyLabel ? 20 : 0,
+                }}>
+                  {rows.map((row) => (
+                    <WorktreeCard
+                      key={row.id}
+                      row={row}
+                      settings={settings}
+                      onSelect={onSelect}
+                      onRefresh={onRefresh}
+                      onToast={(msg) => showToast(msg, 'ok')}
+                      openMenuId={openMenuId}
+                      onMenuOpen={setOpenMenuId}
+                      cardHeight={cardHeight}
+                      selected={selectedIds.has(row.id)}
+                      onShiftClick={handleShiftClick}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
       {selectedIds.size > 0 && (

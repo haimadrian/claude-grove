@@ -1158,7 +1158,50 @@ All items in this phase were implemented after the initial v0.1.0 release based 
 
 ---
 
-## Current State (2026-06-20)
+## Phase 9 — Session 2026-06-21 (all shipped)
+
+### Labels
+- `src/renderer/hooks/useLabels.ts` — localStorage labels store (`claude-grove:labels`). Cross-instance sync via `window.dispatchEvent(new Event('claude-grove:labels-changed'))` so table and card views see changes instantly.
+- `src/renderer/components/LabelBar.tsx` — floating bottom bar: N selected · label input · Set · ✕
+- **Multi-select**: Shift+click cards (`onShiftClick` prop) or table rows (`onMouseDown` with shiftKey) → `selectedIds: Set<string>` state. LabelBar appears when selection is non-empty.
+- **Card grouping**: `WorktreeCardGrid` groups filtered cards by label. Each group has a `GroupHeader` (colored tag + colored 2px separator line, hue derived from label name hash). Unlabeled cards go in "All" group. Per-group grids fix the `gridAutoRows` gap issue (separate `<div>` per group outside the flat grid).
+- **Table Label column**: `useLabels` in WorktreeTable, Label `<td>` after Sessions, sortable.
+- **Labels ▾ filter**: added to FilterBar alongside Repos ▾ — same multi-select pattern.
+- `Filters` interface gains `label: string[]`; all filter init uses `{ ...DEFAULT_FILTERS, ...(persisted ?? {}) }` to guard against missing fields in old persisted state.
+
+### Git submenu (⎇)
+- Rename, Delete, Update (pull = `sync(path, 'pull')`) grouped under collapsible `⎇ Git` section in the card ⋮ menu (inline expand/collapse) and as an `⎇` button in the table floating actions (opens `position: fixed` dropdown).
+- Table git dropdown closes when hovering to a different row (watches `actionInfo`) but stays open when mouse moves to the dropdown itself.
+- Toggle-close: `onMouseDown stopPropagation` on the ⎇ button; `onClick` checks `gitDropdown?.id === row.id` before re-opening.
+
+### Icons (Lucide React)
+- `pnpm add lucide-react` — all emoji/unicode structural icons replaced with SVG icons: `Eye, Play, Code2, Terminal, FolderOpen, GitBranch, ExternalLink, ArrowDownToLine, Pencil, Trash2, MoreVertical, Copy, Check, X, RotateCcw, List, LayoutGrid, Sun, Moon, CircleHelp, Settings2, Trees`.
+- `Trees` icon (28px, accent color) added next to "Claude Grove" graffiti title in header and HelpModal.
+- Refresh button spins `reverse` (counter-clockwise, matching `RotateCcw` arrow direction).
+
+### App icon
+- `build/icon.svg` — custom design: dark rounded square (`#0f1923`), large green pine tree (left) + smaller blue pine tree (right), stars, ground glow.
+- `scripts/create-icon.mjs` — converts SVG → PNG at 8 sizes (16–1024px) using `@resvg/resvg-js`.
+- `build/icon.png` (1024×1024) wired into `electron-builder.yml` and `BrowserWindow` via `nativeImage.createFromPath`.
+
+### Card layout settings
+- `Settings` gains `cardColumns: number` and `cardRows: number` (default 3×3).
+- `WorktreeCardGrid` uses `settings.cardColumns` for `gridTemplateColumns` and `settings.cardRows` in ResizeObserver height computation. Re-computes card height when rows setting changes via a separate `useEffect([settings.cardRows])`.
+- **Settings page**: Card layout section with `−`/`+` stepper buttons (range 1–6).
+
+### Label group headers
+- `GroupHeader`: colored tag pill (hue hashed from label), 2px colored separator line, 15px/700 font.
+- Spacing: `marginTop: 40px` before a group (≈2 card rows), `marginTop: 20px` after header (≈1 card row).
+
+### Bug fixes
+- **Blank screen**: `filters.label` undefined in old persisted state → `{ ...DEFAULT_FILTERS, ...(persisted ?? {}) }` merge pattern applied in both WorktreeTable and WorktreeCardGrid.
+- **Card click no longer navigates** — removed `onSelect(row)` from card `onClick`; only Shift+click (multi-select) and ⋮ > View diff work.
+- **Git dropdown toggle**: same `onMouseDown stopPropagation` fix as the kebab menu.
+- **gitDropdown close-on-row-change**: `useEffect([actionInfo])` closes dropdown only when actionInfo changes to a different row (not when null, so mouse can reach the dropdown).
+
+---
+
+## Current State (2026-06-21)
 
 - **Tests**: 37/37 passing (8 test files, pure logic only)
 - **Typecheck**: clean (both `tsconfig.node.json` and `tsconfig.web.json`)

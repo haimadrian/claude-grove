@@ -56,119 +56,111 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
           <div style={SECTION}>
             <div style={H2}>Table / Card Columns</div>
             <table style={TABLE_STYLE}>
-              <thead>
-                <tr>
-                  <th style={TH_STYLE}>Column</th>
-                  <th style={TH_STYLE}>Description</th>
-                </tr>
-              </thead>
+              <thead><tr><th style={TH_STYLE}>Column</th><th style={TH_STYLE}>Description</th></tr></thead>
               <tbody>
                 {[
-                  ['Repo', 'Name of the git repository the worktree belongs to.'],
-                  ['Branch', 'Current branch. Shows "detached" for detached HEAD state. ⎘ copies the branch name.'],
-                  ['State', 'Badges: dirty (uncommitted changes), ↑N (ahead), ↓N (behind upstream), locked, prunable, remote gone, merged. Hover for details.'],
-                  ['Last commit', 'Short SHA (click to open on GitHub) + commit subject. ⎘ copies the full SHA.'],
-                  ['Modified', 'Time of the most recent commit. Click column header to sort.'],
-                  ['Sessions', 'Linked Claude Code sessions count + primary session title.'],
-                  ['PR', 'Pull request status, CI check result, and review decision. Hover for details. Requires gh CLI.'],
+                  ['Repo', 'Git repository name.'],
+                  ['Branch', 'Current branch. ⎘ copies it.'],
+                  ['State', 'Badges: dirty, ↑N ahead, ↓N behind, locked, prunable, remote gone, merged. Hover for details. Shows time since last commit inline.'],
+                  ['Last commit', 'Short SHA (links to GitHub) + commit subject. ⎘ copies the full SHA.'],
+                  ['Modified', 'Time of last commit. Sortable.'],
+                  ['Sessions', 'Linked Claude Code sessions + primary title.'],
+                  ['Label', 'User-assigned label (table view only as a column). Set via Shift+click multi-select.'],
+                  ['PR', 'PR status, CI checks, review decision. Hover for details. Requires gh CLI.'],
                 ].map(([col, desc]) => (
                   <tr key={col}>
-                    <td style={{ ...TD_STYLE, fontWeight: 500, whiteSpace: 'nowrap', width: 120 }}>{col}</td>
+                    <td style={{ ...TD_STYLE, fontWeight: 500, whiteSpace: 'nowrap', width: 110 }}>{col}</td>
                     <td style={{ ...TD_STYLE, color: 'var(--fg-muted)' }}>{desc}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p style={{ ...P, fontSize: 12 }}>In table view: drag column header borders to resize. Click headers to sort ascending/descending.</p>
+            <p style={{ ...P, fontSize: 12 }}>In table view: drag column header borders to resize. Click headers to sort.</p>
           </div>
 
           <div style={SECTION}>
             <div style={H2}>Actions</div>
-            <p style={P}>In <strong>table view</strong>, hover any row to reveal floating action buttons on the right. In <strong>card view</strong>, click the <strong>⋮</strong> menu. Both expose the same actions:</p>
+            <p style={P}>Actions are grouped into three sections. In <strong>table view</strong>: hover a row to reveal floating icon buttons. In <strong>card view</strong>: click <strong>⋮</strong>. In card view, the <strong>▶</strong> button in the card header is a quick Resume shortcut without opening ⋮.</p>
             <table style={TABLE_STYLE}>
-              <thead>
-                <tr>
-                  <th style={TH_STYLE}>Action</th>
-                  <th style={TH_STYLE}>Description</th>
-                </tr>
-              </thead>
+              <thead><tr><th style={TH_STYLE}>Section</th><th style={TH_STYLE}>Actions</th></tr></thead>
               <tbody>
                 {[
-                  ['View', 'Open the worktree detail page with commit history and in-app diff viewer.'],
-                  ['Resume ▶', 'Resume the linked Claude Code session in your configured terminal. If multiple sessions are linked, a picker appears. In card view, the ▶ button in the card header is a quick shortcut — no need to open ⋮.'],
-                  ['Edit', 'Open the worktree folder in your configured editor.'],
-                  ['Terminal', 'Open the worktree folder in your configured terminal.'],
-                  ['Rename', 'Rename the branch locally and on remote.'],
-                  ['Delete', 'Remove the worktree. Optionally also delete the remote branch.'],
-                  ['Finder', 'Reveal the worktree folder in Finder.'],
-                  ['GitHub', 'Open the repository on GitHub. Only visible when the repo has a GitHub remote.'],
-                ].map(([action, desc]) => (
-                  <tr key={action}>
-                    <td style={{ ...TD_STYLE, fontWeight: 500, fontSize: 12, whiteSpace: 'nowrap', width: 100 }}>{action}</td>
-                    <td style={{ ...TD_STYLE, color: 'var(--fg-muted)' }}>{desc}</td>
+                  ['View / Resume', 'View diff (open detail page) · Resume Claude session (▶ in card header or ⋮ menu)'],
+                  ['Edit / Terminal / Finder', 'Open in editor · Open in terminal · Reveal in Finder'],
+                  ['⎇ Git / GitHub', 'Update (pull) · Rename branch · Delete worktree · Open on GitHub'],
+                ].map(([section, actions]) => (
+                  <tr key={section}>
+                    <td style={{ ...TD_STYLE, fontWeight: 500, whiteSpace: 'nowrap', width: 160 }}>{section}</td>
+                    <td style={{ ...TD_STYLE, color: 'var(--fg-muted)' }}>{actions}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <p style={{ ...P, fontSize: 12 }}>The <strong>⎇ Git</strong> submenu groups Rename, Delete, and Update (pull) to keep the top-level action list clean.</p>
+          </div>
+
+          <div style={SECTION}>
+            <div style={H2}>Labels</div>
+            <p style={P}>Assign a text label to any worktree to group and filter them. Labels persist across restarts and sync between table and card view instantly.</p>
+            <ul style={{ paddingLeft: 20, color: 'var(--fg-muted)', fontSize: 13, lineHeight: 2 }}>
+              <li><strong>Shift+click</strong> cards or table rows to multi-select (accent outline on cards, tinted rows in table)</li>
+              <li>A <strong>LabelBar</strong> floats at the bottom — type a label and press Enter or click <strong>Set</strong></li>
+              <li>Empty label removes it. <strong>✕</strong> clears the selection without changing labels</li>
+              <li>In card view, labeled cards are <strong>grouped by label</strong> with a colored section header</li>
+              <li>The <strong>Labels ▾</strong> dropdown in the filter bar filters to specific labels</li>
+              <li>The <strong>Label column</strong> in table view shows the current label for each row</li>
+            </ul>
           </div>
 
           <div style={SECTION}>
             <div style={H2}>Card View</div>
-            <p style={P}>Cards are color-coded by repository — all worktrees from the same repo share the same accent color on the left border. Each card shows all worktree details as labeled rows: State, Commit, Modified, Path, Upstream, Sessions, and PR.</p>
-            <p style={P}>Card header shortcuts: <strong>⎘</strong> copies the branch name. <strong>▶</strong> (visible when a session is linked) resumes the primary Claude session directly. <strong>⋮</strong> opens the full action menu.</p>
-            <p style={P}>The commit SHA in the Commit row links to GitHub. <strong>⎘</strong> next to it copies the full SHA. Path and Upstream rows also have <strong>⎘</strong> copy buttons.</p>
-            <p style={P}>The card grid always shows 3 columns × 3 rows. Cards resize with the window. If there are more than 9 worktrees, the grid scrolls. Card content scrolls vertically within the card if it overflows.</p>
+            <p style={P}>Cards are color-coded by repository. Each card shows: State + time, PR, Commit (SHA links to GitHub), Path, Sessions, Upstream. Card body scrolls if content overflows.</p>
+            <p style={P}>Header buttons: <strong>⎘</strong> copies branch name · <strong>▶</strong> resumes the primary Claude session · <strong>⋮</strong> opens the full action menu.</p>
+            <p style={P}>The grid size (columns × rows) is configurable in Settings. Cards resize automatically to fill the visible area. If there are more cards than the grid shows, it scrolls.</p>
+            <p style={P}>When any worktree has a label, cards are grouped into labeled sections separated by a colored horizontal rule.</p>
           </div>
 
           <div style={SECTION}>
             <div style={H2}>Worktree Detail View</div>
-            <p style={P}>Click any worktree to open its detail page. It shows the branch, repo, path, PR badge, and action buttons, plus a two-panel layout: commit list on the left, diff viewer on the right (drag the splitter to resize).</p>
+            <p style={P}>Click <strong>View diff</strong> (⋮ menu or table floating action) to open the detail page: branch, repo, path, PR badge, action buttons, commit list on the left, diff viewer on the right.</p>
             <ul style={{ paddingLeft: 20, color: 'var(--fg-muted)', fontSize: 13, lineHeight: 2 }}>
-              <li>Click a commit in the list to see its diff</li>
-              <li>Click <strong>Full diff vs base</strong> for the complete PR diff</li>
-              <li>The <strong>↺ Refresh</strong> button in detail view reloads only this worktree's diff and commits — it does not reload the full list</li>
+              <li>Click a commit to see its diff · <strong>Full diff vs base</strong> for the complete PR diff</li>
+              <li><strong>↺ Refresh</strong> in detail view reloads only this worktree's diff and commits — not the full list</li>
             </ul>
           </div>
 
           <div style={SECTION}>
             <div style={H2}>Filters and Search</div>
-            <p style={P}>The filter bar has:</p>
             <ul style={{ paddingLeft: 20, color: 'var(--fg-muted)', fontSize: 13, lineHeight: 2 }}>
-              <li><strong>Repos ▾</strong> — multi-select dropdown. Includes a search box to filter repos by name and a Select all / Deselect all checkbox.</li>
-              <li><strong>Sort</strong> — click any sort chip to sort by that field; click again to reverse.</li>
-              <li><strong>dirty</strong> — only worktrees with uncommitted changes</li>
-              <li><strong>safe to delete</strong> — upstream gone or PR merged</li>
-              <li><strong>has PR</strong> — worktrees with a linked PR</li>
-              <li><strong>locked</strong> — locked worktrees only</li>
+              <li><strong>Repos ▾</strong> — multi-select with search and select-all checkbox</li>
+              <li><strong>Labels ▾</strong> — same multi-select, filters by label; only appears when labels exist</li>
+              <li><strong>Sort</strong> — Repo, Branch, Last commit, Modified, Sessions, PR, Label</li>
+              <li><strong>dirty / safe to delete / has PR / locked</strong> — boolean chips</li>
             </ul>
-            <p style={P}>The search bar (above the filter bar) filters across repo name, branch, path, and PR title. All filters and search combine with AND logic. Filter and sort state persists across restarts separately for table and card view.</p>
+            <p style={P}>The search bar filters repo name, branch, path, and PR title simultaneously. All filters combine with AND. State persists separately per layout across restarts.</p>
           </div>
 
           <div style={SECTION}>
             <div style={H2}>Settings</div>
             <table style={TABLE_STYLE}>
-              <thead>
-                <tr>
-                  <th style={TH_STYLE}>Setting</th>
-                  <th style={TH_STYLE}>Description</th>
-                </tr>
-              </thead>
+              <thead><tr><th style={TH_STYLE}>Setting</th><th style={TH_STYLE}>Description</th></tr></thead>
               <tbody>
                 {[
                   ['Roots', 'Folders to scan for git repositories (up to 5 levels deep).'],
-                  ['Default terminal', 'Terminal used for Resume actions. Terminal.app and iTerm2 auto-run the command; Warp copies it to clipboard.'],
-                  ['Editor', 'Click "Choose app…" to pick an app bundle, or type a CLI command (e.g. code, cursor).'],
-                  ['Default base branch', 'Fallback branch for ahead/behind counts and diffs when no PR exists and origin/HEAD is not set.'],
-                  ['PR cache TTL', 'How long (seconds) PR data is cached before re-fetching from GitHub.'],
+                  ['Default terminal', 'Terminal for Resume. Terminal.app and iTerm2 auto-run the command; Warp copies it.'],
+                  ['Editor', '"Choose app…" for an app bundle, or type a CLI command (e.g. code, cursor).'],
+                  ['Card layout', 'Columns and rows for the card grid (1–6 each, default 3×3). Cards resize to fill the visible area.'],
+                  ['Default base branch', 'Fallback for diffs when no PR and origin/HEAD is not set.'],
+                  ['PR cache TTL', 'Seconds to cache PR data before re-fetching.'],
                 ].map(([setting, desc]) => (
                   <tr key={setting}>
-                    <td style={{ ...TD_STYLE, fontWeight: 500, whiteSpace: 'nowrap', width: 160 }}>{setting}</td>
+                    <td style={{ ...TD_STYLE, fontWeight: 500, whiteSpace: 'nowrap', width: 140 }}>{setting}</td>
                     <td style={{ ...TD_STYLE, color: 'var(--fg-muted)' }}>{desc}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p style={{ ...P, fontSize: 12 }}>Theme (light / dark) is controlled by the <strong>☀ / ☾</strong> button in the header — it is not in Settings. The preference is saved to local storage and remembered across restarts. On first launch, the system appearance is used.</p>
+            <p style={{ ...P, fontSize: 12 }}>Theme (☀/☾) is in the header, not Settings. Persists to localStorage; system default on first launch.</p>
           </div>
 
           <div style={SECTION}>

@@ -10,13 +10,24 @@ If you follow a workflow where every ticket gets its own worktree — branches a
 
 Toggle between views using **≡ / ⊞** in the header.
 
-**Table view** — a compact sortable/filterable/resizable table. Each row is one worktree. Columns: Repo, Branch, State, Last commit (SHA link + subject), Modified, Sessions, PR. Hover a row for floating action buttons.
+**Table view** — a compact sortable/filterable/resizable table. Columns: Repo, Branch, State, Last commit (SHA link + subject), Modified, Sessions, Label, PR. Hover a row for floating action buttons. Shift+click rows for multi-select.
 
-**Card view** — color-coded cards, one per worktree. Each repo gets its own consistent accent color on the card's left border. Cards always show 3 columns × 3 rows; extra cards scroll. Each card shows all fields as labeled rows (State, Commit, Modified, Path, Upstream, Sessions, PR). The card body scrolls if content overflows.
+**Card view** — color-coded cards grouped by label. Each repo gets its own accent color on the left border. Cards are arranged in a configurable grid (default 3×3, adjustable in Settings). Each card shows State, PR, Commit, Path, Sessions, Upstream. Shift+click cards for multi-select.
+
+### Labels
+
+Assign persistent text labels to any worktree to group and filter them.
+
+- **Shift+click** one or more cards / table rows to multi-select
+- A **LabelBar** floats at the bottom — type a label and click **Set** (or press Enter)
+- Empty label removes it. **✕** clears the selection without changing labels.
+- In card view, cards are grouped by label with a colored section header and separator line
+- **Labels ▾** filter dropdown in the filter bar — multi-select with search and select-all
+- Labels persist across restarts and are instantly visible in both table and card view
 
 ### PR status at a glance
 
-Shows CI check status and review decision (approved / changes requested / pending) without opening the browser. Hover State or PR badges for a tooltip with full details. Commit SHAs are clickable links to the commit on GitHub.
+Shows CI check status and review decision (approved / changes requested / pending) without opening the browser. Hover State or PR badges for a tooltip with full details. Commit SHAs link directly to GitHub.
 
 ### In-app diff viewer
 
@@ -24,41 +35,49 @@ GitHub-style diff without leaving the app. Commit list on the left, per-commit d
 
 ### Claude Code session linkage
 
-Finds which Claude session was working on which worktree by tallying file paths in session history. Cards show a **▶** button in the header for one-click resume of the primary session. Multiple sessions show a picker. The Resume button is also available in the table's floating actions and the worktree detail page.
+Finds which Claude session was working on which worktree by tallying file paths in session history. Cards show a **▶** button in the header for one-click resume. Multiple sessions show a picker.
 
 ### Copy to clipboard
 
-**⎘** buttons appear next to: branch name (card header, table row hover), commit SHA, Path, and Upstream. Click to copy; the icon briefly changes to **✓**. Commit SHAs link to GitHub when the repo has a remote.
+**⎘** buttons appear next to: branch name, commit SHA, Path, and Upstream. Click to copy; flashes **✓** on success. Commit SHAs are also clickable links to GitHub.
 
 ### Filter bar
 
-- **Repos ▾** — multi-select dropdown with a search box and a select-all / deselect-all checkbox
-- **Sort** — sortable by Repo, Branch, Last commit, Modified, Sessions, PR
+- **Repos ▾** — multi-select dropdown with search and select-all/deselect-all
+- **Labels ▾** — same multi-select dropdown, filters to worktrees with specific labels
+- **Sort** — by Repo, Branch, Last commit, Modified, Sessions, PR, Label
 - **dirty / safe to delete / has PR / locked** — boolean filter chips
-- **Search bar** — live substring filter across repo name, branch, path, and PR title
-- All filters combine with AND. State persists separately for table and card view across restarts.
+- **Search bar** — live filter across repo name, branch, path, and PR title
+- All filters combine with AND logic. State persists per layout across restarts.
 
-### Worktree operations (row actions / ⋮ menu)
+### Git actions (⎇ menu)
 
-| Action | Description |
+Rename, Delete, and Update operations are grouped under a **⎇ Git** submenu in both the ⋮ card menu and the table floating actions, keeping the top-level action list clean.
+
+| Git action | Description |
 |---|---|
-| View diff | Open detail view |
-| Resume Claude ▶ | Resume linked Claude Code session |
-| Edit in IDE | Open worktree in configured editor |
-| Terminal | Open worktree in configured terminal |
+| Update (pull) | `git pull` — fetch and merge the upstream branch |
 | Rename branch | Rename locally and push to remote |
 | Delete worktree | Remove worktree; optionally delete remote branch |
-| Open in Finder | Reveal in macOS Finder |
-| Open on GitHub | Open repo in browser |
+
+### All row/card actions
+
+Actions are grouped into three sections:
+
+| Section | Actions |
+|---|---|
+| View / Resume | Open detail view, Resume Claude session |
+| Edit / Terminal / Finder | Open in editor, terminal, Finder |
+| Git / GitHub | ⎇ Git submenu, Open on GitHub |
 
 ### Refresh button — context-aware
 
-- **In list view**: reloads all worktrees from git.
-- **In detail view**: reloads only the current worktree's diff and commit list — does not touch the list.
+- **In list view**: reloads all worktrees from git
+- **In detail view**: reloads only the current worktree's diff and commits — does not touch the list
 
 ### Theme toggle
 
-**☀ / ☾** button in the header switches between light and dark. On first launch, the system appearance is used. The preference is saved to `localStorage` and persists across restarts.
+**☀ / ☾** button in the header switches light/dark. First launch uses the system default. Persists to `localStorage`.
 
 ### Terminal adapters
 
@@ -68,7 +87,16 @@ Finds which Claude session was working on which worktree by tallying file paths 
 
 ### Settings
 
-Configure root folders to scan, your editor (native app picker), default terminal, default base branch, and PR cache TTL. Theme is controlled by the ☀/☾ header button, not Settings.
+| Setting | Description |
+|---|---|
+| Roots | Folders to scan for git repos (up to 5 levels deep) |
+| Default terminal | Terminal used for Resume actions |
+| Editor | App bundle or CLI command (e.g. `code`, `cursor`) |
+| Card layout | Columns and rows for the card grid (1–6 each, default 3×3) |
+| Default base branch | Fallback for diffs when no PR or `origin/HEAD` |
+| PR cache TTL | Seconds to cache PR data before re-fetching |
+
+Theme (☀/☾) is in the header, not Settings.
 
 ## Requirements
 
@@ -81,7 +109,7 @@ Configure root folders to scan, your editor (native app picker), default termina
 
 ### macOS Gatekeeper
 
-The DMG is ad-hoc signed but not notarized (no Apple Developer certificate). macOS will block it on first open. To bypass:
+The DMG is ad-hoc signed but not notarized. macOS will block it on first open. To bypass:
 
 **Option 1 — Terminal (recommended):**
 ```bash
@@ -90,7 +118,7 @@ xattr -cr "/Applications/Claude Grove.app"
 Then open the app normally.
 
 **Option 2 — System Settings:**
-System Settings → Privacy & Security → scroll to the "Claude Grove.app was blocked" notice → click **Open Anyway**.
+System Settings → Privacy & Security → scroll to "Claude Grove.app was blocked" → **Open Anyway**.
 
 ### Initial setup
 
@@ -117,7 +145,12 @@ pnpm typecheck
 pnpm test
 ```
 
-### Build .dmg -> release/
+### Regenerate app icon
+```bash
+node scripts/create-icon.mjs
+```
+
+### Build .dmg → release/
 ```bash
 pnpm package
 ```

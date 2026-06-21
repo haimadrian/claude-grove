@@ -151,9 +151,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     };
   }, [gitDropdown]);
 
-  // Close git dropdown when hover moves to a different row (or off the table)
+  // Close git dropdown when hover moves to a different row
   useEffect(() => {
-    if (gitDropdown && (!actionInfo || actionInfo.id !== gitDropdown.id)) {
+    if (gitDropdown && actionInfo && actionInfo.id !== gitDropdown.id) {
       setGitDropdown(null);
     }
   }, [actionInfo]); // eslint-disable-line react-hooks/exhaustive-deps

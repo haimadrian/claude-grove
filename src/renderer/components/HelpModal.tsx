@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Trees } from 'lucide-react';
 
 interface Props { onClose: () => void; }
 
@@ -26,15 +26,18 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
         {/* Header */}
         <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           <div style={{ flex: 1 }}>
-            <div style={{
-              fontFamily: "'Bangers', cursive",
-              fontSize: 34,
-              letterSpacing: '0.08em',
-              lineHeight: 1,
-              color: 'var(--fg)',
-              WebkitTextStroke: '0.5px var(--accent)',
-              textShadow: '2px 2px 0 var(--accent), 4px 4px 0 rgba(0,0,0,0.15)',
-            } as React.CSSProperties}>Claude Grove</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <Trees size={28} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+              <span style={{
+                fontFamily: "'Bangers', cursive",
+                fontSize: 34,
+                letterSpacing: '0.08em',
+                lineHeight: 1,
+                color: 'var(--fg)',
+                WebkitTextStroke: '0.5px var(--accent)',
+                textShadow: '2px 2px 0 var(--accent), 4px 4px 0 rgba(0,0,0,0.15)',
+              } as React.CSSProperties}>Claude Grove</span>
+            </div>
             <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 3 }}>Created by Haim Adrian</div>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}><X size={18} /></button>

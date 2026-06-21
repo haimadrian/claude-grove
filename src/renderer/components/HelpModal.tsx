@@ -150,6 +150,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
                   ['Default terminal', 'Terminal for Resume. Terminal.app and iTerm2 auto-run the command; Warp copies it.'],
                   ['Editor', '"Choose app…" for an app bundle, or type a CLI command (e.g. code, cursor).'],
                   ['Card layout', 'Columns and rows for the card grid (1–6 each, default 3×3). Cards resize to fill the visible area.'],
+                  ['Ignored branches', 'Hide main and/or master worktrees from both table and card view to reduce noise when managing many repositories. Applies immediately on toggle.'],
                   ['Default base branch', 'Fallback for diffs when no PR and origin/HEAD is not set.'],
                   ['PR cache TTL', 'Seconds to cache PR data before re-fetching.'],
                 ].map(([setting, desc]) => (

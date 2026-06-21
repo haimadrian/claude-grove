@@ -15,4 +15,5 @@ export const DEFAULT_SETTINGS: Settings = {
   layout: 'table',
   cardColumns: 3,
   cardRows: 3,
+  ignoredBranches: [],
 };

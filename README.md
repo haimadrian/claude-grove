@@ -93,6 +93,7 @@ Actions are grouped into three sections:
 | Default terminal | Terminal used for Resume actions |
 | Editor | App bundle or CLI command (e.g. `code`, `cursor`) |
 | Card layout | Columns and rows for the card grid (1–6 each, default 3×3) |
+| Ignored branches | Hide `main` and/or `master` worktrees from the list to reduce noise when managing many repositories. |
 | Default base branch | Fallback for diffs when no PR or `origin/HEAD` |
 | PR cache TTL | Seconds to cache PR data before re-fetching |
 

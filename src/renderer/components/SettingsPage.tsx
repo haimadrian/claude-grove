@@ -116,6 +116,29 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
           </div>
         </Section>
 
+        <Section title="Ignored branches">
+          <div style={{ display: 'flex', gap: 16 }}>
+            {(['main', 'master'] as const).map((b) => (
+              <label key={b} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={settings.ignoredBranches?.includes(b) ?? false}
+                  onChange={(e) => {
+                    const next = e.target.checked
+                      ? [...(settings.ignoredBranches ?? []), b]
+                      : (settings.ignoredBranches ?? []).filter((x) => x !== b);
+                    void onUpdate({ ignoredBranches: next });
+                  }}
+                />
+                <code style={{ fontSize: 12 }}>{b}</code>
+              </label>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 6 }}>
+            Worktrees on these branches are hidden from the table and card view.
+          </div>
+        </Section>
+
         <Section title="Editor">
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
             <span style={{

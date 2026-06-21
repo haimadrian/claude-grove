@@ -15,6 +15,7 @@ export interface Settings {
   layout: 'table' | 'card';
   cardColumns: number;
   cardRows: number;
+  ignoredBranches: string[];
 }
 
 export interface RepoRef {

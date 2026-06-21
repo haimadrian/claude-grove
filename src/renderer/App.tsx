@@ -16,6 +16,9 @@ import { useWorktrees } from './hooks/useWorktrees';
 function AppInner(): React.JSX.Element {
   const { settings, updateSettings } = useSettings();
   const { worktrees, loading, refresh } = useWorktrees();
+  const filteredWorktrees = (settings?.ignoredBranches?.length ?? 0) > 0
+    ? worktrees.filter((w) => w.branch === null || !settings!.ignoredBranches.includes(w.branch))
+    : worktrees;
   const { theme, toggle: toggleTheme } = useTheme();
   const [ghInstalled, setGhInstalled] = useState<boolean | null>(null);
   const [ghAuthed, setGhAuthed] = useState<boolean | null>(null);
@@ -132,7 +135,7 @@ function AppInner(): React.JSX.Element {
           <>
             <div style={{ display: selected !== null || settings.layout !== 'table' ? 'none' : 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
               <WorktreeTable
-                worktrees={worktrees}
+                worktrees={filteredWorktrees}
                 loading={loading}
                 defaultTerminal={settings.defaultTerminal}
                 onSelect={(w) => setSelectedId(w.id)}
@@ -141,7 +144,7 @@ function AppInner(): React.JSX.Element {
             </div>
             <div style={{ display: selected !== null || settings.layout !== 'card' ? 'none' : 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
               <WorktreeCardGrid
-                worktrees={worktrees}
+                worktrees={filteredWorktrees}
                 settings={settings}
                 loading={loading}
                 onSelect={(w) => setSelectedId(w.id)}

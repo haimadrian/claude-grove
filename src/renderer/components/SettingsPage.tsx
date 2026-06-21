@@ -156,7 +156,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
           </div>
         </Section>
 
-        <Section title="Default base branch">
+        <Section title="Base branch">
           <input
             className="settings-input"
             value={defaultBaseBranch}
@@ -164,9 +164,10 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
             style={INPUT}
             placeholder="main"
           />
-        </Section>
-
-        <Section title="Ignored branches">
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4, marginBottom: 10 }}>
+            Fallback for diffs when no PR or origin/HEAD is set.
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-muted)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>Ignored branches</div>
           <div style={{ display: 'flex', gap: 16 }}>
             {(['main', 'master'] as const).map((b) => (
               <label key={b} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
@@ -184,7 +185,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
             ))}
           </div>
           <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 6 }}>
-            Worktrees on these branches are hidden from the table and card view.
+            Worktrees on these branches are hidden from the list.
           </div>
         </Section>
 

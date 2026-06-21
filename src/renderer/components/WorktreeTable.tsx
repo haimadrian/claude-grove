@@ -76,11 +76,12 @@ function LabelPill({ label }: { label: string }): React.JSX.Element {
   const hue = labelHue(label);
   return (
     <span style={{
-      fontSize: 12, fontWeight: 600, padding: '2px 10px', borderRadius: 12,
-      background: `hsla(${hue}, 60%, 55%, 0.12)`,
-      border: `1px solid hsla(${hue}, 60%, 55%, 0.3)`,
-      color: `hsl(${hue}, 60%, 55%)`,
+      display: 'inline-flex', alignItems: 'center',
+      borderRadius: 10, padding: '1px 7px', fontSize: 11, fontWeight: 500,
       whiteSpace: 'nowrap',
+      background: `hsla(${hue}, 55%, 50%, 0.12)`,
+      border: `1px solid hsla(${hue}, 55%, 50%, 0.25)`,
+      color: `hsl(${hue}, 60%, 55%)`,
     }}>
       {label}
     </span>

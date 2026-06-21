@@ -94,13 +94,14 @@ function GroupHeader({ label, lineColor }: { label: string; lineColor: string })
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <span style={{
-        fontSize: 15, fontWeight: 700, flexShrink: 0,
-        padding: '3px 12px', borderRadius: 12,
+        display: 'inline-flex', alignItems: 'center',
+        borderRadius: 10, padding: '3px 10px', fontSize: 15, fontWeight: 500,
+        flexShrink: 0, whiteSpace: 'nowrap',
         ...(isAll
           ? { background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }
           : {
-              background: `hsla(${hue}, 60%, 55%, 0.12)`,
-              border: `1px solid hsla(${hue}, 60%, 55%, 0.3)`,
+              background: `hsla(${hue}, 55%, 50%, 0.12)`,
+              border: `1px solid hsla(${hue}, 55%, 50%, 0.25)`,
               color: `hsl(${hue}, 60%, 55%)`,
             }),
       }}>

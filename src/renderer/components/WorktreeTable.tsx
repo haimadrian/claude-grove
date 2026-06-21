@@ -114,6 +114,8 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     savePersistedState({ filters, sortKey, sortDir, colWidths });
   }, [filters, sortKey, sortDir, colWidths]);
   const [deleteState, setDeleteState] = useState<{ wt: WorktreeRow; deleteRemote: boolean } | null>(null);
+  const [gitDropdown, setGitDropdown] = useState<{ id: string; top: number; left: number } | null>(null);
+  const gitBtnRef = useRef<HTMLButtonElement | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const dragging = useRef<{ idx: number; startX: number; startW: number } | null>(null);
   const dragMoved = useRef(false); // true if mouse moved during resize — suppresses sort click
@@ -131,6 +133,20 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!gitDropdown) return;
+    const close = (): void => setGitDropdown(null);
+    const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') setGitDropdown(null); };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('scroll', close, true);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('scroll', close, true);
+    };
+  }, [gitDropdown]);
 
   const handleSort = useCallback((key: string): void => {
     setSortDir((d) => (sortKey === key ? (d === 'asc' ? 'desc' : 'asc') : 'asc'));
@@ -431,18 +447,19 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
               onClick={() => window.api.open.editor(row.path).then((r) => { if (!r.success) onMessage(r.message, false); }).catch((e) => onMessage(String(e), false))}
               style={ROW_BTN} data-tip="Open in editor"
             >✏</button>
-            {row.branch && (
-              <button
-                onClick={() => setRenameState({ wt: row, value: row.branch! })}
-                style={ROW_BTN}
-                data-tip="Rename branch locally and on remote"
-              >✎</button>
-            )}
             <button
-              onClick={() => setDeleteState({ wt: row, deleteRemote: false })}
-              style={{ ...ROW_BTN, color: 'var(--danger)' }}
-              data-tip="Delete worktree"
-            >🗑</button>
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                const dropW = 170;
+                let left = rect.left;
+                if (left + dropW > window.innerWidth) { left = rect.right - dropW; }
+                setGitDropdown({ id: row.id, top: rect.bottom + 4, left });
+              }}
+              style={{ ...ROW_BTN, color: gitDropdown?.id === row.id ? 'var(--accent)' : 'var(--fg)' }}
+              data-tip="Git actions"
+            >⎇</button>
             <button onClick={() => void window.api.open.finder(row.path)} style={ROW_BTN} data-tip="Reveal in Finder">📂</button>
             <button
               onClick={() => window.api.terminals.openDir({ terminal: defaultTerminal, dir: row.path })
@@ -453,6 +470,74 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
             {row.repo.remoteUrl && (
               <button onClick={() => void window.api.open.url(row.repo.remoteUrl!)} style={ROW_BTN} data-tip="Open on GitHub">↗</button>
             )}
+          </div>
+        );
+      })()}
+      {gitDropdown && (() => {
+        const row = filtered.find((r) => r.id === gitDropdown.id);
+        if (!row) return null;
+        const itemStyle: React.CSSProperties = {
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '0 14px', minHeight: 30, width: '100%', textAlign: 'left',
+          background: 'none', border: 'none', color: 'var(--fg)',
+          fontSize: 13, cursor: 'pointer',
+        };
+        const hover = (e: React.MouseEvent, on: boolean): void => {
+          (e.currentTarget as HTMLElement).style.background = on ? 'var(--bg-tertiary)' : 'none';
+        };
+        return (
+          <div
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed', top: gitDropdown.top, left: gitDropdown.left,
+              width: 170, background: 'var(--bg)', border: '1px solid var(--border)',
+              borderRadius: 8, boxShadow: '0 4px 16px var(--shadow)', zIndex: 200,
+              paddingTop: 4, paddingBottom: 4,
+            }}
+          >
+            <button
+              style={itemStyle}
+              onMouseEnter={(e) => hover(e, true)} onMouseLeave={(e) => hover(e, false)}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setGitDropdown(null);
+                window.api.worktrees.sync(row.path, 'pull')
+                  .then((r) => onMessage(r.message, r.success))
+                  .catch((err) => onMessage(String(err), false));
+              }}
+            >
+              <span style={{ width: 16, textAlign: 'center' }}>↓</span>
+              <span>Update (pull)</span>
+            </button>
+            {row.branch && (
+              <button
+                style={itemStyle}
+                onMouseEnter={(e) => hover(e, true)} onMouseLeave={(e) => hover(e, false)}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setGitDropdown(null);
+                  setRenameState({ wt: row, value: row.branch! });
+                }}
+              >
+                <span style={{ width: 16, textAlign: 'center' }}>✎</span>
+                <span>Rename branch</span>
+              </button>
+            )}
+            <button
+              style={{ ...itemStyle, color: 'var(--danger)' }}
+              onMouseEnter={(e) => hover(e, true)} onMouseLeave={(e) => hover(e, false)}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setGitDropdown(null);
+                setDeleteState({ wt: row, deleteRemote: false });
+              }}
+            >
+              <span style={{ width: 16, textAlign: 'center' }}>🗑</span>
+              <span>Delete worktree</span>
+            </button>
           </div>
         );
       })()}

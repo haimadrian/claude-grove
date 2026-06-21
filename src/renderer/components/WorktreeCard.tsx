@@ -43,6 +43,7 @@ interface KebabMenuProps {
 function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openMenuId, onMenuOpen }: KebabMenuProps): React.JSX.Element {
   const open = openMenuId === row.id;
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const [gitExpanded, setGitExpanded] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
 
   const openMenu = (e: React.MouseEvent): void => {
@@ -60,7 +61,7 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
   };
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) { setGitExpanded(false); return; }
     const close = (): void => onMenuOpen(null);
     const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') onMenuOpen(null); };
     document.addEventListener('mousedown', close);
@@ -135,8 +136,84 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
             window.api.terminals.openDir({ terminal: settings.defaultTerminal, dir: row.path })
               .then((r) => onToast(r.message)).catch((e) => onToast(String(e)));
           })}
-          {row.branch && item('✎', 'Rename branch', onRename)}
-          {item('🗑', 'Delete worktree', onDelete, 'var(--danger)')}
+          {/* Git group */}
+          <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+          <button
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); setGitExpanded((g) => !g); }}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '0 12px', minHeight: 32, width: '100%', textAlign: 'left',
+              background: 'none', border: 'none', color: 'var(--fg)',
+              fontSize: 13, cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 16, textAlign: 'center', fontSize: 12 }}>⎇</span>
+              <span>Git</span>
+            </span>
+            <span style={{ fontSize: 10, color: 'var(--fg-muted)' }}>{gitExpanded ? '▾' : '▸'}</span>
+          </button>
+          {gitExpanded && (
+            <>
+              <button
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMenuOpen(null);
+                  window.api.worktrees.sync(row.path, 'pull')
+                    .then((r) => onToast(r.message))
+                    .catch((err) => onToast(String(err)));
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '0 12px 0 28px', minHeight: 30, width: '100%', textAlign: 'left',
+                  background: 'none', border: 'none', color: 'var(--fg)',
+                  fontSize: 12, cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+              >
+                <span style={{ width: 14, textAlign: 'center' }}>↓</span>
+                <span>Update (pull)</span>
+              </button>
+              {row.branch && (
+                <button
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); onMenuOpen(null); onRename(); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '0 12px 0 28px', minHeight: 30, width: '100%', textAlign: 'left',
+                    background: 'none', border: 'none', color: 'var(--fg)',
+                    fontSize: 12, cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+                >
+                  <span style={{ width: 14, textAlign: 'center' }}>✎</span>
+                  <span>Rename branch</span>
+                </button>
+              )}
+              <button
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onMenuOpen(null); onDelete(); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '0 12px 0 28px', minHeight: 30, width: '100%', textAlign: 'left',
+                  background: 'none', border: 'none', color: 'var(--danger)',
+                  fontSize: 12, cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+              >
+                <span style={{ width: 14, textAlign: 'center' }}>🗑</span>
+                <span>Delete worktree</span>
+              </button>
+            </>
+          )}
+          <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
           {item('📂', 'Open in Finder', () => {
             void window.api.open.finder(row.path);
             onToast('Opened in Finder');

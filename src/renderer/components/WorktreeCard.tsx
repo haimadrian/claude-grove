@@ -254,9 +254,11 @@ export interface WorktreeCardProps {
   openMenuId: string | null;
   onMenuOpen: (id: string | null) => void;
   cardHeight?: number;
+  selected?: boolean;
+  onShiftClick?: (id: string) => void;
 }
 
-export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, openMenuId, onMenuOpen, cardHeight }: WorktreeCardProps): React.JSX.Element {
+export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, openMenuId, onMenuOpen, cardHeight, selected, onShiftClick }: WorktreeCardProps): React.JSX.Element {
   const [hovered, setHovered] = useState(false);
   const [renameState, setRenameState] = useState<{ value: string } | null>(null);
   const [deleteState, setDeleteState] = useState<{ deleteRemote: boolean } | null>(null);
@@ -290,7 +292,14 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
   return (
     <>
       <div
-        onClick={() => onSelect(row)}
+        onClick={(e) => {
+          if (e.shiftKey && onShiftClick) {
+            e.stopPropagation();
+            onShiftClick(row.id);
+          } else {
+            onSelect(row);
+          }
+        }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
@@ -308,6 +317,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
           height: cardHeight,
           display: 'flex',
           flexDirection: 'column',
+          ...(selected ? { outline: '2px solid var(--accent)', outlineOffset: '-2px' } : {}),
         }}
       >
         {/* Card header */}
@@ -318,6 +328,13 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             background: repoTint,
           }}
         >
+          {selected && (
+            <span style={{
+              width: 16, height: 16, borderRadius: 3, flexShrink: 0,
+              background: 'var(--accent)', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: 10, color: '#fff',
+            }}>✓</span>
+          )}
           <span style={{ fontWeight: 600, fontSize: 13, color: repoColor }}>
             {row.repo.name}
           </span>

@@ -6,9 +6,11 @@ import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 import { SessionPickerModal } from './SessionPickerModal';
 import { CopyButton } from './CopyButton';
+import { useLabels } from '../hooks/useLabels';
+import { LabelBar } from './LabelBar';
 
 const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
-const COL_COUNT = 6; // Repo, Branch, State, Last commit, Modified, Sessions, PR
+const COL_COUNT = 7; // Repo, Branch, State, Last commit, Modified, Sessions, Label, PR
 
 const LS_KEY = 'claude-grove:table-state';
 
@@ -114,6 +116,8 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     savePersistedState({ filters, sortKey, sortDir, colWidths });
   }, [filters, sortKey, sortDir, colWidths]);
   const [deleteState, setDeleteState] = useState<{ wt: WorktreeRow; deleteRemote: boolean } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { labels, setLabel } = useLabels();
   const [gitDropdown, setGitDropdown] = useState<{ id: string; top: number; left: number } | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const dragging = useRef<{ idx: number; startX: number; startW: number } | null>(null);
@@ -234,11 +238,11 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
         } else if (sortKey === 'pr') {
           const cmp = (a.pr?.number ?? 0) - (b.pr?.number ?? 0);
           return sortDir === 'asc' ? cmp : -cmp;
-        }
+        } else if (sortKey === 'label') { av = labels[a.path] ?? ''; bv = labels[b.path] ?? ''; }
         const cmp = av.localeCompare(bv);
         return sortDir === 'asc' ? cmp : -cmp;
       });
-  }, [worktrees, search, filters, sortKey, sortDir]);
+  }, [worktrees, search, filters, sortKey, sortDir, labels]);
 
   const thStyle = (idx: number): React.CSSProperties => ({
     ...TH,
@@ -246,9 +250,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     ...(colWidths[idx] !== null ? { width: colWidths[idx] } : {}),
   });
 
-  const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Modified', 'Sessions'];
+  const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Modified', 'Sessions', 'Label'];
   // Sort key per header (empty string = not sortable, e.g. State)
-  const HEADER_SORT_KEYS = ['repo', 'branch', '', 'lastCommit', 'modified', 'sessions'];
+  const HEADER_SORT_KEYS = ['repo', 'branch', '', 'lastCommit', 'modified', 'sessions', 'label'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -261,7 +265,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
         onFilters={setFilters}
         onSort={handleSort}
       />
-      <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+      <div style={{ flex: 1, overflow: 'auto', minHeight: 0, position: 'relative' }}>
       {loading ? (
         <div style={{ padding: '8px 0' }}>
           {Array.from({ length: 6 }).map((_, i) => (
@@ -308,11 +312,24 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
           <tbody>
             {filtered.map((w) => {
               const hovered = hoveredId === w.id;
-              const rowBg = hovered ? 'var(--bg-secondary)' : undefined;
+              const rowBg = selectedIds.has(w.id)
+                ? 'var(--accent-muted)'
+                : hovered ? 'var(--bg-secondary)'
+                : undefined;
               return (
                 <tr
                   key={w.id}
                   style={{ background: rowBg, cursor: 'pointer', transition: 'background var(--transition-fast)' }}
+                  onMouseDown={(e) => {
+                    if (e.shiftKey) {
+                      e.preventDefault();
+                      setSelectedIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(w.id)) next.delete(w.id); else next.add(w.id);
+                        return next;
+                      });
+                    }
+                  }}
                   onMouseEnter={(e) => {
                     setHoveredId(w.id);
                     showActions(w.id, (e.currentTarget as HTMLElement).getBoundingClientRect());
@@ -381,6 +398,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                         {w.sessions.length} {w.sessions[0]?.title ? `· ${w.sessions[0].title}` : ''}
                       </span>
                     ) : '—'}
+                  </td>
+                  <td style={TD}>
+                    <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>{labels[w.path] ?? '—'}</span>
                   </td>
                   <td
                     style={TD}
@@ -547,6 +567,19 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
           </div>
         );
       })()}
+      {selectedIds.size > 0 && (
+        <LabelBar
+          count={selectedIds.size}
+          onSetLabel={(label) => {
+            const paths = filtered
+              .filter((r) => selectedIds.has(r.id))
+              .map((r) => r.path);
+            setLabel(paths, label);
+            setSelectedIds(new Set());
+          }}
+          onClear={() => setSelectedIds(new Set())}
+        />
+      )}
       </div>
       {stateTooltip && (() => {
         const row = filtered.find((w) => w.id === stateTooltip.id);

@@ -1,93 +1,93 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="37" failures="0" errors="0" time="0.896">
-    <testsuite name="src/main/git/parseCommits.test.ts" timestamp="2026-06-21T07:35:40.477Z" hostname="Haims-mac.local" tests="2" failures="0" errors="0" skipped="0" time="0.001908708">
-        <testcase classname="src/main/git/parseCommits.test.ts" name="parseCommits &gt; parses rows with subjects containing spaces" time="0.00110575">
+<testsuites name="vitest tests" tests="37" failures="0" errors="0" time="0.614">
+    <testsuite name="src/main/gh/mapChecks.test.ts" timestamp="2026-06-21T08:00:30.804Z" hostname="Haims-mac.local" tests="5" failures="0" errors="0" skipped="0" time="0.002044375">
+        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; empty -&gt; NONE" time="0.000730292">
         </testcase>
-        <testcase classname="src/main/git/parseCommits.test.ts" name="parseCommits &gt; empty output -&gt; empty array" time="0.000115">
+        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; a failing conclusion -&gt; FAILING" time="0.000223542">
         </testcase>
-    </testsuite>
-    <testsuite name="src/main/git/parseUpstream.test.ts" timestamp="2026-06-21T07:35:40.480Z" hostname="Haims-mac.local" tests="6" failures="0" errors="0" skipped="0" time="0.00253475">
-        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; parses ahead only" time="0.00132675">
+        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; an in-progress check -&gt; PENDING" time="0.000120584">
         </testcase>
-        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; parses behind only" time="0.000178208">
+        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; all success -&gt; PASSING" time="0.000073667">
         </testcase>
-        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; parses ahead and behind" time="0.000092125">
-        </testcase>
-        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; parses gone" time="0.000081042">
-        </testcase>
-        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; no upstream -&gt; nulls" time="0.00007525">
-        </testcase>
-        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; in sync (empty track)" time="0.000077875">
+        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; state FAILURE counts as failing" time="0.000128875">
         </testcase>
     </testsuite>
-    <testsuite name="src/main/git/parseWorktrees.test.ts" timestamp="2026-06-21T07:35:40.481Z" hostname="Haims-mac.local" tests="4" failures="0" errors="0" skipped="0" time="0.002744">
-        <testcase classname="src/main/git/parseWorktrees.test.ts" name="parseWorktreePorcelain &gt; parses three records" time="0.001185709">
+    <testsuite name="src/main/git/parseCommits.test.ts" timestamp="2026-06-21T08:00:30.805Z" hostname="Haims-mac.local" tests="2" failures="0" errors="0" skipped="0" time="0.001812833">
+        <testcase classname="src/main/git/parseCommits.test.ts" name="parseCommits &gt; parses rows with subjects containing spaces" time="0.001073334">
         </testcase>
-        <testcase classname="src/main/git/parseWorktrees.test.ts" name="parseWorktreePorcelain &gt; marks the main worktree" time="0.000646917">
-        </testcase>
-        <testcase classname="src/main/git/parseWorktrees.test.ts" name="parseWorktreePorcelain &gt; parses branch, locked, prunable on linked worktree" time="0.000116708">
-        </testcase>
-        <testcase classname="src/main/git/parseWorktrees.test.ts" name="parseWorktreePorcelain &gt; handles detached head" time="0.000093583">
+        <testcase classname="src/main/git/parseCommits.test.ts" name="parseCommits &gt; empty output -&gt; empty array" time="0.000112542">
         </testcase>
     </testsuite>
-    <testsuite name="src/main/git/remoteUrl.test.ts" timestamp="2026-06-21T07:35:40.481Z" hostname="Haims-mac.local" tests="6" failures="0" errors="0" skipped="0" time="0.006178208">
-        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; converts ssh scp-style github to https and ownerRepo" time="0.001724417">
+    <testsuite name="src/main/git/parseUpstream.test.ts" timestamp="2026-06-21T08:00:30.805Z" hostname="Haims-mac.local" tests="6" failures="0" errors="0" skipped="0" time="0.002317959">
+        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; parses ahead only" time="0.001102375">
         </testcase>
-        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; converts ssh:// form" time="0.000234708">
+        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; parses behind only" time="0.000182083">
         </testcase>
-        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; strips .git from https form" time="0.000092708">
+        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; parses ahead and behind" time="0.000093875">
         </testcase>
-        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; passes through clean https form" time="0.000078167">
+        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; parses gone" time="0.0000785">
         </testcase>
-        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; non-github host yields browseUrl but null ownerRepo" time="0.000073375">
+        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; no upstream -&gt; nulls" time="0.000075292">
         </testcase>
-        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; empty input yields nulls" time="0.000068333">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/main/gh/mapChecks.test.ts" timestamp="2026-06-21T07:35:40.482Z" hostname="Haims-mac.local" tests="5" failures="0" errors="0" skipped="0" time="0.001769417">
-        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; empty -&gt; NONE" time="0.000746291">
-        </testcase>
-        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; a failing conclusion -&gt; FAILING" time="0.0001185">
-        </testcase>
-        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; an in-progress check -&gt; PENDING" time="0.000084">
-        </testcase>
-        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; all success -&gt; PASSING" time="0.00007">
-        </testcase>
-        <testcase classname="src/main/gh/mapChecks.test.ts" name="mapChecksState &gt; state FAILURE counts as failing" time="0.000067583">
+        <testcase classname="src/main/git/parseUpstream.test.ts" name="parseUpstream &gt; in sync (empty track)" time="0.000073416">
         </testcase>
     </testsuite>
-    <testsuite name="src/main/sessions/sessions.test.ts" timestamp="2026-06-21T07:35:40.482Z" hostname="Haims-mac.local" tests="5" failures="0" errors="0" skipped="0" time="0.002553959">
-        <testcase classname="src/main/sessions/sessions.test.ts" name="parseSessionContent &gt; extracts launchDir from cwd" time="0.000727917">
+    <testsuite name="src/main/git/parseWorktrees.test.ts" timestamp="2026-06-21T08:00:30.805Z" hostname="Haims-mac.local" tests="4" failures="0" errors="0" skipped="0" time="0.002837792">
+        <testcase classname="src/main/git/parseWorktrees.test.ts" name="parseWorktreePorcelain &gt; parses three records" time="0.00123375">
         </testcase>
-        <testcase classname="src/main/sessions/sessions.test.ts" name="parseSessionContent &gt; uses aiTitle as title" time="0.000096417">
+        <testcase classname="src/main/git/parseWorktrees.test.ts" name="parseWorktreePorcelain &gt; marks the main worktree" time="0.000660709">
         </testcase>
-        <testcase classname="src/main/sessions/sessions.test.ts" name="parseSessionContent &gt; takes max timestamp as lastActivity" time="0.000069584">
+        <testcase classname="src/main/git/parseWorktrees.test.ts" name="parseWorktreePorcelain &gt; parses branch, locked, prunable on linked worktree" time="0.00011725">
         </testcase>
-        <testcase classname="src/main/sessions/sessions.test.ts" name="parseSessionContent &gt; skips malformed lines and tallies path hits" time="0.00008375">
-        </testcase>
-        <testcase classname="src/main/sessions/sessions.test.ts" name="linkSessions &gt; attaches sessions to the dominant worktree as primary" time="0.000829084">
+        <testcase classname="src/main/git/parseWorktrees.test.ts" name="parseWorktreePorcelain &gt; handles detached head" time="0.000091625">
         </testcase>
     </testsuite>
-    <testsuite name="src/main/settings/mergeSettings.test.ts" timestamp="2026-06-21T07:35:40.483Z" hostname="Haims-mac.local" tests="2" failures="0" errors="0" skipped="0" time="0.002142792">
-        <testcase classname="src/main/settings/mergeSettings.test.ts" name="mergeSettings &gt; returns defaults for empty input" time="0.001202625">
+    <testsuite name="src/main/git/remoteUrl.test.ts" timestamp="2026-06-21T08:00:30.806Z" hostname="Haims-mac.local" tests="6" failures="0" errors="0" skipped="0" time="0.00245725">
+        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; converts ssh scp-style github to https and ownerRepo" time="0.001189833">
         </testcase>
-        <testcase classname="src/main/settings/mergeSettings.test.ts" name="mergeSettings &gt; applies a partial patch" time="0.000187917">
+        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; converts ssh:// form" time="0.000207875">
+        </testcase>
+        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; strips .git from https form" time="0.000091083">
+        </testcase>
+        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; passes through clean https form" time="0.000077291">
+        </testcase>
+        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; non-github host yields browseUrl but null ownerRepo" time="0.000072792">
+        </testcase>
+        <testcase classname="src/main/git/remoteUrl.test.ts" name="normalizeRemote &gt; empty input yields nulls" time="0.000068708">
         </testcase>
     </testsuite>
-    <testsuite name="src/main/security/validate.test.ts" timestamp="2026-06-21T07:35:40.483Z" hostname="Haims-mac.local" tests="7" failures="0" errors="0" skipped="0" time="0.002235542">
-        <testcase classname="src/main/security/validate.test.ts" name="isPathWithinRoots &gt; accepts a path inside a root" time="0.000973167">
+    <testsuite name="src/main/security/validate.test.ts" timestamp="2026-06-21T08:00:30.807Z" hostname="Haims-mac.local" tests="7" failures="0" errors="0" skipped="0" time="0.00633875">
+        <testcase classname="src/main/security/validate.test.ts" name="isPathWithinRoots &gt; accepts a path inside a root" time="0.000863292">
         </testcase>
-        <testcase classname="src/main/security/validate.test.ts" name="isPathWithinRoots &gt; accepts the root itself" time="0.00010725">
+        <testcase classname="src/main/security/validate.test.ts" name="isPathWithinRoots &gt; accepts the root itself" time="0.000152542">
         </testcase>
-        <testcase classname="src/main/security/validate.test.ts" name="isPathWithinRoots &gt; rejects a path outside roots" time="0.000074417">
+        <testcase classname="src/main/security/validate.test.ts" name="isPathWithinRoots &gt; rejects a path outside roots" time="0.001696916">
         </testcase>
-        <testcase classname="src/main/security/validate.test.ts" name="isPathWithinRoots &gt; rejects a sibling-prefix trick" time="0.000067916">
+        <testcase classname="src/main/security/validate.test.ts" name="isPathWithinRoots &gt; rejects a sibling-prefix trick" time="0.00011">
         </testcase>
-        <testcase classname="src/main/security/validate.test.ts" name="isValidBranchName &gt; accepts normal names" time="0.000107125">
+        <testcase classname="src/main/security/validate.test.ts" name="isValidBranchName &gt; accepts normal names" time="0.00011175">
         </testcase>
-        <testcase classname="src/main/security/validate.test.ts" name="isValidBranchName &gt; rejects shell metachars" time="0.000102791">
+        <testcase classname="src/main/security/validate.test.ts" name="isValidBranchName &gt; rejects shell metachars" time="0.000448459">
         </testcase>
-        <testcase classname="src/main/security/validate.test.ts" name="isValidBranchName &gt; rejects empty" time="0.000063292">
+        <testcase classname="src/main/security/validate.test.ts" name="isValidBranchName &gt; rejects empty" time="0.000101333">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/main/sessions/sessions.test.ts" timestamp="2026-06-21T08:00:30.807Z" hostname="Haims-mac.local" tests="5" failures="0" errors="0" skipped="0" time="0.002726916">
+        <testcase classname="src/main/sessions/sessions.test.ts" name="parseSessionContent &gt; extracts launchDir from cwd" time="0.000859375">
+        </testcase>
+        <testcase classname="src/main/sessions/sessions.test.ts" name="parseSessionContent &gt; uses aiTitle as title" time="0.00009825">
+        </testcase>
+        <testcase classname="src/main/sessions/sessions.test.ts" name="parseSessionContent &gt; takes max timestamp as lastActivity" time="0.000069709">
+        </testcase>
+        <testcase classname="src/main/sessions/sessions.test.ts" name="parseSessionContent &gt; skips malformed lines and tallies path hits" time="0.000087083">
+        </testcase>
+        <testcase classname="src/main/sessions/sessions.test.ts" name="linkSessions &gt; attaches sessions to the dominant worktree as primary" time="0.000856667">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/main/settings/mergeSettings.test.ts" timestamp="2026-06-21T08:00:30.808Z" hostname="Haims-mac.local" tests="2" failures="0" errors="0" skipped="0" time="0.002234084">
+        <testcase classname="src/main/settings/mergeSettings.test.ts" name="mergeSettings &gt; returns defaults for empty input" time="0.001128958">
+        </testcase>
+        <testcase classname="src/main/settings/mergeSettings.test.ts" name="mergeSettings &gt; applies a partial patch" time="0.00017875">
         </testcase>
     </testsuite>
 </testsuites>

@@ -4,6 +4,8 @@ import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 import { WorktreeCard } from './WorktreeCard';
 import { Toast, useToast } from './Toast';
+import { useLabels } from '../hooks/useLabels';
+import { LabelBar } from './LabelBar';
 
 const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
 
@@ -80,6 +82,20 @@ function SkeletonCard({ height, delay }: { height: number; delay: number }): Rea
   );
 }
 
+function GroupHeader({ label }: { label: string }): React.JSX.Element {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', gridColumn: '1 / -1' }}>
+      <span style={{
+        fontSize: 11, fontWeight: 700, color: 'var(--fg-muted)',
+        textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0,
+      }}>
+        {label || 'All'}
+      </span>
+      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+    </div>
+  );
+}
+
 export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRefresh }: WorktreeCardGridProps): React.JSX.Element {
   const persisted = loadPersistedState();
   const [search, setSearch] = useState('');
@@ -88,6 +104,16 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.sortDir ?? 'asc');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const { toast, showToast, clearToast } = useToast();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { labels, setLabel } = useLabels();
+
+  const handleShiftClick = (id: string): void => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
   const gridRef = useRef<HTMLDivElement>(null);
   const [cardHeight, setCardHeight] = useState(220);
 
@@ -160,8 +186,26 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
       });
   }, [worktrees, search, filters, sortKey, sortDir]);
 
+  const hasAnyLabel = filtered.some((r) => labels[r.path]);
+
+  const groups: { label: string; rows: typeof filtered }[] = hasAnyLabel
+    ? (() => {
+        const unlabeled = filtered.filter((r) => !labels[r.path]);
+        const labelMap = new Map<string, typeof filtered>();
+        for (const r of filtered.filter((r) => labels[r.path])) {
+          const l = labels[r.path]!;
+          if (!labelMap.has(l)) labelMap.set(l, []);
+          labelMap.get(l)!.push(r);
+        }
+        const result: { label: string; rows: typeof filtered }[] = [];
+        if (unlabeled.length > 0) result.push({ label: '', rows: unlabeled });
+        for (const [l, rows] of labelMap) result.push({ label: l, rows });
+        return result;
+      })()
+    : [{ label: '', rows: filtered }];
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, position: 'relative' }}>
       <SearchBar value={search} onChange={setSearch} />
       <FilterBar
         worktrees={worktrees}
@@ -197,21 +241,41 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
             No worktrees match the current filters.
           </div>
         ) : (
-          filtered.map((row) => (
-            <WorktreeCard
-              key={row.id}
-              row={row}
-              settings={settings}
-              onSelect={onSelect}
-              onRefresh={onRefresh}
-              onToast={(msg) => showToast(msg, 'ok')}
-              openMenuId={openMenuId}
-              onMenuOpen={setOpenMenuId}
-              cardHeight={cardHeight}
-            />
+          groups.map(({ label, rows }) => (
+            <React.Fragment key={label || '__all__'}>
+              {hasAnyLabel && <GroupHeader label={label} />}
+              {rows.map((row) => (
+                <WorktreeCard
+                  key={row.id}
+                  row={row}
+                  settings={settings}
+                  onSelect={onSelect}
+                  onRefresh={onRefresh}
+                  onToast={(msg) => showToast(msg, 'ok')}
+                  openMenuId={openMenuId}
+                  onMenuOpen={setOpenMenuId}
+                  cardHeight={cardHeight}
+                  selected={selectedIds.has(row.id)}
+                  onShiftClick={handleShiftClick}
+                />
+              ))}
+            </React.Fragment>
           ))
         )}
       </div>
+      {selectedIds.size > 0 && (
+        <LabelBar
+          count={selectedIds.size}
+          onSetLabel={(label) => {
+            const paths = filtered
+              .filter((r) => selectedIds.has(r.id))
+              .map((r) => r.path);
+            setLabel(paths, label);
+            setSelectedIds(new Set());
+          }}
+          onClear={() => setSelectedIds(new Set())}
+        />
+      )}
       {toast !== null && (
         <Toast message={toast.message} type={toast.type} onDone={clearToast} />
       )}

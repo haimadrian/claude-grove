@@ -97,6 +97,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
               </tbody>
             </table>
             <p style={{ ...P, fontSize: 12 }}>The <strong>⎇ Git</strong> submenu groups Rename, Delete, and Update (pull) to keep the top-level action list clean.</p>
+            <p style={{ ...P, fontSize: 12 }}>Long-running git operations — <strong>Update (pull)</strong>, <strong>Rename branch</strong>, and <strong>Delete worktree</strong> — show a progress toast with the branch name while running. Multiple concurrent operations each get their own toast. The worktree list refreshes automatically on success.</p>
           </div>
 
           <div style={SECTION}>
@@ -115,7 +116,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
           <div style={SECTION}>
             <div style={H2}>Card View</div>
             <p style={P}>Cards are color-coded by repository. Each card shows: State + time, PR, Commit (SHA links to GitHub), Path, Sessions, Upstream. Card body scrolls if content overflows.</p>
-            <p style={P}>Header buttons: <strong>⎘</strong> copies branch name · <strong>▶</strong> resumes the primary Claude session · <strong>⋮</strong> opens the full action menu.</p>
+            <p style={P}>Header buttons: <strong>⎘</strong> copies branch name · <strong>▶</strong> resumes the primary Claude session · <strong>⋮</strong> opens the full action menu (flips upward automatically when near the bottom of the screen).</p>
             <p style={P}>The grid size (columns × rows) is configurable in Settings. Cards resize automatically to fill the visible area. If there are more cards than the grid shows, it scrolls.</p>
             <p style={P}>When any worktree has a label, cards are grouped into labeled sections separated by a colored horizontal rule.</p>
           </div>
@@ -148,10 +149,9 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
                 {[
                   ['Roots', 'Folders to scan for git repositories (up to 5 levels deep).'],
                   ['Default terminal', 'Terminal for Resume. Terminal.app and iTerm2 auto-run the command; Warp copies it.'],
-                  ['Editor', '"Choose app…" for an app bundle, or type a CLI command (e.g. code, cursor).'],
-                  ['Card layout', 'Columns and rows for the card grid (1–6 each, default 3×3). Cards resize to fill the visible area.'],
-                  ['Ignored branches', 'Hide main and/or master worktrees from both table and card view to reduce noise when managing many repositories. Applies immediately on toggle.'],
-                  ['Default base branch', 'Fallback for diffs when no PR and origin/HEAD is not set.'],
+                  ['Default editor', 'App bundle or CLI command (e.g. code, cursor).'],
+                  ['Card layout', 'Columns and rows for the card grid (1–6 each, default 3×3).'],
+                  ['Base branch', 'Fallback branch for diffs. Also hides main / master worktrees from the list. Applied on Save.'],
                   ['PR cache TTL', 'Seconds to cache PR data before re-fetching.'],
                 ].map(([setting, desc]) => (
                   <tr key={setting}>

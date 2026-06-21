@@ -91,13 +91,14 @@ Actions are grouped into three sections:
 |---|---|
 | Roots | Folders to scan for git repos (up to 5 levels deep) |
 | Default terminal | Terminal used for Resume actions |
-| Editor | App bundle or CLI command (e.g. `code`, `cursor`) |
+| Default editor | App bundle or CLI command (e.g. `code`, `cursor`) |
 | Card layout | Columns and rows for the card grid (1–6 each, default 3×3) |
-| Ignored branches | Hide `main` and/or `master` worktrees from the list to reduce noise when managing many repositories. |
-| Default base branch | Fallback for diffs when no PR or `origin/HEAD` |
+| Base branch | Default base branch for diffs (fallback when no PR or `origin/HEAD`). Also configure which branches (`main`, `master`) to hide from the list. |
 | PR cache TTL | Seconds to cache PR data before re-fetching |
 
 Theme (☀/☾) is in the header, not Settings.
+
+Long-running operations (pull, rename branch, delete worktree) show an animated progress toast with the branch name. Multiple concurrent operations each get their own independent toast. The list refreshes automatically on success.
 
 ## Requirements
 

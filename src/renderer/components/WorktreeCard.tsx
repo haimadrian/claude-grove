@@ -127,6 +127,7 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
               sessionId: s.sessionId,
             }).then((r) => onToast(r.message)).catch((e) => onToast(String(e)));
           })}
+          <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
           {item('✏', 'Edit in IDE', () => {
             window.api.open.editor(row.path)
               .then((r) => { if (!r.success) onToast(r.message); else onToast('Opened in editor'); })
@@ -136,7 +137,11 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
             window.api.terminals.openDir({ terminal: settings.defaultTerminal, dir: row.path })
               .then((r) => onToast(r.message)).catch((e) => onToast(String(e)));
           })}
-          {/* Git group */}
+          {item('📂', 'Open in Finder', () => {
+            void window.api.open.finder(row.path);
+            onToast('Opened in Finder');
+          })}
+          {/* Git section */}
           <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
           <button
             onMouseDown={(e) => e.stopPropagation()}
@@ -213,11 +218,6 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
               </button>
             </>
           )}
-          <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
-          {item('📂', 'Open in Finder', () => {
-            void window.api.open.finder(row.path);
-            onToast('Opened in Finder');
-          })}
           {row.repo.remoteUrl && item('↗', 'Open on GitHub', () => {
             void window.api.open.url(row.repo.remoteUrl!);
           })}

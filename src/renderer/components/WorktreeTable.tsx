@@ -422,6 +422,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
             onMouseEnter={() => { if (hideTimerRef.current) clearTimeout(hideTimerRef.current); }}
             onMouseLeave={hideActions}
           >
+            {/* Section 1: View, Resume */}
             <button onClick={() => onSelect(row)} style={ROW_BTN} data-tip="View commits and diff">👁</button>
             {row.sessions[0] && (
               <button
@@ -442,10 +443,23 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                   : `Resume Claude session: ${row.sessions[0].title ?? row.sessions[0].sessionId}`}
               >{row.sessions.length > 1 ? `▶ ${row.sessions.length}` : '▶'}</button>
             )}
+            {/* Separator */}
+            <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px', flexShrink: 0 }} />
+            {/* Section 2: Edit, Terminal, Finder */}
             <button
               onClick={() => window.api.open.editor(row.path).then((r) => { if (!r.success) onMessage(r.message, false); }).catch((e) => onMessage(String(e), false))}
               style={ROW_BTN} data-tip="Open in editor"
             >✏</button>
+            <button
+              onClick={() => window.api.terminals.openDir({ terminal: defaultTerminal, dir: row.path })
+                .then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false))}
+              style={ROW_BTN}
+              data-tip={`Open in ${defaultTerminal}`}
+            >&gt;_</button>
+            <button onClick={() => void window.api.open.finder(row.path)} style={ROW_BTN} data-tip="Reveal in Finder">📂</button>
+            {/* Separator */}
+            <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px', flexShrink: 0 }} />
+            {/* Section 3: Git, GitHub */}
             <button
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
@@ -459,13 +473,6 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
               style={{ ...ROW_BTN, color: gitDropdown?.id === row.id ? 'var(--accent)' : 'var(--fg)' }}
               data-tip="Git actions"
             >⎇</button>
-            <button onClick={() => void window.api.open.finder(row.path)} style={ROW_BTN} data-tip="Reveal in Finder">📂</button>
-            <button
-              onClick={() => window.api.terminals.openDir({ terminal: defaultTerminal, dir: row.path })
-                .then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false))}
-              style={ROW_BTN}
-              data-tip={`Open in ${defaultTerminal}`}
-            >&gt;_</button>
             {row.repo.remoteUrl && (
               <button onClick={() => void window.api.open.url(row.repo.remoteUrl!)} style={ROW_BTN} data-tip="Open on GitHub">↗</button>
             )}

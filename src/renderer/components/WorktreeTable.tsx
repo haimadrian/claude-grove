@@ -11,7 +11,7 @@ import { LabelBar } from './LabelBar';
 import { Eye, Play, Code2, Terminal, FolderOpen, GitBranch, ExternalLink, ArrowDownToLine, Pencil, Trash2 } from 'lucide-react';
 
 const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false, label: [] };
-const COL_COUNT = 7; // Repo, Branch, State, Last commit, Modified, Sessions, Label, PR
+const COL_COUNT = 8; // Repo, Branch, State, Last commit, Modified, Sessions, Label, PR
 
 const LS_KEY = 'claude-grove:table-state';
 
@@ -286,9 +286,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     ...(colWidths[idx] !== null ? { width: colWidths[idx] } : {}),
   });
 
-  const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Modified', 'Sessions', 'Label'];
+  const HEADERS = ['Repo', 'Branch', 'State', 'Last commit', 'Modified', 'Sessions', 'Label', 'PR'];
   // Sort key per header (empty string = not sortable, e.g. State)
-  const HEADER_SORT_KEYS = ['repo', 'branch', '', 'lastCommit', 'modified', 'sessions', 'label'];
+  const HEADER_SORT_KEYS = ['repo', 'branch', '', 'lastCommit', 'modified', 'sessions', 'label', 'pr'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>

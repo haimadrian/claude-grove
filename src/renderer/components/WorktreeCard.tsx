@@ -43,7 +43,7 @@ interface KebabMenuProps {
 
 function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openMenuId, onMenuOpen }: KebabMenuProps): React.JSX.Element {
   const open = openMenuId === row.id;
-  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top?: number; bottom?: number; left: number } | null>(null);
   const [gitExpanded, setGitExpanded] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -53,11 +53,17 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
     if (!btnRef.current) return;
     const rect = btnRef.current.getBoundingClientRect();
     const menuW = 200;
+    const menuHEstimate = 260;
     let left = rect.right + 4;
     if (left + menuW > window.innerWidth) {
       left = rect.left - menuW - 4;
     }
-    setMenuPos({ top: rect.bottom + 4, left });
+    if (window.innerHeight - rect.bottom - 4 >= menuHEstimate) {
+      setMenuPos({ top: rect.bottom + 4, left });
+    } else {
+      // Anchor bottom of menu to just above the button (no height knowledge needed)
+      setMenuPos({ bottom: window.innerHeight - rect.top + 4, left });
+    }
     onMenuOpen(row.id);
   };
 
@@ -113,10 +119,14 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
         <div
           onMouseDown={(e) => e.stopPropagation()}
           style={{
-            position: 'fixed', top: menuPos.top, left: menuPos.left,
+            position: 'fixed',
+            ...(menuPos.top !== undefined ? { top: menuPos.top } : { bottom: menuPos.bottom }),
+            left: menuPos.left,
             width: 200, background: 'var(--bg)', border: '1px solid var(--border)',
             borderRadius: 8, boxShadow: '0 4px 16px var(--shadow)', zIndex: 2000,
             paddingTop: 4, paddingBottom: 4, overflow: 'hidden',
+            maxHeight: window.innerHeight - 8,
+            overflowY: 'auto',
           }}
         >
           {item(<Eye size={14} />, 'View diff', () => onSelect(row))}

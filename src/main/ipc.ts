@@ -86,10 +86,11 @@ export function registerIpc(): void {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
     const repos = await getRepos(settings);
-    const repoRoot = repos.find((r) => wtPath.startsWith(r + '/')) ?? '';
-    if (!repoRoot) return { success: false, message: 'Cannot find repo root for worktree' };
     const wts = await listAllWorktrees(repos);
-    const branch = wts.find((w) => w.path === wtPath)?.branch ?? null;
+    const wt = wts.find((w) => w.path === wtPath);
+    const repoRoot = wt?.repo.path ?? '';
+    if (!repoRoot) return { success: false, message: 'Cannot find repo root for worktree' };
+    const branch = wt?.branch ?? null;
     try {
       logger.info(`ipc: removing worktree ${wtPath}`);
       const result = await removeWorktree(wtPath, repoRoot, { ...opts, branch });
@@ -152,10 +153,10 @@ export function registerIpc(): void {
     const settings = await loadSettings();
     if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
     const repos = await getRepos(settings);
-    const repoRoot = repos.find((r) => wtPath.startsWith(r + '/')) ?? '';
-    if (!repoRoot) return { success: false, message: 'Cannot find repo root for worktree' };
     const wts = await listAllWorktrees(repos);
     const wt = wts.find((w) => w.path === wtPath);
+    const repoRoot = wt?.repo.path ?? '';
+    if (!repoRoot) return { success: false, message: 'Cannot find repo root for worktree' };
     if (!wt?.branch) return { success: false, message: 'Worktree has no branch (detached HEAD)' };
     try {
       logger.info(`ipc: renaming branch ${wt.branch} -> ${newBranch} in ${wtPath}`);

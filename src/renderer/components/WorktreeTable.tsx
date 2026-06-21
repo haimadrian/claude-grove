@@ -115,7 +115,6 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
   }, [filters, sortKey, sortDir, colWidths]);
   const [deleteState, setDeleteState] = useState<{ wt: WorktreeRow; deleteRemote: boolean } | null>(null);
   const [gitDropdown, setGitDropdown] = useState<{ id: string; top: number; left: number } | null>(null);
-  const gitBtnRef = useRef<HTMLButtonElement | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const dragging = useRef<{ idx: number; startX: number; startW: number } | null>(null);
   const dragMoved = useRef(false); // true if mouse moved during resize — suppresses sort click

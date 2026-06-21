@@ -82,14 +82,33 @@ function SkeletonCard({ height, delay }: { height: number; delay: number }): Rea
   );
 }
 
-function GroupHeader({ label }: { label: string }): React.JSX.Element {
+function labelHue(s: string): number {
+  let h = 0;
+  for (const c of s) h = ((h << 5) - h + c.charCodeAt(0)) | 0;
+  return Math.abs(h) % 360;
+}
+
+function GroupHeader({ label, isFirst }: { label: string; isFirst?: boolean }): React.JSX.Element {
+  const isAll = !label;
+  const hue = isAll ? 0 : labelHue(label);
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', gridColumn: '1 / -1' }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: isFirst ? '0' : '6px 0 0',
+      gridColumn: '1 / -1',
+    }}>
       <span style={{
-        fontSize: 11, fontWeight: 700, color: 'var(--fg-muted)',
-        textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0,
+        fontSize: 13, fontWeight: 600, flexShrink: 0,
+        padding: '3px 12px', borderRadius: 12,
+        ...(isAll
+          ? { background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }
+          : {
+              background: `hsla(${hue}, 60%, 55%, 0.12)`,
+              border: `1px solid hsla(${hue}, 60%, 55%, 0.3)`,
+              color: `hsl(${hue}, 60%, 55%)`,
+            }),
       }}>
-        {label || 'All'}
+        {isAll ? 'All' : label}
       </span>
       <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
     </div>
@@ -245,9 +264,9 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
             No worktrees match the current filters.
           </div>
         ) : (
-          groups.map(({ label, rows }) => (
+          groups.map(({ label, rows }, gi) => (
             <React.Fragment key={label || '__all__'}>
-              {hasAnyLabel && <GroupHeader label={label} />}
+              {hasAnyLabel && <GroupHeader label={label} isFirst={gi === 0} />}
               {rows.map((row) => (
                 <WorktreeCard
                   key={row.id}

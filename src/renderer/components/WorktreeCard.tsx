@@ -296,8 +296,6 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
           if (e.shiftKey && onShiftClick) {
             e.stopPropagation();
             onShiftClick(row.id);
-          } else {
-            onSelect(row);
           }
         }}
         onMouseEnter={() => setHovered(true)}
@@ -312,7 +310,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             ? '0 6px 16px var(--shadow)'
             : '0 1px 3px var(--shadow)',
           transition: 'box-shadow 150ms ease-out',
-          cursor: 'pointer',
+          cursor: 'default',
           overflow: 'hidden',
           height: cardHeight,
           display: 'flex',

@@ -88,7 +88,7 @@ interface Props {
 export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, onMessage }: Props): React.JSX.Element {
   const [search, setSearch] = useState('');
   const persisted = loadPersistedState();
-  const [filters, setFilters] = useState<Filters>(persisted.filters ?? DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS, ...(persisted.filters ?? {}) });
   const [sortKey, setSortKey] = useState(persisted.sortKey ?? 'repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.sortDir ?? 'asc');
 

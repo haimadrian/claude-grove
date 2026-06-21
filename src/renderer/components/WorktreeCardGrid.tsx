@@ -99,7 +99,7 @@ function GroupHeader({ label }: { label: string }): React.JSX.Element {
 export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRefresh }: WorktreeCardGridProps): React.JSX.Element {
   const persisted = loadPersistedState();
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Filters>(persisted.filters ?? DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS, ...(persisted.filters ?? {}) });
   const [sortKey, setSortKey] = useState(persisted.sortKey ?? 'repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.sortDir ?? 'asc');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);

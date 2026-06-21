@@ -98,27 +98,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
               </button>
             ))}
           </div>
-        </Section>
-
-        <Section title="Card layout">
-          <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
-            {([['Columns', cardColumns, setCardColumns], ['Rows', cardRows, setCardRows]] as const).map(([lbl, val, set]) => (
-              <div key={lbl}>
-                <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginBottom: 6, fontWeight: 500 }}>{lbl}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <button onClick={() => set((v) => Math.max(1, v - 1))} style={{ ...BTN_SMALL, width: 28, textAlign: 'center' as const }}>−</button>
-                  <span style={{ fontSize: 15, fontWeight: 700, minWidth: 18, textAlign: 'center' as const, color: 'var(--fg)' }}>{val}</span>
-                  <button onClick={() => set((v) => Math.min(6, v + 1))} style={{ ...BTN_SMALL, width: 28, textAlign: 'center' as const }}>+</button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 8 }}>
-            Cards resize automatically to fill the visible area. Range: 1–6.
-          </div>
-        </Section>
-
-        <Section title="Editor">
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-muted)', marginTop: 16, marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>Default editor</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
             <span style={{
               flex: 1, fontSize: 13, padding: '5px 8px',
@@ -156,6 +136,24 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
           </div>
         </Section>
 
+        <Section title="Card layout">
+          <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+            {([['Columns', cardColumns, setCardColumns], ['Rows', cardRows, setCardRows]] as const).map(([lbl, val, set]) => (
+              <div key={lbl}>
+                <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginBottom: 6, fontWeight: 500 }}>{lbl}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <button onClick={() => set((v) => Math.max(1, v - 1))} style={{ ...BTN_SMALL, width: 28, textAlign: 'center' as const }}>−</button>
+                  <span style={{ fontSize: 15, fontWeight: 700, minWidth: 18, textAlign: 'center' as const, color: 'var(--fg)' }}>{val}</span>
+                  <button onClick={() => set((v) => Math.min(6, v + 1))} style={{ ...BTN_SMALL, width: 28, textAlign: 'center' as const }}>+</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 8 }}>
+            Cards resize automatically to fill the visible area. Range: 1–6.
+          </div>
+        </Section>
+
         <Section title="Base branch">
           <input
             className="settings-input"
@@ -164,7 +162,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
             style={INPUT}
             placeholder="main"
           />
-          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4, marginBottom: 10 }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4, marginBottom: 16 }}>
             Fallback for diffs when no PR or origin/HEAD is set.
           </div>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-muted)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>Ignored branches</div>

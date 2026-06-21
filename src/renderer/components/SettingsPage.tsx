@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Settings, TerminalKind } from '../../shared/types';
+import { X } from 'lucide-react';
 
 interface Props {
   settings: Settings;
@@ -59,7 +60,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
       }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{ fontSize: 16, flex: 1 }}>Settings</h2>
-          <button onClick={onClose} style={{ fontSize: 18, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg)' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg)', display: 'inline-flex', alignItems: 'center' }}><X size={16} /></button>
         </div>
 
         <Section title="Roots" first>
@@ -116,7 +117,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
               Choose app...
             </button>
             {editorCommand && (
-              <button onClick={() => setEditorCommand('')} style={{ ...BTN_SMALL, color: 'var(--fg-muted)' }}>✕</button>
+              <button onClick={() => setEditorCommand('')} style={{ ...BTN_SMALL, color: 'var(--fg-muted)', display: 'inline-flex', alignItems: 'center' }}><X size={12} /></button>
             )}
           </div>
           <input

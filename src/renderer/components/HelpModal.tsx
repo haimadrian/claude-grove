@@ -1,4 +1,5 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
 interface Props { onClose: () => void; }
 
@@ -36,7 +37,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
             } as React.CSSProperties}>Claude Grove</div>
             <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 3 }}>Created by Haim Adrian</div>
           </div>
-          <button onClick={onClose} style={{ fontSize: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}><X size={18} /></button>
         </div>
 
         {/* Scrollable content */}

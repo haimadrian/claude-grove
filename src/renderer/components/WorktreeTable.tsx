@@ -8,6 +8,7 @@ import { SessionPickerModal } from './SessionPickerModal';
 import { CopyButton } from './CopyButton';
 import { useLabels } from '../hooks/useLabels';
 import { LabelBar } from './LabelBar';
+import { Eye, Play, Code2, Terminal, FolderOpen, GitBranch, ExternalLink, ArrowDownToLine, Pencil, Trash2 } from 'lucide-react';
 
 const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
 const COL_COUNT = 7; // Repo, Branch, State, Last commit, Modified, Sessions, Label, PR
@@ -46,6 +47,7 @@ const ROW_BTN: React.CSSProperties = {
   fontSize: 14, padding: '2px 6px', background: 'var(--bg)',
   border: '1px solid var(--border)', borderRadius: 4, minWidth: 26, textAlign: 'center' as const,
   color: 'var(--fg)', whiteSpace: 'nowrap', boxShadow: '0 1px 3px var(--shadow)',
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
 };
 const DIALOG_BTN: React.CSSProperties = {
   padding: '6px 14px', fontSize: 13, borderRadius: 6,
@@ -450,7 +452,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
             onMouseLeave={hideActions}
           >
             {/* Section 1: View, Resume */}
-            <button onClick={() => onSelect(row)} style={ROW_BTN} data-tip="View commits and diff">👁</button>
+            <button onClick={() => onSelect(row)} style={ROW_BTN} data-tip="View commits and diff"><Eye size={14} /></button>
             {row.sessions[0] && (
               <button
                 onClick={() => {
@@ -468,7 +470,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                 data-tip={row.sessions.length > 1
                   ? `${row.sessions.length} sessions — click to pick`
                   : `Resume Claude session: ${row.sessions[0].title ?? row.sessions[0].sessionId}`}
-              >{row.sessions.length > 1 ? `▶ ${row.sessions.length}` : '▶'}</button>
+              >{row.sessions.length > 1 ? <><Play size={14} /><span style={{ marginLeft: 3 }}>{row.sessions.length}</span></> : <Play size={14} />}</button>
             )}
             {/* Separator */}
             <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px', flexShrink: 0 }} />
@@ -476,14 +478,14 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
             <button
               onClick={() => window.api.open.editor(row.path).then((r) => { if (!r.success) onMessage(r.message, false); }).catch((e) => onMessage(String(e), false))}
               style={ROW_BTN} data-tip="Open in editor"
-            >✏</button>
+            ><Code2 size={14} /></button>
             <button
               onClick={() => window.api.terminals.openDir({ terminal: defaultTerminal, dir: row.path })
                 .then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false))}
               style={ROW_BTN}
               data-tip={`Open in ${defaultTerminal}`}
-            >&gt;_</button>
-            <button onClick={() => void window.api.open.finder(row.path)} style={ROW_BTN} data-tip="Reveal in Finder">📂</button>
+            ><Terminal size={14} /></button>
+            <button onClick={() => void window.api.open.finder(row.path)} style={ROW_BTN} data-tip="Reveal in Finder"><FolderOpen size={14} /></button>
             {/* Separator */}
             <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px', flexShrink: 0 }} />
             {/* Section 3: Git, GitHub */}
@@ -500,9 +502,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
               }}
               style={{ ...ROW_BTN, color: gitDropdown?.id === row.id ? 'var(--accent)' : 'var(--fg)' }}
               data-tip="Git actions"
-            >⎇</button>
+            ><GitBranch size={14} /></button>
             {row.repo.remoteUrl && (
-              <button onClick={() => void window.api.open.url(row.repo.remoteUrl!)} style={ROW_BTN} data-tip="Open on GitHub">↗</button>
+              <button onClick={() => void window.api.open.url(row.repo.remoteUrl!)} style={ROW_BTN} data-tip="Open on GitHub"><ExternalLink size={14} /></button>
             )}
           </div>
         );
@@ -541,7 +543,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                   .catch((err) => onMessage(String(err), false));
               }}
             >
-              <span style={{ width: 16, textAlign: 'center' }}>↓</span>
+              <span style={{ display: 'flex', width: 16, alignItems: 'center' }}><ArrowDownToLine size={14} /></span>
               <span>Update (pull)</span>
             </button>
             {row.branch && (
@@ -555,7 +557,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                   setRenameState({ wt: row, value: row.branch! });
                 }}
               >
-                <span style={{ width: 16, textAlign: 'center' }}>✎</span>
+                <span style={{ display: 'flex', width: 16, alignItems: 'center' }}><Pencil size={14} /></span>
                 <span>Rename branch</span>
               </button>
             )}
@@ -569,7 +571,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                 setDeleteState({ wt: row, deleteRemote: false });
               }}
             >
-              <span style={{ width: 16, textAlign: 'center' }}>🗑</span>
+              <span style={{ display: 'flex', width: 16, alignItems: 'center' }}><Trash2 size={14} /></span>
               <span>Delete worktree</span>
             </button>
           </div>

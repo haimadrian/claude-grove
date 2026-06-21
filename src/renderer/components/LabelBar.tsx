@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 
 interface Props {
   count: number;
@@ -52,8 +53,9 @@ export function LabelBar({ count, onSetLabel, onClear }: Props): React.JSX.Eleme
         style={{
           padding: '2px 6px', fontSize: 13, borderRadius: 5, cursor: 'pointer',
           background: 'none', border: 'none', color: 'var(--fg-muted)',
+        display: 'inline-flex', alignItems: 'center',
         }}
-      >✕</button>
+      ><X size={14} /></button>
     </div>
   );
 }

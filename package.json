@@ -28,6 +28,7 @@
   "dependencies": {
     "electron-log": "^5.4.3",
     "gitdiff-parser": "^0.3.1",
+    "lucide-react": "^1.21.0",
     "react-diff-view": "^3.2.0"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Copy, Check } from 'lucide-react';
 
 interface Props {
   text: string;
@@ -38,7 +39,7 @@ export function CopyButton({ text, style }: Props): React.JSX.Element {
         ...style,
       }}
     >
-      {copied ? '✓' : '⎘'}
+      {copied ? <Check size={16} /> : <Copy size={16} />}
     </button>
   );
 }

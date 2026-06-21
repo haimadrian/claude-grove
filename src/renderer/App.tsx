@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RotateCcw, List, LayoutGrid, Sun, Moon, CircleHelp, Settings2 } from 'lucide-react';
 import type { WorktreeRow } from '../shared/types';
 import { ThemeProvider, useTheme } from './theme/ThemeProvider';
 import { WorktreeTable } from './components/WorktreeTable';
@@ -77,9 +78,9 @@ function AppInner(): React.JSX.Element {
           title={selected !== null
             ? 'Refresh — reload this worktree and its diff'
             : 'Refresh — reload all worktrees'}
-          style={{ ...BTN, marginLeft: 'auto', fontSize: 16 }}
+          style={{ ...BTN, marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <span style={loading && selected === null ? { display: 'inline-block', animation: 'spin 0.8s linear infinite' } : undefined}>↺</span>
+          <span style={loading && selected === null ? { display: 'inline-flex', animation: 'spin 0.8s linear infinite' } : { display: 'inline-flex' }}><RotateCcw size={15} /></span>
         </button>
         {/* Layout toggle — only relevant on the worktree list, hidden in detail view */}
         <div style={{ display: selected !== null ? 'none' : 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
@@ -91,9 +92,10 @@ function AppInner(): React.JSX.Element {
               background: settings.layout === 'table' ? 'var(--accent)' : 'var(--bg-secondary)',
               color: settings.layout === 'table' ? 'var(--bg)' : 'var(--fg)',
               border: 'none', borderRadius: 0,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            ≡
+            <List size={15} />
           </button>
           <button
             onClick={() => void updateSettings({ layout: 'card' })}
@@ -103,21 +105,22 @@ function AppInner(): React.JSX.Element {
               background: settings.layout === 'card' ? 'var(--accent)' : 'var(--bg-secondary)',
               color: settings.layout === 'card' ? 'var(--bg)' : 'var(--fg)',
               border: 'none', borderLeft: '1px solid var(--border)', borderRadius: 0,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            ⊞
+            <LayoutGrid size={15} />
           </button>
         </div>
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          style={BTN}
+          style={{ ...BTN, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          {theme === 'dark' ? '☀' : '☾'}
+          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
         </button>
-        <button onClick={() => setHelpOpen(true)} title="Help" style={{ ...BTN, fontSize: 14, fontWeight: 600 }}>?</button>
-        <button onClick={() => setSettingsOpen(true)} title="Settings" style={BTN}>⚙</button>
+        <button onClick={() => setHelpOpen(true)} title="Help" style={{ ...BTN, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><CircleHelp size={15} /></button>
+        <button onClick={() => setSettingsOpen(true)} title="Settings" style={{ ...BTN, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><Settings2 size={15} /></button>
       </header>
       <main style={{ flex: 1, overflow: 'hidden', padding: '12px 16px', display: 'flex', flexDirection: 'column' }}>
         {showGhNotice && <GhMissingNotice installed={ghInstalled ?? false} />}

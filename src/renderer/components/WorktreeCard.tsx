@@ -4,6 +4,7 @@ import { buildStateLines, buildPrLines } from '../utils/tooltips';
 import { PrBadge } from './PrBadge';
 import { CopyButton } from './CopyButton';
 import { SessionPickerModal } from './SessionPickerModal';
+import { Eye, Play, Code2, Terminal, FolderOpen, GitBranch, ExternalLink, ArrowDownToLine, Pencil, Trash2, MoreVertical } from 'lucide-react';
 
 const REPO_HUES = [217, 142, 271, 24, 180, 329, 90, 45, 195, 0, 260, 158];
 
@@ -74,7 +75,7 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
     };
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const item = (icon: string, label: string, action: () => void, color?: string): React.JSX.Element => (
+  const item = (icon: React.ReactNode, label: string, action: () => void, color?: string): React.JSX.Element => (
     <button
       key={label}
       onMouseDown={(e) => e.stopPropagation()}
@@ -88,7 +89,7 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
       onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
     >
-      <span style={{ width: 16, textAlign: 'center' }}>{icon}</span>
+      <span style={{ width: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</span>
       <span>{label}</span>
     </button>
   );
@@ -102,11 +103,11 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
         onClick={openMenu}
         style={{
           background: 'none', border: 'none', color: 'var(--fg-muted)',
-          fontSize: 18, lineHeight: 1, padding: '2px 6px', borderRadius: 4,
-          cursor: 'pointer',
+          lineHeight: 1, padding: '2px 6px', borderRadius: 4,
+          cursor: 'pointer', display: 'inline-flex', alignItems: 'center',
         }}
       >
-        ⋮
+        <MoreVertical size={16} />
       </button>
       {open && menuPos && (
         <div
@@ -118,8 +119,8 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
             paddingTop: 4, paddingBottom: 4, overflow: 'hidden',
           }}
         >
-          {item('👁', 'View diff', () => onSelect(row))}
-          {row.sessions.length > 0 && item('▶', 'Resume Claude', () => {
+          {item(<Eye size={14} />, 'View diff', () => onSelect(row))}
+          {row.sessions.length > 0 && item(<Play size={14} />, 'Resume Claude', () => {
             const s = row.sessions[0]!;
             window.api.terminals.resumeSession({
               terminal: settings.defaultTerminal,
@@ -128,16 +129,16 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
             }).then((r) => onToast(r.message)).catch((e) => onToast(String(e)));
           })}
           <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
-          {item('✏', 'Edit in IDE', () => {
+          {item(<Code2 size={14} />, 'Edit in IDE', () => {
             window.api.open.editor(row.path)
               .then((r) => { if (!r.success) onToast(r.message); else onToast('Opened in editor'); })
               .catch((e) => onToast(String(e)));
           })}
-          {item('>_', 'Open in terminal', () => {
+          {item(<Terminal size={14} />, 'Open in terminal', () => {
             window.api.terminals.openDir({ terminal: settings.defaultTerminal, dir: row.path })
               .then((r) => onToast(r.message)).catch((e) => onToast(String(e)));
           })}
-          {item('📂', 'Open in Finder', () => {
+          {item(<FolderOpen size={14} />, 'Open in Finder', () => {
             void window.api.open.finder(row.path);
             onToast('Opened in Finder');
           })}
@@ -156,7 +157,7 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 16, textAlign: 'center', fontSize: 12 }}>⎇</span>
+              <span style={{ width: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><GitBranch size={14} /></span>
               <span>Git</span>
             </span>
             <span style={{ fontSize: 10, color: 'var(--fg-muted)' }}>{gitExpanded ? '▾' : '▸'}</span>
@@ -181,7 +182,7 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
               >
-                <span style={{ width: 14, textAlign: 'center' }}>↓</span>
+                <span style={{ display: 'flex', alignItems: 'center', width: 14 }}><ArrowDownToLine size={13} /></span>
                 <span>Update (pull)</span>
               </button>
               {row.branch && (
@@ -197,7 +198,7 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
                   onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
                 >
-                  <span style={{ width: 14, textAlign: 'center' }}>✎</span>
+                  <span style={{ display: 'flex', alignItems: 'center', width: 14 }}><Pencil size={13} /></span>
                   <span>Rename branch</span>
                 </button>
               )}
@@ -213,12 +214,12 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
               >
-                <span style={{ width: 14, textAlign: 'center' }}>🗑</span>
+                <span style={{ display: 'flex', alignItems: 'center', width: 14 }}><Trash2 size={13} /></span>
                 <span>Delete worktree</span>
               </button>
             </>
           )}
-          {row.repo.remoteUrl && item('↗', 'Open on GitHub', () => {
+          {row.repo.remoteUrl && item(<ExternalLink size={14} />, 'Open on GitHub', () => {
             void window.api.open.url(row.repo.remoteUrl!);
           })}
         </div>
@@ -378,7 +379,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
                 gap: 3,
               }}
             >
-              ▶
+              <Play size={13} />
             </button>
           )}
           <KebabMenu

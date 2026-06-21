@@ -151,6 +151,13 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     };
   }, [gitDropdown]);
 
+  // Close git dropdown when hover moves to a different row (or off the table)
+  useEffect(() => {
+    if (gitDropdown && (!actionInfo || actionInfo.id !== gitDropdown.id)) {
+      setGitDropdown(null);
+    }
+  }, [actionInfo]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSort = useCallback((key: string): void => {
     setSortDir((d) => (sortKey === key ? (d === 'asc' ? 'desc' : 'asc') : 'asc'));
     setSortKey(key);
@@ -484,6 +491,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
+                if (gitDropdown?.id === row.id) { setGitDropdown(null); return; }
                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                 const dropW = 170;
                 let left = rect.left;

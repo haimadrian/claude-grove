@@ -61,7 +61,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
     }}>
       <div style={{
         background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12,
-        padding: 28, maxWidth: 500, width: '90%', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto',
+        padding: '16px 28px', maxWidth: 500, width: '90%', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto',
         boxShadow: '0 8px 32px var(--shadow)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
@@ -197,7 +197,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
           />
         </Section>
 
-        <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onClose} style={BTN_SECONDARY}>Close</button>
           <button onClick={save} disabled={saving} style={{ ...BTN_SECONDARY, background: saved ? 'var(--ok)' : 'var(--accent)', color: 'var(--bg)', borderColor: 'transparent' }}>
             {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save'}

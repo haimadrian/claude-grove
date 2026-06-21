@@ -15,6 +15,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
   const [terminal, setTerminalLocal] = useState(settings.defaultTerminal);
   const [cardColumns, setCardColumns] = useState(settings.cardColumns ?? 3);
   const [cardRows, setCardRows] = useState(settings.cardRows ?? 3);
+  const [ignoredBranches, setIgnoredBranches] = useState<string[]>(settings.ignoredBranches ?? []);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -38,6 +39,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
       defaultTerminal: terminal,
       cardColumns: Math.max(1, Math.min(6, cardColumns)),
       cardRows: Math.max(1, Math.min(6, cardRows)),
+      ignoredBranches,
     });
     setSaving(false);
     setSaved(true);
@@ -122,12 +124,11 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
               <label key={b} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
                 <input
                   type="checkbox"
-                  checked={settings.ignoredBranches?.includes(b) ?? false}
+                  checked={ignoredBranches.includes(b)}
                   onChange={(e) => {
-                    const next = e.target.checked
-                      ? [...(settings.ignoredBranches ?? []), b]
-                      : (settings.ignoredBranches ?? []).filter((x) => x !== b);
-                    void onUpdate({ ignoredBranches: next });
+                    setIgnoredBranches(e.target.checked
+                      ? [...ignoredBranches, b]
+                      : ignoredBranches.filter((x) => x !== b));
                   }}
                 />
                 <code style={{ fontSize: 12 }}>{b}</code>

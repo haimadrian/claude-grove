@@ -106,9 +106,10 @@ interface Props {
   defaultTerminal: TerminalKind;
   onSelect: (wt: WorktreeRow) => void;
   onMessage: (msg: string, ok: boolean | 'pending', resolveId?: string, subtitle?: string) => string;
+  onRefresh: () => void;
 }
 
-export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, onMessage }: Props): React.JSX.Element {
+export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, onMessage, onRefresh }: Props): React.JSX.Element {
   const [search, setSearch] = useState('');
   const persisted = loadPersistedState();
   const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS, ...(persisted.filters ?? {}) });
@@ -228,9 +229,13 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     if (!renameState) return;
     const { wt, value } = renameState;
     if (!value.trim() || value === wt.branch) { setRenameState(null); return; }
+    const val = value.trim();
     setRenameState(null);
-    void window.api.worktrees.renameBranch(wt.path, value.trim());
-  }, [renameState]);
+    const renameId = onMessage('Renaming branch…', 'pending', undefined, val);
+    window.api.worktrees.renameBranch(wt.path, val)
+      .then((r) => { onMessage(r.message, r.success, renameId); if (r.success) onRefresh(); })
+      .catch((e) => onMessage(String(e), false, renameId));
+  }, [renameState, onMessage, onRefresh]);
 
   const doDelete = useCallback((): void => {
     if (!deleteState) return;
@@ -238,9 +243,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     setDeleteState(null);
     const id = onMessage('Deleting worktree…', 'pending', undefined, wt.branch ?? undefined);
     window.api.worktrees.remove(wt.path, { force: false, deleteLocalBranch: deleteRemote })
-      .then((r) => onMessage(r.message, r.success, id))
+      .then((r) => { onMessage(r.message, r.success, id); if (r.success) onRefresh(); })
       .catch((e) => onMessage(String(e), false, id));
-  }, [deleteState, onMessage]);
+  }, [deleteState, onMessage, onRefresh]);
 
   const hasFixed = colWidths.some((w) => w !== null);
 
@@ -566,9 +571,10 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
               onClick={(e) => {
                 e.stopPropagation();
                 setGitDropdown(null);
+                const pullId = onMessage('Pulling…', 'pending', undefined, row.branch ?? undefined);
                 window.api.worktrees.sync(row.path, 'pull')
-                  .then((r) => onMessage(r.message, r.success))
-                  .catch((err) => onMessage(String(err), false));
+                  .then((r) => { onMessage(r.message, r.success, pullId); if (r.success) onRefresh(); })
+                  .catch((err) => onMessage(String(err), false, pullId));
               }}
             >
               <span style={{ display: 'flex', width: 16, alignItems: 'center' }}><ArrowDownToLine size={14} /></span>

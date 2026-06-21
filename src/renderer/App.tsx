@@ -140,6 +140,7 @@ function AppInner(): React.JSX.Element {
                 defaultTerminal={settings.defaultTerminal}
                 onSelect={(w) => setSelectedId(w.id)}
                 onMessage={(msg, ok, resolveId, subtitle) => showToast(msg, ok === 'pending' ? 'pending' : ok ? 'ok' : 'error', resolveId, subtitle)}
+                onRefresh={refresh}
               />
             </div>
             <div style={{ display: selected !== null || settings.layout !== 'card' ? 'none' : 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
@@ -157,7 +158,8 @@ function AppInner(): React.JSX.Element {
                 defaultTerminal={settings.defaultTerminal}
                 refreshKey={detailRefreshKey}
                 onBack={() => setSelectedId(null)}
-                onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
+                onMessage={(msg, ok, resolveId, subtitle) => showToast(msg, ok === 'pending' ? 'pending' : ok ? 'ok' : 'error', resolveId, subtitle)}
+                onRefresh={refresh}
               />
             )}
           </>

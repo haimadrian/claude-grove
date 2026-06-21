@@ -35,13 +35,14 @@ interface KebabMenuProps {
   settings: Settings;
   onSelect: (row: WorktreeRow) => void;
   onToast: (msg: string, type?: 'ok' | 'error' | 'pending', resolveId?: string, subtitle?: string) => string;
+  onRefresh: () => void;
   onRename: () => void;
   onDelete: () => void;
   openMenuId: string | null;
   onMenuOpen: (id: string | null) => void;
 }
 
-function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openMenuId, onMenuOpen }: KebabMenuProps): React.JSX.Element {
+function KebabMenu({ row, settings, onSelect, onToast, onRefresh, onRename, onDelete, openMenuId, onMenuOpen }: KebabMenuProps): React.JSX.Element {
   const open = openMenuId === row.id;
   const [menuPos, setMenuPos] = useState<{ top?: number; bottom?: number; left: number } | null>(null);
   const [gitExpanded, setGitExpanded] = useState(false);
@@ -179,9 +180,10 @@ function KebabMenu({ row, settings, onSelect, onToast, onRename, onDelete, openM
                 onClick={(e) => {
                   e.stopPropagation();
                   onMenuOpen(null);
+                  const pullId = onToast('Pulling…', 'pending', undefined, row.branch ?? undefined);
                   window.api.worktrees.sync(row.path, 'pull')
-                    .then((r) => onToast(r.message))
-                    .catch((err) => onToast(String(err)));
+                    .then((r) => { onToast(r.message, r.success ? 'ok' : 'error', pullId); if (r.success) onRefresh(); })
+                    .catch((err) => onToast(String(err), 'error', pullId));
                 }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
@@ -286,8 +288,11 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
     const val = renameState.value.trim();
     if (!val || val === row.branch) { setRenameState(null); return; }
     setRenameState(null);
-    void window.api.worktrees.renameBranch(row.path, val);
-  }, [renameState, row.branch, row.path]);
+    const renameId = onToast('Renaming branch…', 'pending', undefined, val);
+    window.api.worktrees.renameBranch(row.path, val)
+      .then((r) => { onToast(r.message, r.success ? 'ok' : 'error', renameId); if (r.success) onRefresh(); })
+      .catch((e) => onToast(String(e), 'error', renameId));
+  }, [renameState, row.branch, row.path, onToast, onRefresh]);
 
   const doDelete = useCallback((): void => {
     if (!deleteState) return;
@@ -398,6 +403,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             settings={settings}
             onSelect={onSelect}
             onToast={onToast}
+            onRefresh={onRefresh}
             onRename={() => setRenameState({ value: row.branch ?? '' })}
             onDelete={() => setDeleteState({ deleteRemote: false })}
             openMenuId={openMenuId}

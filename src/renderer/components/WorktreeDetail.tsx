@@ -15,10 +15,11 @@ interface Props {
   defaultTerminal: TerminalKind;
   refreshKey?: number;
   onBack: () => void;
-  onMessage: (msg: string, ok: boolean) => void;
+  onMessage: (msg: string, ok: boolean | 'pending', resolveId?: string, subtitle?: string) => string;
+  onRefresh?: () => void;
 }
 
-export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, onMessage }: Props): React.JSX.Element {
+export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, onMessage, onRefresh }: Props): React.JSX.Element {
   const [diff, setDiff] = useState<string>('');
   const [leftWidth, setLeftWidth] = useState(300);
   const splitterDragging = useRef(false);
@@ -36,17 +37,19 @@ export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, 
     const val = renameState.value.trim();
     if (!val || val === worktree.branch) { setRenameState(null); return; }
     setRenameState(null);
+    const renameId = onMessage('Renaming branch…', 'pending', undefined, val);
     window.api.worktrees.renameBranch(worktree.path, val)
-      .then((r) => onMessage(r.message, r.success))
-      .catch((e) => onMessage(String(e), false));
-  }, [renameState, worktree, onMessage]);
+      .then((r) => { onMessage(r.message, r.success, renameId); if (r.success) onRefresh?.(); })
+      .catch((e) => onMessage(String(e), false, renameId));
+  }, [renameState, worktree, onMessage, onRefresh]);
 
   const doDelete = useCallback((): void => {
     setShowDeleteConfirm(false);
+    const delId = onMessage('Deleting worktree…', 'pending', undefined, worktree.branch ?? undefined);
     window.api.worktrees.remove(worktree.path, { force: false, deleteLocalBranch: deleteRemote })
-      .then((r) => { onMessage(r.message, r.success); if (r.success) onBack(); })
-      .catch((e) => onMessage(String(e), false));
-  }, [worktree, deleteRemote, onMessage, onBack]);
+      .then((r) => { onMessage(r.message, r.success, delId); if (r.success) { onRefresh?.(); onBack(); } })
+      .catch((e) => onMessage(String(e), false, delId));
+  }, [worktree, deleteRemote, onMessage, onBack, onRefresh]);
 
   const loadFullDiff = useCallback((): void => {
     window.api.worktrees.fullDiff(worktree.path, worktree.pr?.baseRefName ?? undefined, ignoreWhitespace).then(setDiff);

@@ -98,7 +98,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
               </button>
             ))}
           </div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-muted)', marginTop: 16, marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>Default editor</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-muted)', marginTop: 20, marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>Default editor</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
             <span style={{
               flex: 1, fontSize: 13, padding: '5px 8px',

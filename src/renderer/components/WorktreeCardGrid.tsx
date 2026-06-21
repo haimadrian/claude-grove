@@ -7,7 +7,7 @@ import { Toast, useToast } from './Toast';
 import { useLabels } from '../hooks/useLabels';
 import { LabelBar } from './LabelBar';
 
-const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
+const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false, label: [] };
 
 const LS_KEY = 'claude-grove:card-state';
 
@@ -158,6 +158,10 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
     return worktrees
       .filter((w) => {
         if (filters.repo.length > 0 && !filters.repo.includes(w.repo.name)) return false;
+        if (filters.label.length > 0) {
+          const wLabel = labels[w.path] ?? '';
+          if (!filters.label.includes(wLabel)) return false;
+        }
         if (filters.dirty && !w.isDirty) return false;
         if (filters.safeToDelete && !(w.upstreamGone || w.pr?.state === 'MERGED')) return false;
         if (filters.hasPr && !w.pr) return false;
@@ -184,7 +188,7 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
         const cmp = av.localeCompare(bv);
         return sortDir === 'asc' ? cmp : -cmp;
       });
-  }, [worktrees, search, filters, sortKey, sortDir]);
+  }, [worktrees, search, filters, sortKey, sortDir, labels]);
 
   const hasAnyLabel = filtered.some((r) => labels[r.path]);
 

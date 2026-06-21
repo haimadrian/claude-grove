@@ -10,7 +10,7 @@ import { useLabels } from '../hooks/useLabels';
 import { LabelBar } from './LabelBar';
 import { Eye, Play, Code2, Terminal, FolderOpen, GitBranch, ExternalLink, ArrowDownToLine, Pencil, Trash2 } from 'lucide-react';
 
-const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false };
+const DEFAULT_FILTERS: Filters = { repo: [], dirty: false, safeToDelete: false, hasPr: false, locked: false, label: [] };
 const COL_COUNT = 7; // Repo, Branch, State, Last commit, Modified, Sessions, Label, PR
 
 const LS_KEY = 'claude-grove:table-state';
@@ -225,6 +225,10 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     return worktrees
       .filter((w) => {
         if (filters.repo.length > 0 && !filters.repo.includes(w.repo.name)) return false;
+        if (filters.label.length > 0) {
+          const wLabel = labels[w.path] ?? '';
+          if (!filters.label.includes(wLabel)) return false;
+        }
         if (filters.dirty && !w.isDirty) return false;
         if (filters.safeToDelete && !(w.upstreamGone || w.pr?.state === 'MERGED')) return false;
         if (filters.hasPr && !w.pr) return false;

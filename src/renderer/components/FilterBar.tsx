@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { WorktreeRow } from '../../shared/types';
+import { useLabels } from '../hooks/useLabels';
 
 export interface Filters {
   repo: string[];
@@ -7,6 +8,7 @@ export interface Filters {
   safeToDelete: boolean;
   hasPr: boolean;
   locked: boolean;
+  label: string[];
 }
 
 interface Props {
@@ -41,7 +43,16 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
   const btnRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const toggle = (key: keyof Omit<Filters, 'repo'>): void =>
+  const { labels } = useLabels();
+  const allLabels = [...new Set(Object.values(labels).filter((v): v is string => Boolean(v)))].sort();
+
+  const [labelOpen, setLabelOpen] = useState(false);
+  const [labelPos, setLabelPos] = useState<{ top: number; left: number } | null>(null);
+  const [labelSearch, setLabelSearch] = useState('');
+  const labelBtnRef = useRef<HTMLButtonElement>(null);
+  const labelSearchRef = useRef<HTMLInputElement>(null);
+
+  const toggle = (key: keyof Omit<Filters, 'repo' | 'label'>): void =>
     onFilters({ ...filters, [key]: !filters[key] });
 
   const toggleRepo = (r: string): void => {
@@ -72,6 +83,40 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
     return () => document.removeEventListener('mousedown', close);
   }, [open]);
 
+  const toggleLabel = (l: string): void => {
+    const next = filters.label.includes(l)
+      ? filters.label.filter((x) => x !== l)
+      : [...filters.label, l];
+    onFilters({ ...filters, label: next });
+  };
+
+  const openLabelDropdown = (): void => {
+    if (labelOpen) { setLabelOpen(false); return; }
+    if (!labelBtnRef.current) return;
+    const rect = labelBtnRef.current.getBoundingClientRect();
+    setLabelPos({ top: rect.bottom + 4, left: rect.left });
+    setLabelSearch('');
+    setLabelOpen(true);
+  };
+
+  useEffect(() => {
+    if (labelOpen) setTimeout(() => labelSearchRef.current?.focus(), 50);
+  }, [labelOpen]);
+
+  useEffect(() => {
+    if (!labelOpen) return;
+    const close = (): void => setLabelOpen(false);
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [labelOpen]);
+
+  const allLabelsSelected = allLabels.length > 0 && allLabels.every((l) => filters.label.includes(l));
+  const someLabelsSelected = filters.label.length > 0 && !allLabelsSelected;
+
+  const toggleAllLabels = (): void => {
+    onFilters({ ...filters, label: allLabelsSelected ? [] : [...allLabels] });
+  };
+
   const selectedCount = filters.repo.length;
   const repoLabel = selectedCount === 0
     ? 'All repos'
@@ -89,6 +134,17 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
   const toggleAll = (): void => {
     onFilters({ ...filters, repo: allSelected ? [] : [...repos] });
   };
+
+  const selectedLabelCount = filters.label.length;
+  const labelBtnLabel = selectedLabelCount === 0
+    ? 'All labels'
+    : selectedLabelCount === 1
+    ? filters.label[0]!
+    : `${selectedLabelCount} labels`;
+
+  const visibleLabels = labelSearch.trim()
+    ? allLabels.filter((l) => l.toLowerCase().includes(labelSearch.toLowerCase()))
+    : allLabels;
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', margin: '8px 0' }}>
@@ -175,6 +231,94 @@ export function FilterBar({ worktrees, filters, sortKey, sortDir, onFilters, onS
                   style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
                 />
                 {r}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Labels multi-select dropdown */}
+      <button
+        ref={labelBtnRef}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={openLabelDropdown}
+        style={{
+          ...CHIP,
+          minWidth: 120,
+          ...(selectedLabelCount > 0 ? { background: 'var(--accent)', color: 'var(--bg)', border: '1px solid var(--accent)' } : {}),
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
+        }}
+      >
+        <span>{labelBtnLabel}</span>
+        <span style={{ fontSize: 9, opacity: 0.7 }}>▾</span>
+      </button>
+
+      {labelOpen && labelPos && (
+        <div
+          onMouseDown={(e) => e.stopPropagation()}
+          style={{
+            position: 'fixed', top: labelPos.top, left: labelPos.left,
+            background: 'var(--bg)', border: '1px solid var(--border)',
+            borderRadius: 8, boxShadow: '0 4px 16px var(--shadow)',
+            zIndex: 2000, width: 200, padding: '6px 0',
+          }}
+        >
+          {/* Search input */}
+          <div style={{ padding: '0 10px 6px' }}>
+            <input
+              ref={labelSearchRef}
+              value={labelSearch}
+              onChange={(e) => setLabelSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Escape') setLabelOpen(false); }}
+              placeholder="Search labels…"
+              style={{
+                width: '100%', padding: '5px 8px', fontSize: 12,
+                background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                borderRadius: 6, color: 'var(--fg)', outline: 'none',
+              }}
+            />
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: 'var(--border)', marginBottom: 4 }} />
+
+          {/* Select all checkbox — only shown when not filtering by text */}
+          {!labelSearch.trim() && allLabels.length > 0 && (
+            <label
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, color: 'var(--fg-muted)', fontWeight: 500 }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLLabelElement).style.background = 'var(--bg-tertiary)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.background = ''; }}
+            >
+              <input
+                type="checkbox"
+                checked={allLabelsSelected}
+                ref={(el) => { if (el) el.indeterminate = someLabelsSelected; }}
+                onChange={toggleAllLabels}
+                style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
+              />
+              All labels
+            </label>
+          )}
+
+          {/* Label list */}
+          <div style={{ maxHeight: 220, overflowY: 'auto' }}>
+            {visibleLabels.length === 0 && (
+              <div style={{ padding: '8px 14px', fontSize: 12, color: 'var(--fg-muted)' }}>No match</div>
+            )}
+            {visibleLabels.map((l) => (
+              <label
+                key={l}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, color: 'var(--fg)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLLabelElement).style.background = 'var(--bg-tertiary)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.background = ''; }}
+              >
+                <input
+                  type="checkbox"
+                  checked={filters.label.includes(l)}
+                  onChange={() => toggleLabel(l)}
+                  style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
+                />
+                {l}
               </label>
             ))}
           </div>

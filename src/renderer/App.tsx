@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RotateCcw, List, LayoutGrid, Sun, Moon, CircleHelp, Settings2 } from 'lucide-react';
+import { RotateCcw, List, LayoutGrid, Sun, Moon, CircleHelp, Settings2, Trees } from 'lucide-react';
 import type { WorktreeRow } from '../shared/types';
 import { ThemeProvider, useTheme } from './theme/ThemeProvider';
 import { WorktreeTable } from './components/WorktreeTable';
@@ -59,17 +59,19 @@ function AppInner(): React.JSX.Element {
         padding: '10px 16px', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
       }}>
-        <span style={{
-          fontFamily: "'Bangers', cursive",
-          fontSize: 34,
-          letterSpacing: '0.08em',
-          userSelect: 'none',
-          color: 'var(--fg)',
-          WebkitTextStroke: '0.5px var(--accent)',
-          textShadow: '2px 2px 0 var(--accent), 4px 4px 0 rgba(0,0,0,0.15)',
-          lineHeight: 1,
-        } as React.CSSProperties}>
-          Claude Grove
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, userSelect: 'none' }}>
+          <Trees size={28} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+          <span style={{
+            fontFamily: "'Bangers', cursive",
+            fontSize: 34,
+            letterSpacing: '0.08em',
+            color: 'var(--fg)',
+            WebkitTextStroke: '0.5px var(--accent)',
+            textShadow: '2px 2px 0 var(--accent), 4px 4px 0 rgba(0,0,0,0.15)',
+            lineHeight: 1,
+          } as React.CSSProperties}>
+            Claude Grove
+          </span>
         </span>
         <button
           onClick={selected !== null
@@ -80,7 +82,7 @@ function AppInner(): React.JSX.Element {
             : 'Refresh — reload all worktrees'}
           style={{ ...BTN, marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <span style={loading && selected === null ? { display: 'inline-flex', animation: 'spin 0.8s linear infinite' } : { display: 'inline-flex' }}><RotateCcw size={15} /></span>
+          <span style={loading && selected === null ? { display: 'inline-flex', animation: 'spin 0.8s linear infinite reverse' } : { display: 'inline-flex' }}><RotateCcw size={15} /></span>
         </button>
         {/* Layout toggle — only relevant on the worktree list, hidden in detail view */}
         <div style={{ display: selected !== null ? 'none' : 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>

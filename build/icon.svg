@@ -1,0 +1,76 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Deep dark background gradient -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f1923"/>
+      <stop offset="100%" stop-color="#0a1016"/>
+    </linearGradient>
+
+    <!-- Left tree: emerald green -->
+    <linearGradient id="g1" x1="380" y1="130" x2="380" y2="730" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#86efac"/>
+      <stop offset="45%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#166534"/>
+    </linearGradient>
+
+    <!-- Right tree: electric blue -->
+    <linearGradient id="g2" x1="695" y1="240" x2="695" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#93c5fd"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+
+    <!-- Ground glow -->
+    <radialGradient id="glow" cx="50%" cy="100%" r="55%">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.18"/>
+      <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft drop shadow on trees -->
+    <filter id="shadow" x="-15%" y="-5%" width="130%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="196" fill="url(#bg)"/>
+
+  <!-- Ground ambient glow -->
+  <rect width="1024" height="1024" rx="196" fill="url(#glow)"/>
+
+  <!-- Ground line -->
+  <rect x="150" y="754" width="724" height="12" rx="6" fill="#ffffff" fill-opacity="0.05"/>
+
+  <!-- ======== LEFT TREE (large, green) ======== -->
+  <g filter="url(#shadow)">
+    <!-- Trunk -->
+    <rect x="354" y="688" width="56" height="78" rx="10" fill="#14532d"/>
+    <!-- Bottom canopy layer -->
+    <polygon points="382,345 160,688 604,688" fill="url(#g1)"/>
+    <!-- Middle canopy layer -->
+    <polygon points="382,238 202,500 562,500" fill="url(#g1)"/>
+    <!-- Top canopy layer -->
+    <polygon points="382,130 248,345 516,345" fill="url(#g1)"/>
+  </g>
+
+  <!-- ======== RIGHT TREE (medium, blue) ======== -->
+  <g filter="url(#shadow)">
+    <!-- Trunk -->
+    <rect x="672" y="632" width="44" height="68" rx="8" fill="#1e3a8a"/>
+    <!-- Bottom canopy layer -->
+    <polygon points="694,360 534,632 854,632" fill="url(#g2)"/>
+    <!-- Middle canopy layer -->
+    <polygon points="694,278 566,462 822,462" fill="url(#g2)"/>
+    <!-- Top canopy layer -->
+    <polygon points="694,200 610,344 778,344" fill="url(#g2)"/>
+  </g>
+
+  <!-- Stars (subtle) -->
+  <circle cx="188" cy="188" r="3.5" fill="#7dd3fc" opacity="0.55"/>
+  <circle cx="828" cy="152" r="2.5" fill="#86efac" opacity="0.5"/>
+  <circle cx="148" cy="420" r="2" fill="#60a5fa" opacity="0.4"/>
+  <circle cx="872" cy="340" r="3" fill="#86efac" opacity="0.45"/>
+  <circle cx="900" cy="220" r="2" fill="#7dd3fc" opacity="0.35"/>
+  <circle cx="130" cy="290" r="2.5" fill="#60a5fa" opacity="0.3"/>
+</svg>

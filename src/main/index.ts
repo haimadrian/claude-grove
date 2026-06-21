@@ -1,5 +1,6 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, nativeImage } from 'electron';
 import { join } from 'node:path';
+import { existsSync } from 'node:fs';
 import { registerIpc } from './ipc';
 import { loadWindowState, trackWindowState } from './windowState';
 import { logger } from './logger';
@@ -20,10 +21,13 @@ for (const p of EXTRA_PATHS) {
 
 function createWindow(): void {
   const state = loadWindowState();
+  const iconPath = join(__dirname, '../../build/icon.png');
+  const icon = existsSync(iconPath) ? nativeImage.createFromPath(iconPath) : undefined;
   const win = new BrowserWindow({
     width: state.width,
     height: state.height,
     ...(state.x !== undefined && state.y !== undefined ? { x: state.x, y: state.y } : {}),
+    ...(icon ? { icon } : {}),
     show: false,
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),

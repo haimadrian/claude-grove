@@ -94,7 +94,7 @@ function GroupHeader({ label, lineColor }: { label: string; lineColor: string })
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <span style={{
-        fontSize: 13, fontWeight: 600, flexShrink: 0,
+        fontSize: 15, fontWeight: 700, flexShrink: 0,
         padding: '3px 12px', borderRadius: 12,
         ...(isAll
           ? { background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }
@@ -106,7 +106,7 @@ function GroupHeader({ label, lineColor }: { label: string; lineColor: string })
       }}>
         {isAll ? 'All' : label}
       </span>
-      <div style={{ flex: 1, height: 1, background: lineColor }} />
+      <div style={{ flex: 1, height: 2, background: lineColor }} />
     </div>
   );
 }
@@ -131,6 +131,8 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
   };
   const gridRef = useRef<HTMLDivElement>(null);
   const [cardHeight, setCardHeight] = useState(220);
+  const cardRowsRef = useRef(settings.cardRows ?? 3);
+  cardRowsRef.current = settings.cardRows ?? 3;
 
   useEffect(() => {
     const el = gridRef.current;
@@ -138,15 +140,26 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
     const GAP = 12;
     const PAD = 12;
     const compute = (): void => {
+      const rows = cardRowsRef.current;
       const h = el.clientHeight;
-      const rowH = Math.floor((h - PAD * 2 - GAP * 2) / 3);
-      setCardHeight(Math.max(rowH, 160));
+      const rowH = Math.floor((h - PAD * 2 - GAP * (rows - 1)) / rows);
+      setCardHeight(Math.max(rowH, 120));
     };
     compute();
     const obs = new ResizeObserver(compute);
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
+
+  // Recompute card height when rows setting changes
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    const rows = settings.cardRows ?? 3;
+    const h = el.clientHeight;
+    const rowH = Math.floor((h - 24 - 12 * (rows - 1)) / rows);
+    setCardHeight(Math.max(rowH, 120));
+  }, [settings.cardRows]);
 
   // Drop repo selections that no longer exist in the current worktree list
   useEffect(() => {
@@ -240,8 +253,8 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
         style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: 12 }}
       >
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridAutoRows: cardHeight, gap: 12 }}>
-            {Array.from({ length: 9 }).map((_, i) => (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${settings.cardColumns ?? 3}, 1fr)`, gridAutoRows: cardHeight, gap: 12 }}>
+            {Array.from({ length: (settings.cardColumns ?? 3) * (settings.cardRows ?? 3) }).map((_, i) => (
               <SkeletonCard key={i} height={cardHeight} delay={i * 80} />
             ))}
           </div>
@@ -259,7 +272,7 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
                 {hasAnyLabel && <GroupHeader label={label} lineColor={lineColor} />}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gridTemplateColumns: `repeat(${settings.cardColumns ?? 3}, 1fr)`,
                   gridAutoRows: cardHeight,
                   gap: 12,
                   marginTop: hasAnyLabel ? 20 : 0,

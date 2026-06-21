@@ -13,6 +13,8 @@ export interface Settings {
   newWorktreeParentDir: string | null;
   theme: Theme;
   layout: 'table' | 'card';
+  cardColumns: number;
+  cardRows: number;
 }
 
 export interface RepoRef {

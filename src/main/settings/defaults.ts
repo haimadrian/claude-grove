@@ -13,4 +13,6 @@ export const DEFAULT_SETTINGS: Settings = {
   newWorktreeParentDir: null,
   theme: 'system',
   layout: 'table',
+  cardColumns: 3,
+  cardRows: 3,
 };

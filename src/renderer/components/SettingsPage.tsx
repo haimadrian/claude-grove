@@ -13,6 +13,8 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
   const [defaultBaseBranch, setDefaultBaseBranch] = useState(settings.defaultBaseBranch);
   const [prCacheTtl, setPrCacheTtl] = useState(String(settings.prCacheTtlSeconds));
   const [terminal, setTerminalLocal] = useState(settings.defaultTerminal);
+  const [cardColumns, setCardColumns] = useState(settings.cardColumns ?? 3);
+  const [cardRows, setCardRows] = useState(settings.cardRows ?? 3);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -34,6 +36,8 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
       defaultBaseBranch,
       prCacheTtlSeconds: Number(prCacheTtl) || 60,
       defaultTerminal: terminal,
+      cardColumns: Math.max(1, Math.min(6, cardColumns)),
+      cardRows: Math.max(1, Math.min(6, cardRows)),
     });
     setSaving(false);
     setSaved(true);
@@ -91,6 +95,24 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
                 {t}
               </button>
             ))}
+          </div>
+        </Section>
+
+        <Section title="Card layout">
+          <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+            {([['Columns', cardColumns, setCardColumns], ['Rows', cardRows, setCardRows]] as const).map(([lbl, val, set]) => (
+              <div key={lbl}>
+                <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginBottom: 6, fontWeight: 500 }}>{lbl}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <button onClick={() => set((v) => Math.max(1, v - 1))} style={{ ...BTN_SMALL, width: 28, textAlign: 'center' as const }}>−</button>
+                  <span style={{ fontSize: 15, fontWeight: 700, minWidth: 18, textAlign: 'center' as const, color: 'var(--fg)' }}>{val}</span>
+                  <button onClick={() => set((v) => Math.min(6, v + 1))} style={{ ...BTN_SMALL, width: 28, textAlign: 'center' as const }}>+</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 8 }}>
+            Cards resize automatically to fill the visible area. Range: 1–6.
           </div>
         </Section>
 

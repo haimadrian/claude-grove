@@ -105,7 +105,7 @@ interface Props {
   loading: boolean;
   defaultTerminal: TerminalKind;
   onSelect: (wt: WorktreeRow) => void;
-  onMessage: (msg: string, ok: boolean) => void;
+  onMessage: (msg: string, ok: boolean | 'pending', resolveId?: string, subtitle?: string) => string;
 }
 
 export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, onMessage }: Props): React.JSX.Element {
@@ -236,9 +236,10 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
     if (!deleteState) return;
     const { wt, deleteRemote } = deleteState;
     setDeleteState(null);
+    const id = onMessage('Deleting worktree…', 'pending', undefined, wt.branch ?? undefined);
     window.api.worktrees.remove(wt.path, { force: false, deleteLocalBranch: deleteRemote })
-      .then((r) => onMessage(r.message, r.success))
-      .catch((e) => onMessage(String(e), false));
+      .then((r) => onMessage(r.message, r.success, id))
+      .catch((e) => onMessage(String(e), false, id));
   }, [deleteState, onMessage]);
 
   const hasFixed = colWidths.some((w) => w !== null);

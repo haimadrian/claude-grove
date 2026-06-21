@@ -34,7 +34,7 @@ interface KebabMenuProps {
   row: WorktreeRow;
   settings: Settings;
   onSelect: (row: WorktreeRow) => void;
-  onToast: (msg: string) => void;
+  onToast: (msg: string, type?: 'ok' | 'error' | 'pending', resolveId?: string, subtitle?: string) => string;
   onRename: () => void;
   onDelete: () => void;
   openMenuId: string | null;
@@ -261,7 +261,7 @@ export interface WorktreeCardProps {
   settings: Settings;
   onSelect: (row: WorktreeRow) => void;
   onRefresh: () => void;
-  onToast: (msg: string) => void;
+  onToast: (msg: string, type?: 'ok' | 'error' | 'pending', resolveId?: string, subtitle?: string) => string;
   openMenuId: string | null;
   onMenuOpen: (id: string | null) => void;
   cardHeight?: number;
@@ -293,9 +293,10 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
     if (!deleteState) return;
     const { deleteRemote } = deleteState;
     setDeleteState(null);
+    const id = onToast('Deleting worktree…', 'pending', undefined, row.branch ?? undefined);
     window.api.worktrees.remove(row.path, { force: false, deleteLocalBranch: deleteRemote })
-      .then((r) => { onToast(r.message); if (r.success) onRefresh(); })
-      .catch((e) => onToast(String(e)));
+      .then((r) => { onToast(r.message, r.success ? 'ok' : 'error', id); if (r.success) onRefresh(); })
+      .catch((e) => onToast(String(e), 'error', id));
   }, [deleteState, row.path, onToast, onRefresh]);
 
   const sha = row.headSha.slice(0, 7);

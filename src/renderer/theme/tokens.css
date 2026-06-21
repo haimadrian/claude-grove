@@ -97,6 +97,11 @@ button:not(:disabled):hover {
   to   { transform: rotate(360deg); }
 }
 
+@keyframes grove-progress {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
 /* react-diff-view dark mode overrides.
    Must use html[data-theme="dark"] (specificity 0,1,1) to beat react-diff-view's
    :root variables (specificity 0,1,0) regardless of stylesheet source order. */

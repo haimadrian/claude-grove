@@ -8,7 +8,7 @@ import { WorktreeDetail } from './components/WorktreeDetail';
 import { GhMissingNotice } from './components/GhMissingNotice';
 import { SettingsPage } from './components/SettingsPage';
 import { Onboarding } from './components/Onboarding';
-import { Toast, useToast } from './components/Toast';
+import { ToastStack, useToast } from './components/Toast';
 import { HelpModal } from './components/HelpModal';
 import { useSettings } from './hooks/useSettings';
 import { useWorktrees } from './hooks/useWorktrees';
@@ -24,7 +24,7 @@ function AppInner(): React.JSX.Element {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
-  const { toast, showToast, clearToast } = useToast();
+  const { items, showToast, removeItem } = useToast();
 
   React.useEffect(() => {
     window.api.gh.status().then((s) => {
@@ -136,7 +136,7 @@ function AppInner(): React.JSX.Element {
                 loading={loading}
                 defaultTerminal={settings.defaultTerminal}
                 onSelect={(w) => setSelectedId(w.id)}
-                onMessage={(msg, ok) => showToast(msg, ok ? 'ok' : 'error')}
+                onMessage={(msg, ok, resolveId, subtitle) => showToast(msg, ok === 'pending' ? 'pending' : ok ? 'ok' : 'error', resolveId, subtitle)}
               />
             </div>
             <div style={{ display: selected !== null || settings.layout !== 'card' ? 'none' : 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
@@ -168,9 +168,7 @@ function AppInner(): React.JSX.Element {
         />
       )}
       {helpOpen && <HelpModal onClose={() => setHelpOpen(false)} />}
-      {toast !== null && (
-        <Toast message={toast.message} type={toast.type} onDone={clearToast} />
-      )}
+      <ToastStack items={items} onRemove={removeItem} />
     </div>
   );
 }

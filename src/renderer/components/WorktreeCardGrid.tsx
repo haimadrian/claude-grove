@@ -3,7 +3,7 @@ import type { WorktreeRow, Settings } from '../../shared/types';
 import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 import { WorktreeCard } from './WorktreeCard';
-import { Toast, useToast } from './Toast';
+import { ToastStack, useToast } from './Toast';
 import { useLabels } from '../hooks/useLabels';
 import { LabelBar } from './LabelBar';
 
@@ -119,7 +119,7 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
   const [sortKey, setSortKey] = useState(persisted.sortKey ?? 'repo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.sortDir ?? 'asc');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const { toast, showToast, clearToast } = useToast();
+  const { items, showToast, removeItem } = useToast();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { labels, setLabel } = useLabels();
 
@@ -285,7 +285,7 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
                       settings={settings}
                       onSelect={onSelect}
                       onRefresh={onRefresh}
-                      onToast={(msg) => showToast(msg, 'ok')}
+                      onToast={(msg, type, resolveId, subtitle) => showToast(msg, type, resolveId, subtitle)}
                       openMenuId={openMenuId}
                       onMenuOpen={setOpenMenuId}
                       cardHeight={cardHeight}
@@ -312,9 +312,7 @@ export function WorktreeCardGrid({ worktrees, settings, loading, onSelect, onRef
           onClear={() => setSelectedIds(new Set())}
         />
       )}
-      {toast !== null && (
-        <Toast message={toast.message} type={toast.type} onDone={clearToast} />
-      )}
+      <ToastStack items={items} onRemove={removeItem} />
     </div>
   );
 }

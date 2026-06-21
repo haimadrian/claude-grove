@@ -65,6 +65,28 @@ const BADGE_BASE: React.CSSProperties = {
 };
 
 
+function labelHue(s: string): number {
+  let h = 0;
+  for (const c of s) h = ((h << 5) - h + c.charCodeAt(0)) | 0;
+  return Math.abs(h) % 360;
+}
+
+function LabelPill({ label }: { label: string }): React.JSX.Element {
+  if (!label) return <span style={{ color: 'var(--fg-muted)' }}>—</span>;
+  const hue = labelHue(label);
+  return (
+    <span style={{
+      fontSize: 12, fontWeight: 600, padding: '2px 10px', borderRadius: 12,
+      background: `hsla(${hue}, 60%, 55%, 0.12)`,
+      border: `1px solid hsla(${hue}, 60%, 55%, 0.3)`,
+      color: `hsl(${hue}, 60%, 55%)`,
+      whiteSpace: 'nowrap',
+    }}>
+      {label}
+    </span>
+  );
+}
+
 function formatDate(iso: string): string {
   if (!iso) return '—';
   try {
@@ -413,7 +435,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                     ) : '—'}
                   </td>
                   <td style={TD}>
-                    <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>{labels[w.path] ?? '—'}</span>
+                    <LabelPill label={labels[w.path] ?? ''} />
                   </td>
                   <td
                     style={TD}

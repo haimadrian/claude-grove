@@ -61,7 +61,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
     }}>
       <div style={{
         background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12,
-        padding: 28, maxWidth: 500, width: '90%', maxHeight: '80vh', overflowY: 'auto',
+        padding: 28, maxWidth: 500, width: '90%', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto',
         boxShadow: '0 8px 32px var(--shadow)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
@@ -118,28 +118,6 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
           </div>
         </Section>
 
-        <Section title="Ignored branches">
-          <div style={{ display: 'flex', gap: 16 }}>
-            {(['main', 'master'] as const).map((b) => (
-              <label key={b} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={ignoredBranches.includes(b)}
-                  onChange={(e) => {
-                    setIgnoredBranches(e.target.checked
-                      ? [...ignoredBranches, b]
-                      : ignoredBranches.filter((x) => x !== b));
-                  }}
-                />
-                <code style={{ fontSize: 12 }}>{b}</code>
-              </label>
-            ))}
-          </div>
-          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 6 }}>
-            Worktrees on these branches are hidden from the table and card view.
-          </div>
-        </Section>
-
         <Section title="Editor">
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
             <span style={{
@@ -186,6 +164,28 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
             style={INPUT}
             placeholder="main"
           />
+        </Section>
+
+        <Section title="Ignored branches">
+          <div style={{ display: 'flex', gap: 16 }}>
+            {(['main', 'master'] as const).map((b) => (
+              <label key={b} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={ignoredBranches.includes(b)}
+                  onChange={(e) => {
+                    setIgnoredBranches(e.target.checked
+                      ? [...ignoredBranches, b]
+                      : ignoredBranches.filter((x) => x !== b));
+                  }}
+                />
+                <code style={{ fontSize: 12 }}>{b}</code>
+              </label>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 6 }}>
+            Worktrees on these branches are hidden from the table and card view.
+          </div>
         </Section>
 
         <Section title="PR cache TTL (seconds)">

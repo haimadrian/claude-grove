@@ -361,6 +361,27 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             {row.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}
           </span>
           {row.branch && <CopyButton text={row.branch} />}
+          <button
+            onClick={(e) => { e.stopPropagation(); onSelect(row); }}
+            title="View diff"
+            style={{
+              background: 'none',
+              border: 'none',
+              borderRadius: 4,
+              cursor: 'pointer',
+              padding: '1px 6px',
+              fontSize: 12,
+              color: 'var(--fg-muted)',
+              lineHeight: 1,
+              flexShrink: 0,
+              alignSelf: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3,
+            }}
+          >
+            <Eye size={13} />
+          </button>
           {row.sessions.length > 0 && (
             <button
               onClick={(e) => {

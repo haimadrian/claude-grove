@@ -42,6 +42,13 @@ declare global {
         pickDirectory(): Promise<{ canceled: boolean; filePaths: string[] }>;
         pickApplication(): Promise<{ canceled: boolean; filePaths: string[] }>;
       };
+      find: {
+        search(text: string): void;
+        next(text: string): void;
+        prev(text: string): void;
+        stop(): void;
+        onResult(cb: (result: { activeMatchOrdinal: number; matches: number; finalUpdate: boolean }) => void): () => void;
+      };
     };
   }
 }

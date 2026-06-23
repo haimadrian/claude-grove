@@ -52,4 +52,15 @@ contextBridge.exposeInMainWorld('api', {
     pickApplication: (): Promise<{ canceled: boolean; filePaths: string[] }> =>
       ipcRenderer.invoke(CH.pickApplication),
   },
+  find: {
+    search: (text: string): void => { ipcRenderer.send(CH.findInPage, text, false, true); },
+    next: (text: string): void => { ipcRenderer.send(CH.findInPage, text, true, true); },
+    prev: (text: string): void => { ipcRenderer.send(CH.findInPage, text, true, false); },
+    stop: (): void => { ipcRenderer.send(CH.stopFindInPage); },
+    onResult: (cb: (result: { activeMatchOrdinal: number; matches: number; finalUpdate: boolean }) => void): (() => void) => {
+      const listener = (_: Electron.IpcRendererEvent, result: { activeMatchOrdinal: number; matches: number; finalUpdate: boolean }): void => cb(result);
+      ipcRenderer.on(CH.foundInPage, listener);
+      return () => { ipcRenderer.removeListener(CH.foundInPage, listener); };
+    },
+  },
 });

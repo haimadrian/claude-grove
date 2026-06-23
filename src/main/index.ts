@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs';
 import { registerIpc } from './ipc';
 import { loadWindowState, trackWindowState } from './windowState';
 import { logger } from './logger';
+import { CH } from '../shared/ipcChannels';
 
 // Augment PATH so execFile can find homebrew/nix/system binaries that aren't
 // in the minimal PATH Electron inherits on macOS.
@@ -38,6 +39,9 @@ function createWindow(): void {
   });
   trackWindowState(win);
   win.on('ready-to-show', () => win.show());
+  win.webContents.on('found-in-page', (_evt, result) => {
+    win.webContents.send(CH.foundInPage, result);
+  });
   if (process.env.ELECTRON_RENDERER_URL) {
     win.loadURL(process.env.ELECTRON_RENDERER_URL);
   } else {

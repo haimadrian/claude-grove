@@ -31,7 +31,13 @@ Shows CI check status and review decision (approved / changes requested / pendin
 
 ### In-app diff viewer
 
-GitHub-style diff without leaving the app. Commit list on the left, per-commit diff or full diff vs base on the right. Drag the splitter to resize. Ignore-whitespace toggle.
+GitHub-style diff without leaving the app. Commit list on the left, per-commit diff or full diff vs base on the right.
+
+- **File tree sidebar** — always-visible collapsible panel showing changed files grouped by folder. `+`/`-` counts on each file. Click any file to jump straight to its section in the diff. Drag the splitter to resize (220 px default).
+- **Collapsible commit list** — click the splitter between the commit list and diff area to pin it open or closed. Drag to resize. State persists across sessions.
+- **Eye button** on cards — open the diff view directly from the worktree card without entering the detail screen first.
+- **Find in diff** (`Cmd+F`) — floating search bar with match counter (`n/m`), next/prev buttons, Enter / Shift+Enter navigation. Works reliably even when Chromium steals focus during search.
+- **Ignore-whitespace toggle** and unified/split view selector.
 
 ### Claude Code session linkage
 
@@ -130,6 +136,25 @@ On first launch, add a root folder (e.g. `~/Documents/GIT`) in Settings. Claude 
 
 ```bash
 pnpm install
+```
+
+### Troubleshooting
+
+**`dyld: Library not loaded: @rpath/Electron Framework.framework/Electron Framework`**
+
+Electron's postinstall download was interrupted, leaving an incomplete `dist/Electron.app` (only `MacOS/` and `Resources/`, missing `Frameworks/`). Fix by re-extracting from the cached zip:
+
+```bash
+cd node_modules/electron/dist
+unzip -o ~/Library/Caches/electron/electron-v33.4.11-darwin-arm64.zip
+```
+
+Replace `arm64` with `x64` if you are on an Intel Mac. After extraction, `pnpm dev` should start normally.
+
+If the zip is missing from the cache (first-ever install, cache cleared), force a re-download:
+
+```bash
+node node_modules/electron/install.js
 ```
 
 ### Hot-reload dev mode

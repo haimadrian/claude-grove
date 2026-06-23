@@ -178,7 +178,7 @@ export function CommitList({ worktreePath, isDirty, prBase, ignoreWhitespace, on
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-muted)' }}>COMMITS</span>
         <button
-          onClick={onFullDiff}
+          onClick={() => { setSelected(null); onFullDiff(); }}
           style={{
             fontSize: 11, padding: '2px 8px', background: 'var(--bg-secondary)',
             border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', color: 'var(--fg)',

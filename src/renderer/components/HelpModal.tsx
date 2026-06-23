@@ -123,9 +123,12 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
 
           <div style={SECTION}>
             <div style={H2}>Worktree Detail View</div>
-            <p style={P}>Click <strong>View diff</strong> (⋮ menu or table floating action) to open the detail page: branch, repo, path, PR badge, action buttons, commit list on the left, diff viewer on the right.</p>
+            <p style={P}>Click <strong>View diff</strong> (⋮ menu, table floating action, or <strong>👁</strong> icon on card header) to open the detail page.</p>
             <ul style={{ paddingLeft: 20, color: 'var(--fg-muted)', fontSize: 13, lineHeight: 2 }}>
               <li>Click a commit to see its diff · <strong>Full diff vs base</strong> for the complete PR diff</li>
+              <li>A <strong>file tree</strong> panel always shows changed files — click any file to jump to it in the diff. Folders are collapsible. Drag the splitter between the tree and diff to resize it.</li>
+              <li>The <strong>commit list splitter</strong> (left edge of diff area) can be clicked to collapse/expand the commit list. Drag it to resize.</li>
+              <li><strong>Cmd+F</strong> — open find-in-page search. Type 2+ characters to highlight all matches. <strong>Enter</strong> = next, <strong>Shift+Enter</strong> = prev. Click ↑ ↓ buttons or press Escape to close.</li>
               <li><strong>↺ Refresh</strong> in detail view reloads only this worktree's diff and commits — not the full list</li>
             </ul>
           </div>

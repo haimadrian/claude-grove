@@ -24,4 +24,7 @@ export const CH = {
   openUrl: 'open:url',
   pickDirectory: 'dialog:pickDirectory',
   pickApplication: 'dialog:pickApplication',
+  findInPage: 'find:search',
+  stopFindInPage: 'find:stop',
+  foundInPage: 'find:result',
 } as const;

@@ -303,5 +303,15 @@ export function registerIpc(): void {
     });
   });
 
+  // Find in page
+  ipcMain.on(CH.findInPage, (event, text: string, findNext: boolean, forward: boolean) => {
+    if (!text) return;
+    event.sender.findInPage(text, { findNext, forward, matchCase: false });
+  });
+
+  ipcMain.on(CH.stopFindInPage, (event) => {
+    event.sender.stopFindInPage('clearSelection');
+  });
+
   logger.info(`ipc: registered ${Object.keys(CH).length} handlers`);
 }

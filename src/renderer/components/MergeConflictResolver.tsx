@@ -137,11 +137,11 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
                   ? <div style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
                   : renderSide(seg.ours)}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                 {seg.type === 'conflict' && (
                   <button
                     onClick={() => accept(seg.id, seg.oursText)}
-                    style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 5, width: 24, height: 24, fontSize: 13, cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ marginTop: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 5, width: 24, height: 24, fontSize: 13, cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     title="Accept Mine"
                   >
                     »
@@ -163,11 +163,11 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
                   </div>
                 )}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                 {seg.type === 'conflict' && (
                   <button
                     onClick={() => accept(seg.id, seg.theirsText)}
-                    style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 5, width: 24, height: 24, fontSize: 13, cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ marginTop: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 5, width: 24, height: 24, fontSize: 13, cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     title="Accept Theirs"
                   >
                     «

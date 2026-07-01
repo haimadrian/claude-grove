@@ -594,7 +594,9 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
               onClick={(e) => {
                 e.stopPropagation();
                 setGitDropdown(null);
-                window.api.worktrees.listBranches(row.path).then((branches) => setMergeBranches({ row, branches }));
+                // Merging a branch into itself is meaningless, but merging its remote-tracking
+                // counterpart (e.g. origin/<same-name>) to pull latest is a real, common operation.
+                window.api.worktrees.listBranches(row.path).then((branches) => setMergeBranches({ row, branches: branches.filter((b) => b !== row.branch) }));
               }}
             >
               <span style={{ display: 'flex', width: 16, alignItems: 'center' }}><GitBranch size={14} /></span>

@@ -301,7 +301,9 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
   const [mergeTarget, setMergeTarget] = useState<string | null>(null);
 
   const openMergeFrom = (): void => {
-    window.api.worktrees.listBranches(row.path).then(setMergeBranches);
+    // Merging a branch into itself is meaningless, but merging its remote-tracking
+    // counterpart (e.g. origin/<same-name>) to pull latest is a real, common operation.
+    window.api.worktrees.listBranches(row.path).then((branches) => setMergeBranches(branches.filter((b) => b !== row.branch)));
   };
 
   const doMerge = (branch: string): void => {

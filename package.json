@@ -26,6 +26,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "diff": "^7.0.0",
     "electron-log": "^5.4.3",
     "gitdiff-parser": "^0.3.1",
     "lucide-react": "^1.21.0",

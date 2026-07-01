@@ -126,6 +126,7 @@ function AppInner(): React.JSX.Element {
                 worktrees={filteredWorktrees}
                 loading={loading}
                 defaultTerminal={settings.defaultTerminal}
+                settings={settings}
                 onSelect={(w) => setSelectedId(w.id)}
                 onMessage={(msg, ok, resolveId, subtitle) => showToast(msg, ok === 'pending' ? 'pending' : ok ? 'ok' : 'error', resolveId, subtitle)}
                 onRefresh={refresh}
@@ -144,6 +145,7 @@ function AppInner(): React.JSX.Element {
               <WorktreeDetail
                 worktree={selected}
                 defaultTerminal={settings.defaultTerminal}
+                settings={settings}
                 refreshKey={detailRefreshKey}
                 onBack={() => setSelectedId(null)}
                 onMessage={(msg, ok, resolveId, subtitle) => showToast(msg, ok === 'pending' ? 'pending' : ok ? 'ok' : 'error', resolveId, subtitle)}

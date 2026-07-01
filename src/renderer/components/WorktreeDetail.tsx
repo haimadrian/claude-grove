@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X as XIcon } from 'lucide-react';
-import type { WorktreeRow, TerminalKind } from '../../shared/types';
+import type { WorktreeRow, TerminalKind, Settings } from '../../shared/types';
 
 import { PrBadge } from './PrBadge';
 import { CommitList } from './CommitList';
 import { DiffViewer } from './DiffViewer';
 import { SessionPickerModal } from './SessionPickerModal';
 import { BranchPicker } from './BranchPicker';
+import { JiraBadge } from './JiraBadge';
 
 const LS_PIN_KEY = 'claude-grove:detail-pinned';
 function loadPinned(): boolean {
@@ -28,13 +29,14 @@ function loadBaseOverride(worktreePath: string): string | null {
 interface Props {
   worktree: WorktreeRow;
   defaultTerminal: TerminalKind;
+  settings: Settings;
   refreshKey?: number;
   onBack: () => void;
   onMessage: (msg: string, ok: boolean | 'pending', resolveId?: string, subtitle?: string) => string;
   onRefresh?: () => void;
 }
 
-export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, onMessage, onRefresh }: Props): React.JSX.Element {
+export function WorktreeDetail({ worktree, defaultTerminal, settings, refreshKey, onBack, onMessage, onRefresh }: Props): React.JSX.Element {
   const [diff, setDiff] = useState<string>('');
   const [pinned, setPinned] = useState(loadPinned);
   const [leftWidth, setLeftWidth] = useState(300);
@@ -228,6 +230,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, 
             pr={worktree.pr}
             {...(worktree.pr ? { onClick: () => window.api.open.url(worktree.pr!.url) } : {})}
           />
+          <JiraBadge branch={worktree.branch} jiraBaseUrl={settings.jiraBaseUrl} />
           <span style={{ fontSize: 11, color: 'var(--fg-muted)' }}>diff against</span>
           <BranchPicker
             branches={allBranches}

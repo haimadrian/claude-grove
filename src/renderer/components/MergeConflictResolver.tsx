@@ -86,8 +86,6 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
 
   if (!currentFile) return <></>;
 
-  const active = conflictSegments[activeConflict] ?? null;
-
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, width: '90vw', maxWidth: 1100, height: '82vh', display: 'flex', flexDirection: 'column', boxShadow: '0 12px 40px var(--shadow)' }}>
@@ -124,55 +122,66 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
           <span style={{ marginLeft: 'auto' }}>unresolved: {conflictSegments.filter((c) => resolutions[c.id] === undefined).length}</span>
         </div>
 
-        {/* 3-column body */}
-        <div style={{ flex: 1, overflow: 'auto', display: 'grid', gridTemplateColumns: '1fr 32px 1fr 32px 1fr' }}>
-          <div style={{ padding: '8px 0', borderRight: '1px solid var(--border)' }}>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--fg-muted)', padding: '0 12px 6px' }}>Mine ({localBranch})</div>
-            {segments.map((seg, i) =>
-              seg.type === 'context'
-                ? <div key={i} style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
-                : <div key={i}>{renderSide(seg.ours)}</div>
-            )}
-          </div>
+        {/* 3-column body: one grid row per segment, with accept-arrow gutters flanking Result */}
+        <div style={{ flex: 1, overflow: 'auto', display: 'grid', gridTemplateColumns: '1fr 32px 1fr 32px 1fr', alignContent: 'start' }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', padding: '8px 12px 6px', borderRight: '1px solid var(--border)' }}>MINE ({localBranch})</div>
           <div />
-          <div>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--fg-muted)', padding: '0 12px 6px' }}>Result</div>
-            {segments.map((seg, i) =>
-              seg.type === 'context'
-                ? <div key={i} style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
-                : resolutions[seg.id] !== undefined
-                ? (
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', padding: '8px 12px 6px' }}>RESULT</div>
+          <div />
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', padding: '8px 12px 6px', borderLeft: '1px solid var(--border)' }}>THEIRS ({remoteBranch})</div>
+
+          {segments.map((seg, i) => (
+            <React.Fragment key={i}>
+              <div style={{ borderRight: '1px solid var(--border)' }}>
+                {seg.type === 'context'
+                  ? <div style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
+                  : renderSide(seg.ours)}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {seg.type === 'conflict' && (
+                  <button
+                    onClick={() => accept(seg.id, seg.oursText)}
+                    style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 5, width: 24, height: 24, fontSize: 13, cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    title="Accept Mine"
+                  >
+                    »
+                  </button>
+                )}
+              </div>
+              <div>
+                {seg.type === 'context' ? (
+                  <div style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
+                ) : resolutions[seg.id] !== undefined ? (
                   <textarea
-                    key={i}
                     value={resolutions[seg.id]}
                     onChange={(e) => accept(seg.id, e.target.value)}
-                    style={{ width: '100%', fontFamily: 'monospace', fontSize: 12, background: 'transparent', border: 'none', outline: 'none', color: 'var(--fg)', resize: 'vertical' }}
+                    style={{ width: '100%', fontFamily: 'monospace', fontSize: 12, padding: '0 8px', background: 'transparent', border: 'none', outline: 'none', color: 'var(--fg)', resize: 'vertical' }}
                   />
                 ) : (
-                  <div key={i} style={{ margin: '0 12px', padding: '6px 8px', border: '1px dashed var(--border)', borderRadius: 4, color: 'var(--fg-muted)', fontStyle: 'italic', fontSize: 11.5 }}>
+                  <div style={{ margin: '4px 12px', padding: '6px 8px', border: '1px dashed var(--border)', borderRadius: 4, color: 'var(--fg-muted)', fontStyle: 'italic', fontSize: 11.5 }}>
                     not resolved — accept a side or edit directly
                   </div>
-                )
-            )}
-          </div>
-          <div />
-          <div style={{ padding: '8px 0', borderLeft: '1px solid var(--border)' }}>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--fg-muted)', padding: '0 12px 6px' }}>Theirs ({remoteBranch})</div>
-            {segments.map((seg, i) =>
-              seg.type === 'context'
-                ? <div key={i} style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
-                : <div key={i}>{renderSide(seg.theirs)}</div>
-            )}
-          </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {seg.type === 'conflict' && (
+                  <button
+                    onClick={() => accept(seg.id, seg.theirsText)}
+                    style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 5, width: 24, height: 24, fontSize: 13, cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    title="Accept Theirs"
+                  >
+                    «
+                  </button>
+                )}
+              </div>
+              <div style={{ borderLeft: '1px solid var(--border)' }}>
+                {seg.type === 'context'
+                  ? <div style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
+                  : renderSide(seg.theirs)}
+              </div>
+            </React.Fragment>
+          ))}
         </div>
-
-        {/* Per-conflict accept buttons for the active conflict */}
-        {active && (
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', padding: '6px 0', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-            <button onClick={() => accept(active.id, active.oursText)} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--fg)', cursor: 'pointer' }}>« Accept Mine</button>
-            <button onClick={() => accept(active.id, active.theirsText)} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--fg)', cursor: 'pointer' }}>Accept Theirs »</button>
-          </div>
-        )}
 
         {/* Footer */}
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>

@@ -10,6 +10,8 @@ export const CH = {
   worktreesCreate: 'worktrees:create',
   worktreesSync: 'worktrees:sync',
   worktreesRenameBranch: 'worktrees:renameBranch',
+  worktreesListBranches: 'worktrees:listBranches',
+  worktreesResolveActiveBase: 'worktrees:resolveActiveBase',
   worktreesWorkingFiles: 'worktrees:workingFiles',
   worktreesWorkingFileDiff: 'worktrees:workingFileDiff',
   worktreesCommitFiles: 'worktrees:commitFiles',

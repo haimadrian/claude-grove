@@ -20,6 +20,10 @@ contextBridge.exposeInMainWorld('api', {
     sync: (path: string, action: SyncAction): Promise<OpResult> => ipcRenderer.invoke(CH.worktreesSync, path, action),
     renameBranch: (path: string, newBranch: string): Promise<OpResult> =>
       ipcRenderer.invoke(CH.worktreesRenameBranch, path, newBranch),
+    listBranches: (path: string): Promise<string[]> =>
+      ipcRenderer.invoke(CH.worktreesListBranches, path),
+    resolveActiveBase: (path: string, prBaseRefName?: string): Promise<string> =>
+      ipcRenderer.invoke(CH.worktreesResolveActiveBase, path, prBaseRefName),
     workingFiles: (path: string) =>
       ipcRenderer.invoke(CH.worktreesWorkingFiles, path),
     workingFileDiff: (path: string, filePath: string): Promise<string> =>

@@ -6,6 +6,7 @@ import { scanRepos } from './git/repoScanner';
 import { listAllWorktrees } from './git/worktrees';
 import { listCommits, commitDiff, fullDiff, listWorkingFiles, workingFileDiff } from './git/diff';
 import { resolveBaseBranch, preferOrigin } from './git/baseBranch';
+import { listBranches } from './git/listBranches';
 import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree, renameBranch, commitFiles, rollbackFile } from './git/operations';
 import { getPr } from './gh/pr';
 import { ghStatus } from './gh/ghRunner';
@@ -172,6 +173,19 @@ export function registerIpc(): void {
       logger.error(`ipc: unhandled error in worktreesRenameBranch: ${String(e)}`);
       return { success: false, message: String(e) };
     }
+  });
+
+  ipcMain.handle(CH.worktreesListBranches, async (_e, wtPath: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return [];
+    return listBranches(wtPath);
+  });
+
+  ipcMain.handle(CH.worktreesResolveActiveBase, async (_e, wtPath: string, prBaseRefName?: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return settings.defaultBaseBranch;
+    if (prBaseRefName) return preferOrigin(wtPath, prBaseRefName);
+    return resolveBaseBranch(wtPath, { pr: null, defaultBaseBranch: settings.defaultBaseBranch });
   });
 
   ipcMain.handle(CH.worktreesWorkingFiles, async (_e, wtPath: string) => {

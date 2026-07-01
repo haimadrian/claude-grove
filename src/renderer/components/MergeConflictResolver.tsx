@@ -1,5 +1,5 @@
 // src/renderer/components/MergeConflictResolver.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import type { DiffLineOp, ConflictFileSegment } from '../../shared/types';
 
@@ -36,6 +36,7 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
   const [resolutions, setResolutions] = useState<Record<number, string>>({});
   const [activeConflict, setActiveConflict] = useState(0);
   const [busy, setBusy] = useState(false);
+  const rowRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   const currentFile = conflictedFiles[fileIndex];
   const conflictSegments = segments.filter((s): s is Extract<ConflictFileSegment, { type: 'conflict' }> => s.type === 'conflict');
@@ -44,8 +45,16 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
     if (!currentFile) return;
     setResolutions({});
     setActiveConflict(0);
+    rowRefs.current = {};
     window.api.worktrees.getConflictBlocks(worktreePath, currentFile).then(setSegments);
   }, [worktreePath, currentFile]);
+
+  // Scroll to the active conflict whenever it changes, and on initial load (opens at the first one).
+  useEffect(() => {
+    const target = conflictSegments[activeConflict];
+    if (!target) return;
+    rowRefs.current[target.id]?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [activeConflict, segments]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const allResolved = conflictSegments.length > 0 && conflictSegments.every((c) => resolutions[c.id] !== undefined);
 
@@ -148,14 +157,15 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
                   </button>
                 )}
               </div>
-              <div>
+              <div ref={seg.type === 'conflict' ? (el) => { rowRefs.current[seg.id] = el; } : undefined}>
                 {seg.type === 'context' ? (
                   <div style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
                 ) : resolutions[seg.id] !== undefined ? (
                   <textarea
                     value={resolutions[seg.id]}
                     onChange={(e) => accept(seg.id, e.target.value)}
-                    style={{ width: '100%', fontFamily: 'monospace', fontSize: 12, padding: '0 8px', background: 'transparent', border: 'none', outline: 'none', color: 'var(--fg)', resize: 'vertical' }}
+                    rows={resolutions[seg.id]!.split('\n').length}
+                    style={{ display: 'block', width: '100%', fontFamily: 'monospace', fontSize: 12, lineHeight: 1.5, padding: '0 8px', background: 'transparent', border: 'none', outline: 'none', color: 'var(--fg)', resize: 'none', overflow: 'hidden' }}
                   />
                 ) : (
                   <div style={{ margin: '4px 12px', padding: '6px 8px', border: '1px dashed var(--border)', borderRadius: 4, color: 'var(--fg-muted)', fontStyle: 'italic', fontSize: 11.5 }}>

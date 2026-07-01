@@ -90,3 +90,5 @@ export interface GhStatus {
   installed: boolean;
   authed: boolean;
 }
+
+export interface DiffLineOp { type: 'context' | 'add' | 'del'; text: string; }

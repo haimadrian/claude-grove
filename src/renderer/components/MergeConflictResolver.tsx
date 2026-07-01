@@ -1,5 +1,5 @@
 // src/renderer/components/MergeConflictResolver.tsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import type { DiffLineOp, ConflictFileSegment } from '../../shared/types';
 
@@ -27,6 +27,29 @@ function renderSide(ops: DiffLineOp[]): React.JSX.Element {
         </div>
       ))}
     </>
+  );
+}
+
+// Sizing via a `rows` count (logical newlines) undercounts wrapped lines, silently clipping
+// content with `overflow: hidden`. Measuring the real rendered scrollHeight instead accounts
+// for wrapping regardless of column width or font metrics.
+function ResolvedTextarea({ value, onChange }: { value: string; onChange: (value: string) => void }): React.JSX.Element {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{ display: 'block', width: '100%', fontFamily: 'monospace', fontSize: 12, lineHeight: 1.5, padding: '0 8px', background: 'transparent', border: 'none', outline: 'none', color: 'var(--fg)', resize: 'none', overflow: 'hidden' }}
+    />
   );
 }
 
@@ -161,12 +184,7 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
                 {seg.type === 'context' ? (
                   <div style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
                 ) : resolutions[seg.id] !== undefined ? (
-                  <textarea
-                    value={resolutions[seg.id]}
-                    onChange={(e) => accept(seg.id, e.target.value)}
-                    rows={resolutions[seg.id]!.split('\n').length}
-                    style={{ display: 'block', width: '100%', fontFamily: 'monospace', fontSize: 12, lineHeight: 1.5, padding: '0 8px', background: 'transparent', border: 'none', outline: 'none', color: 'var(--fg)', resize: 'none', overflow: 'hidden' }}
-                  />
+                  <ResolvedTextarea value={resolutions[seg.id]!} onChange={(v) => accept(seg.id, v)} />
                 ) : (
                   <div style={{ margin: '4px 12px', padding: '6px 8px', border: '1px dashed var(--border)', borderRadius: 4, color: 'var(--fg-muted)', fontStyle: 'italic', fontSize: 11.5 }}>
                     not resolved — accept a side or edit directly

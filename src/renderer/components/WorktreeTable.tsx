@@ -6,6 +6,8 @@ import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 import { SessionPickerModal } from './SessionPickerModal';
 import { CopyButton } from './CopyButton';
+import { BranchPicker } from './BranchPicker';
+import { MergeConflictResolver } from './MergeConflictResolver';
 import { JiraBadge } from './JiraBadge';
 import { useLabels } from '../hooks/useLabels';
 import { LabelBar } from './LabelBar';
@@ -138,6 +140,8 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
   );
   const [renameState, setRenameState] = useState<{ wt: WorktreeRow; value: string } | null>(null);
   const [sessionPickerRow, setSessionPickerRow] = useState<WorktreeRow | null>(null);
+  const [mergeBranches, setMergeBranches] = useState<{ row: WorktreeRow; branches: string[] } | null>(null);
+  const [mergeConflicts, setMergeConflicts] = useState<{ row: WorktreeRow; files: string[] } | null>(null);
 
   // Persist filter + sort + colWidths whenever they change (after all state is declared)
   useEffect(() => {
@@ -583,6 +587,19 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
               <span style={{ display: 'flex', width: 16, alignItems: 'center' }}><ArrowDownToLine size={14} /></span>
               <span>Update (pull)</span>
             </button>
+            <button
+              style={itemStyle}
+              onMouseEnter={(e) => hover(e, true)} onMouseLeave={(e) => hover(e, false)}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setGitDropdown(null);
+                window.api.worktrees.listBranches(row.path).then((branches) => setMergeBranches({ row, branches }));
+              }}
+            >
+              <span style={{ display: 'flex', width: 16, alignItems: 'center' }}><GitBranch size={14} /></span>
+              <span>Merge from…</span>
+            </button>
             {row.branch && (
               <button
                 style={itemStyle}
@@ -759,6 +776,42 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
             }).then((r) => onMessage(r.message, r.success)).catch((e) => onMessage(String(e), false));
           }}
           onClose={() => setSessionPickerRow(null)}
+        />
+      )}
+      {mergeBranches && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setMergeBranches(null)}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: 24, maxWidth: 400, width: '90%', boxShadow: '0 8px 32px var(--shadow)' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ marginBottom: 12, fontSize: 15 }}>Merge from…</h3>
+            <p style={{ fontSize: 12, color: 'var(--fg-muted)', marginBottom: 16 }}>Pick a branch to merge into <code>{mergeBranches.row.branch}</code>.</p>
+            <BranchPicker
+              branches={mergeBranches.branches}
+              value={null}
+              autoLabel=""
+              onChange={(b) => {
+                if (!b) return;
+                const target = mergeBranches.row;
+                setMergeBranches(null);
+                const id = onMessage(`Merging ${b}…`, 'pending', undefined, target.branch ?? undefined);
+                window.api.worktrees.mergeFrom(target.path, b).then((r) => {
+                  if (r.success) { onMessage(r.message, r.success, id); onRefresh(); return; }
+                  onMessage(r.message, false, id);
+                  if (r.conflictedFiles && r.conflictedFiles.length > 0) setMergeConflicts({ row: target, files: r.conflictedFiles });
+                }).catch((err) => onMessage(String(err), false, id));
+              }}
+              triggerLabel="Choose a branch…"
+            />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 20 }}>
+              <button onClick={() => setMergeBranches(null)} style={DIALOG_BTN}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {mergeConflicts && (
+        <MergeConflictResolver
+          worktreePath={mergeConflicts.row.path}
+          conflictedFiles={mergeConflicts.files}
+          onDone={(message, success) => { setMergeConflicts(null); onMessage(message, success); if (success) onRefresh(); }}
+          onClose={() => setMergeConflicts(null)}
         />
       )}
     </div>

@@ -4,6 +4,8 @@ import { buildStateLines, buildPrLines } from '../utils/tooltips';
 import { PrBadge } from './PrBadge';
 import { CopyButton } from './CopyButton';
 import { SessionPickerModal } from './SessionPickerModal';
+import { BranchPicker } from './BranchPicker';
+import { MergeConflictResolver } from './MergeConflictResolver';
 import { JiraBadge } from './JiraBadge';
 import { Eye, Play, Code2, Terminal, FolderOpen, GitBranch, ExternalLink, ArrowDownToLine, Pencil, Trash2, MoreVertical } from 'lucide-react';
 
@@ -39,11 +41,12 @@ interface KebabMenuProps {
   onRefresh: () => void;
   onRename: () => void;
   onDelete: () => void;
+  onMergeFrom: () => void;
   openMenuId: string | null;
   onMenuOpen: (id: string | null) => void;
 }
 
-function KebabMenu({ row, settings, onSelect, onToast, onRefresh, onRename, onDelete, openMenuId, onMenuOpen }: KebabMenuProps): React.JSX.Element {
+function KebabMenu({ row, settings, onSelect, onToast, onRefresh, onRename, onDelete, onMergeFrom, openMenuId, onMenuOpen }: KebabMenuProps): React.JSX.Element {
   const open = openMenuId === row.id;
   const [menuPos, setMenuPos] = useState<{ top?: number; bottom?: number; left: number } | null>(null);
   const [gitExpanded, setGitExpanded] = useState(false);
@@ -198,6 +201,21 @@ function KebabMenu({ row, settings, onSelect, onToast, onRefresh, onRename, onDe
                 <span style={{ display: 'flex', alignItems: 'center', width: 14 }}><ArrowDownToLine size={13} /></span>
                 <span>Update (pull)</span>
               </button>
+              <button
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onMenuOpen(null); onMergeFrom(); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '0 12px 0 28px', minHeight: 30, width: '100%', textAlign: 'left',
+                  background: 'none', border: 'none', color: 'var(--fg)',
+                  fontSize: 12, cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', width: 14 }}><GitBranch size={13} /></span>
+                <span>Merge from…</span>
+              </button>
               {row.branch && (
                 <button
                   onMouseDown={(e) => e.stopPropagation()}
@@ -278,6 +296,27 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
   const [deleteState, setDeleteState] = useState<{ deleteRemote: boolean } | null>(null);
   const [showSessionPicker, setShowSessionPicker] = useState(false);
   const [tooltip, setTooltip] = useState<{ lines: string[]; x: number; y: number } | null>(null);
+  const [mergeBranches, setMergeBranches] = useState<string[] | null>(null); // non-null = picker open
+  const [mergeConflicts, setMergeConflicts] = useState<string[] | null>(null); // non-null = resolver open
+  const [mergeTarget, setMergeTarget] = useState<string | null>(null);
+
+  const openMergeFrom = (): void => {
+    window.api.worktrees.listBranches(row.path).then(setMergeBranches);
+  };
+
+  const doMerge = (branch: string): void => {
+    setMergeBranches(null);
+    const id = onToast(`Merging ${branch}…`, 'pending', undefined, row.branch ?? undefined);
+    window.api.worktrees.mergeFrom(row.path, branch).then((r) => {
+      if (r.success) { onToast(r.message, 'ok', id); onRefresh(); return; }
+      if (r.conflictedFiles && r.conflictedFiles.length > 0) {
+        onToast(r.message, 'error', id);
+        setMergeConflicts(r.conflictedFiles);
+      } else {
+        onToast(r.message, 'error', id);
+      }
+    }).catch((e) => onToast(String(e), 'error', id));
+  };
 
   const hueIdx = repoColorIndex(row.repo.name);
   const hue = REPO_HUES[hueIdx]!;
@@ -429,6 +468,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             onRefresh={onRefresh}
             onRename={() => setRenameState({ value: row.branch ?? '' })}
             onDelete={() => setDeleteState({ deleteRemote: false })}
+            onMergeFrom={openMergeFrom}
             openMenuId={openMenuId}
             onMenuOpen={onMenuOpen}
           />
@@ -686,6 +726,32 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             }).then((r) => onToast(r.message)).catch((e) => onToast(String(e)));
           }}
           onClose={() => setShowSessionPicker(false)}
+        />
+      )}
+      {mergeBranches && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setMergeBranches(null)}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: 24, maxWidth: 400, width: '90%', boxShadow: '0 8px 32px var(--shadow)' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ marginBottom: 12, fontSize: 15 }}>Merge from…</h3>
+            <p style={{ fontSize: 12, color: 'var(--fg-muted)', marginBottom: 16 }}>Pick a branch to merge into <code>{row.branch}</code>.</p>
+            <BranchPicker
+              branches={mergeBranches}
+              value={mergeTarget}
+              autoLabel=""
+              onChange={(b) => { setMergeTarget(b); if (b) doMerge(b); }}
+              triggerLabel={mergeTarget ?? 'Choose a branch…'}
+            />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 20 }}>
+              <button onClick={() => setMergeBranches(null)} style={DIALOG_BTN}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {mergeConflicts && (
+        <MergeConflictResolver
+          worktreePath={row.path}
+          conflictedFiles={mergeConflicts}
+          onDone={(message, success) => { setMergeConflicts(null); onToast(message, success ? 'ok' : 'error'); if (success) onRefresh(); }}
+          onClose={() => setMergeConflicts(null)}
         />
       )}
     </>

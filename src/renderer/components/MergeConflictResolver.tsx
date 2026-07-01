@@ -133,11 +133,11 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
 
         {/* 3-column body: one grid row per segment, with accept-arrow gutters flanking Result */}
         <div style={{ flex: 1, overflow: 'auto', display: 'grid', gridTemplateColumns: '1fr 32px 1fr 32px 1fr', alignContent: 'start' }}>
-          <div style={{ fontSize: 11, color: 'var(--fg-muted)', padding: '8px 12px 6px', borderRight: '1px solid var(--border)' }}>MINE ({localBranch})</div>
-          <div />
-          <div style={{ fontSize: 11, color: 'var(--fg-muted)', padding: '8px 12px 6px' }}>RESULT</div>
-          <div />
-          <div style={{ fontSize: 11, color: 'var(--fg-muted)', padding: '8px 12px 6px', borderLeft: '1px solid var(--border)' }}>THEIRS ({remoteBranch})</div>
+          <div style={{ position: 'sticky', top: 0, zIndex: 1, background: 'var(--bg)', fontSize: 11, color: 'var(--fg-muted)', padding: '8px 12px 6px', borderRight: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>MINE ({localBranch})</div>
+          <div style={{ position: 'sticky', top: 0, zIndex: 1, background: 'var(--bg)', borderBottom: '1px solid var(--border)' }} />
+          <div style={{ position: 'sticky', top: 0, zIndex: 1, background: 'var(--bg)', fontSize: 11, color: 'var(--fg-muted)', padding: '8px 12px 6px', borderBottom: '1px solid var(--border)' }}>RESULT</div>
+          <div style={{ position: 'sticky', top: 0, zIndex: 1, background: 'var(--bg)', borderBottom: '1px solid var(--border)' }} />
+          <div style={{ position: 'sticky', top: 0, zIndex: 1, background: 'var(--bg)', fontSize: 11, color: 'var(--fg-muted)', padding: '8px 12px 6px', borderLeft: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>THEIRS ({remoteBranch})</div>
 
           {segments.map((seg, i) => (
             <React.Fragment key={i}>

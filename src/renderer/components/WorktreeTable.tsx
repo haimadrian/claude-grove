@@ -394,7 +394,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
                         {w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}
                       </span>
                       <JiraBadge branch={w.branch} jiraBaseUrl={settings.jiraBaseUrl} />
-                      {hovered && w.branch && <CopyButton text={w.branch} />}
+                      {w.branch && <CopyButton text={w.branch} style={{ visibility: hovered ? 'visible' : 'hidden' }} />}
                     </div>
                   </td>
                   <td
@@ -434,7 +434,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
                       ) : (
                         <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg-muted)', flexShrink: 0 }}>{w.headSha.slice(0, 7)}</span>
                       )}
-                      {hovered && <CopyButton text={w.headSha} />}
+                      <CopyButton text={w.headSha} style={{ visibility: hovered ? 'visible' : 'hidden' }} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {w.lastCommitSubject || ''}
                       </span>

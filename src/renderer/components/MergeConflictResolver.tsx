@@ -18,10 +18,14 @@ const DIFF_LINE_STYLE: Record<DiffLineOp['type'], React.CSSProperties> = {
   del: { background: 'var(--diff-code-delete-background-color, rgba(255,80,80,0.18))', textDecoration: 'line-through', opacity: 0.75 },
 };
 
+// A 'del' op marks a line the base had that this side removed — it isn't part of this side's
+// actual file content, so rendering it would show text that doesn't really exist in this branch.
+// Only 'context' and 'add' reconstruct this side's real content; 'add' stays highlighted since
+// it's genuinely new relative to base.
 function renderSide(ops: DiffLineOp[]): React.JSX.Element {
   return (
     <>
-      {ops.map((op, i) => (
+      {ops.filter((op) => op.type !== 'del').map((op, i) => (
         <div key={i} style={{ ...DIFF_LINE_STYLE[op.type], fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>
           {op.text || ' '}
         </div>

@@ -28,4 +28,13 @@ describe('computeSideDiff', () => {
       { type: 'add', text: 'new line' },
     ]);
   });
+
+  it('preserves a genuine leading blank line when base is empty', () => {
+    // Regression: a blank first line in `side` reads identically to the boundary artifact a
+    // naive join-and-append-newline diff strategy introduces, and can get silently dropped.
+    expect(computeSideDiff([], ['', 'new line'])).toEqual([
+      { type: 'add', text: '' },
+      { type: 'add', text: 'new line' },
+    ]);
+  });
 });

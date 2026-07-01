@@ -124,7 +124,7 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, localBran
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'var(--modal-backdrop)', zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, width: '90vw', maxWidth: 1100, height: '82vh', display: 'flex', flexDirection: 'column', boxShadow: '0 12px 40px var(--shadow)' }}>
+      <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, width: '90vw', height: '82vh', minWidth: 640, minHeight: 360, maxWidth: '96vw', maxHeight: '96vh', resize: 'both', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 12px 40px var(--shadow)' }}>
         {/* Title bar */}
         <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <span style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: 13 }}>{currentFile}</span>

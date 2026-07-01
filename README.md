@@ -38,6 +38,11 @@ GitHub-style diff without leaving the app. Commit list on the left, per-commit d
 - **Eye button** on cards — open the diff view directly from the worktree card without entering the detail screen first.
 - **Find in diff** (`Cmd+F`) — floating search bar with match counter (`n/m`), next/prev buttons, Enter / Shift+Enter navigation. Works reliably even when Chromium steals focus during search.
 - **Ignore-whitespace toggle** and unified/split view selector.
+- **Parent branch override** — a searchable branch picker next to the PR badge lets you diff against any local or remote branch instead of the auto-detected base. Defaults to "Auto (\<detected branch\>)"; your override is remembered per worktree across restarts until you pick "Auto" again.
+
+### Jira ticket links
+
+If a branch name contains a Jira-style ticket id (e.g. `t2a-3131`, `eco-2120`), a small badge showing the uppercased id appears next to the branch name in table view, card view, and the diff detail page. Click it to open the ticket. Configure the base URL in **Settings → Jira base URL** (default: `https://honeybook.atlassian.net/browse`); clearing the field hides the badge everywhere.
 
 ### Claude Code session linkage
 
@@ -58,13 +63,26 @@ Finds which Claude session was working on which worktree by tallying file paths 
 
 ### Git actions (⎇ menu)
 
-Rename, Delete, and Update operations are grouped under a **⎇ Git** submenu in both the ⋮ card menu and the table floating actions, keeping the top-level action list clean.
+Rename, Delete, Update, and Merge from operations are grouped under a **⎇ Git** submenu in both the ⋮ card menu and the table floating actions, keeping the top-level action list clean.
 
 | Git action | Description |
 |---|---|
 | Update (pull) | `git pull` — fetch and merge the upstream branch |
 | Rename branch | Rename locally and push to remote |
 | Delete worktree | Remove worktree; optionally delete remote branch |
+| Merge from… | Merge any local or remote branch into this worktree. Clean merges just show a toast; conflicts open the in-app conflict resolver (see below). The worktree's own branch is excluded from the picker (merging a branch into itself is meaningless), but its remote-tracking counterpart (`origin/<same-name>`) stays available for pulling latest. |
+
+### Merge conflict resolver
+
+When **Merge from…** can't merge cleanly, an in-app 3-way resolver opens instead of dropping you to the command line.
+
+- **Mine / Result / Theirs** — three columns, each labeled with the actual branch name (e.g. `MINE (feature/foo)`, `THEIRS (origin/main)`). Mine and Theirs show each branch's real file content with newly-added lines highlighted — never raw `<<<<<<<`/`=======`/`>>>>>>>` conflict-marker text.
+- **Per-conflict accept arrows** — a `»` button between Mine and Result, and a `«` button between Result and Theirs, right beside each conflict's row. Click either to take that side for just that conflict; the Result column is also directly editable if neither side is exactly right.
+- **Sticky header, synced scrolling** — the column headers stay pinned while you scroll; the file tabs (when more than one file has conflicts), the `↑`/`↓` conflict navigator, and the "opens at the first conflict" behavior all help you move through a large file without losing your place.
+- **Abort merge** is always available, at any point, even after resolving some files — it runs `git merge --abort` and discards all progress.
+- Finishing every conflicted file automatically completes the merge (`git commit`, no prompt) — same one-step feel as a clean merge.
+
+Most merges are clean and never show this dialog at all — it only appears when git genuinely can't auto-resolve something.
 
 ### All row/card actions
 
@@ -100,6 +118,7 @@ Actions are grouped into three sections:
 | Default editor | App bundle or CLI command (e.g. `code`, `cursor`) |
 | Card layout | Columns and rows for the card grid (1–6 each, default 3×3) |
 | Base branch | Default base branch for diffs (fallback when no PR or `origin/HEAD`). Also configure which branches (`main`, `master`) to hide from the list. |
+| Jira base URL | Base URL for the Jira ticket badge shown on branch names (default: `https://honeybook.atlassian.net/browse`). Clear to disable the badge. |
 | PR cache TTL | Seconds to cache PR data before re-fetching |
 
 Theme (☀/☾) is in the header, not Settings.
@@ -156,6 +175,29 @@ If the zip is missing from the cache (first-ever install, cache cleared), force 
 ```bash
 node node_modules/electron/install.js
 ```
+
+**`Error: Electron uninstall` / `Error: Electron failed to install correctly`**
+
+If your environment sets `ELECTRON_SKIP_BINARY_DOWNLOAD`, `electron`'s own postinstall script exits immediately without extracting the binary or writing its `path.txt` marker — `pnpm install` completes with no error, but `require('electron')` fails. Extract manually from the cached zip and write the marker yourself:
+
+```bash
+cd node_modules/.pnpm/electron@<version>/node_modules/electron/dist
+ditto -x -k ~/Library/Caches/electron/electron-v<version>-darwin-arm64.zip .
+echo -n "Electron.app/Contents/MacOS/Electron" > ../path.txt
+```
+
+Use `ditto`, not `unzip` — `unzip` doesn't reliably preserve the code-signature resources macOS app bundles need, which shows up next as `spctl: code has no resources but signature indicates they must be present`.
+
+**Electron launches then exits immediately with code 1 and no output (`spctl -a` reports `rejected`)**
+
+The downloaded Electron binary is ad-hoc signed but not notarized, so Gatekeeper blocks it — same root cause as the DMG note above, just hitting the raw dev binary instead of the packaged app. Ad-hoc re-sign it, then clear the quarantine/provenance attributes:
+
+```bash
+codesign --force --deep --sign - node_modules/.pnpm/electron@<version>/node_modules/electron/dist/Electron.app
+xattr -cr node_modules/.pnpm/electron@<version>/node_modules/electron/dist/Electron.app
+```
+
+`pnpm dev` should launch normally afterward.
 
 ### Hot-reload dev mode
 ```bash

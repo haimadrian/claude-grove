@@ -50,7 +50,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
               <tbody>
                 {[
                   ['Repo', 'Git repository name.'],
-                  ['Branch', 'Current branch. ⎘ copies it.'],
+                  ['Branch', 'Current branch. ⎘ copies it. A branch name containing a Jira ticket id (e.g. t2a-3131) shows a clickable badge linking to it.'],
                   ['State', 'Badges: dirty, ↑N ahead, ↓N behind, locked, prunable, remote gone, merged. Hover for details. Shows time since last commit inline.'],
                   ['Last commit', 'Short SHA (links to GitHub) + commit subject. ⎘ copies the full SHA.'],
                   ['Modified', 'Time of last commit. Sortable.'],
@@ -77,7 +77,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
                 {[
                   ['View / Resume', 'View diff (open detail page) · Resume Claude session (▶ in card header or ⋮ menu)'],
                   ['Edit / Terminal / Finder', 'Open in editor · Open in terminal · Reveal in Finder'],
-                  ['⎇ Git / GitHub', 'Update (pull) · Rename branch · Delete worktree · Open on GitHub'],
+                  ['⎇ Git / GitHub', 'Update (pull) · Rename branch · Merge from… · Delete worktree · Open on GitHub'],
                 ].map(([section, actions]) => (
                   <tr key={section}>
                     <td style={{ ...TD_STYLE, fontWeight: 500, whiteSpace: 'nowrap', width: 160 }}>{section}</td>
@@ -86,7 +86,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
                 ))}
               </tbody>
             </table>
-            <p style={{ ...P, fontSize: 12 }}>The <strong>⎇ Git</strong> submenu groups Rename, Delete, and Update (pull) to keep the top-level action list clean.</p>
+            <p style={{ ...P, fontSize: 12 }}>The <strong>⎇ Git</strong> submenu groups Rename, Delete, Update (pull), and Merge from… to keep the top-level action list clean.</p>
             <p style={{ ...P, fontSize: 12 }}>Long-running git operations — <strong>Update (pull)</strong>, <strong>Rename branch</strong>, and <strong>Delete worktree</strong> — show a progress toast with the branch name while running. Multiple concurrent operations each get their own toast. The worktree list refreshes automatically on success.</p>
           </div>
 

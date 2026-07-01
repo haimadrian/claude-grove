@@ -7,7 +7,8 @@ import { listAllWorktrees } from './git/worktrees';
 import { listCommits, commitDiff, fullDiff, listWorkingFiles, workingFileDiff } from './git/diff';
 import { resolveBaseBranch, preferOrigin } from './git/baseBranch';
 import { listBranches } from './git/listBranches';
-import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree, renameBranch, commitFiles, rollbackFile } from './git/operations';
+import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree, renameBranch, commitFiles, rollbackFile, mergeFrom, listConflictedFiles, applyFileResolution, finishMerge, abortMerge } from './git/operations';
+import { getConflictBlocks } from './git/conflictResolver';
 import { getPr } from './gh/pr';
 import { ghStatus } from './gh/ghRunner';
 import { isPathWithinRoots } from './security/validate';
@@ -228,6 +229,52 @@ export function registerIpc(): void {
       logger.error(`ipc: unhandled error in worktreesRollbackFile: ${String(e)}`);
       return { success: false, message: String(e) };
     }
+  });
+
+  ipcMain.handle(CH.worktreesMergeFrom, async (_e, wtPath: string, branch: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed', conflictedFiles: null };
+    try {
+      logger.info(`ipc: merging ${branch} into ${wtPath}`);
+      const result = await mergeFrom(wtPath, branch);
+      if (result.success) invalidateRepoCache();
+      return result;
+    } catch (e) {
+      logger.error(`ipc: unhandled error in worktreesMergeFrom: ${String(e)}`);
+      return { success: false, message: String(e), conflictedFiles: null };
+    }
+  });
+
+  ipcMain.handle(CH.worktreesListConflictedFiles, async (_e, wtPath: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return [];
+    return listConflictedFiles(wtPath);
+  });
+
+  ipcMain.handle(CH.worktreesGetConflictBlocks, async (_e, wtPath: string, filePath: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return [];
+    return getConflictBlocks(wtPath, filePath);
+  });
+
+  ipcMain.handle(CH.worktreesApplyFileResolution, async (_e, wtPath: string, filePath: string, resolvedContent: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
+    return applyFileResolution(wtPath, filePath, resolvedContent);
+  });
+
+  ipcMain.handle(CH.worktreesFinishMerge, async (_e, wtPath: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
+    const result = await finishMerge(wtPath);
+    if (result.success) invalidateRepoCache();
+    return result;
+  });
+
+  ipcMain.handle(CH.worktreesAbortMerge, async (_e, wtPath: string) => {
+    const settings = await loadSettings();
+    if (!guardPath(wtPath, settings)) return { success: false, message: 'Path not allowed' };
+    return abortMerge(wtPath);
   });
 
   // PR

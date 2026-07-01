@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { CH } from '../shared/ipcChannels';
-import type { Settings, WorktreeRow, Commit, PrInfo, OpResult, GhStatus, SyncAction, TerminalKind } from '../shared/types';
+import type { Settings, WorktreeRow, Commit, PrInfo, OpResult, GhStatus, SyncAction, TerminalKind, ConflictFileSegment } from '../shared/types';
 
 contextBridge.exposeInMainWorld('api', {
   settings: {
@@ -24,6 +24,16 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke(CH.worktreesListBranches, path),
     resolveActiveBase: (path: string, prBaseRefName?: string): Promise<string> =>
       ipcRenderer.invoke(CH.worktreesResolveActiveBase, path, prBaseRefName),
+    mergeFrom: (path: string, branch: string): Promise<OpResult & { conflictedFiles: string[] | null }> =>
+      ipcRenderer.invoke(CH.worktreesMergeFrom, path, branch),
+    listConflictedFiles: (path: string): Promise<string[]> =>
+      ipcRenderer.invoke(CH.worktreesListConflictedFiles, path),
+    getConflictBlocks: (path: string, filePath: string): Promise<ConflictFileSegment[]> =>
+      ipcRenderer.invoke(CH.worktreesGetConflictBlocks, path, filePath),
+    applyFileResolution: (path: string, filePath: string, resolvedContent: string): Promise<OpResult> =>
+      ipcRenderer.invoke(CH.worktreesApplyFileResolution, path, filePath, resolvedContent),
+    finishMerge: (path: string): Promise<OpResult> => ipcRenderer.invoke(CH.worktreesFinishMerge, path),
+    abortMerge: (path: string): Promise<OpResult> => ipcRenderer.invoke(CH.worktreesAbortMerge, path),
     workingFiles: (path: string) =>
       ipcRenderer.invoke(CH.worktreesWorkingFiles, path),
     workingFileDiff: (path: string, filePath: string): Promise<string> =>

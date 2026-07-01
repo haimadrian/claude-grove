@@ -141,7 +141,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
   const [renameState, setRenameState] = useState<{ wt: WorktreeRow; value: string } | null>(null);
   const [sessionPickerRow, setSessionPickerRow] = useState<WorktreeRow | null>(null);
   const [mergeBranches, setMergeBranches] = useState<{ row: WorktreeRow; branches: string[] } | null>(null);
-  const [mergeConflicts, setMergeConflicts] = useState<{ row: WorktreeRow; files: string[] } | null>(null);
+  const [mergeConflicts, setMergeConflicts] = useState<{ row: WorktreeRow; files: string[]; branch: string } | null>(null);
 
   // Persist filter + sort + colWidths whenever they change (after all state is declared)
   useEffect(() => {
@@ -796,7 +796,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
                 window.api.worktrees.mergeFrom(target.path, b).then((r) => {
                   if (r.success) { onMessage(r.message, r.success, id); onRefresh(); return; }
                   onMessage(r.message, false, id);
-                  if (r.conflictedFiles && r.conflictedFiles.length > 0) setMergeConflicts({ row: target, files: r.conflictedFiles });
+                  if (r.conflictedFiles && r.conflictedFiles.length > 0) setMergeConflicts({ row: target, files: r.conflictedFiles, branch: b });
                 }).catch((err) => onMessage(String(err), false, id));
               }}
               triggerLabel="Choose a branch…"
@@ -811,6 +811,8 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
         <MergeConflictResolver
           worktreePath={mergeConflicts.row.path}
           conflictedFiles={mergeConflicts.files}
+          localBranch={mergeConflicts.row.branch ?? 'local'}
+          remoteBranch={mergeConflicts.branch}
           onDone={(message, success) => { setMergeConflicts(null); onMessage(message, success); if (success) onRefresh(); }}
           onClose={() => setMergeConflicts(null)}
         />

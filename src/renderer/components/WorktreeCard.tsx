@@ -751,6 +751,8 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
         <MergeConflictResolver
           worktreePath={row.path}
           conflictedFiles={mergeConflicts}
+          localBranch={row.branch ?? 'local'}
+          remoteBranch={mergeTarget ?? ''}
           onDone={(message, success) => { setMergeConflicts(null); onToast(message, success ? 'ok' : 'error'); if (success) onRefresh(); }}
           onClose={() => setMergeConflicts(null)}
         />

@@ -6,6 +6,8 @@ import type { DiffLineOp, ConflictFileSegment } from '../../shared/types';
 interface Props {
   worktreePath: string;
   conflictedFiles: string[];
+  localBranch: string;
+  remoteBranch: string;
   onDone: (message: string, success: boolean) => void;
   onClose: () => void;
 }
@@ -28,7 +30,7 @@ function renderSide(ops: DiffLineOp[]): React.JSX.Element {
   );
 }
 
-export function MergeConflictResolver({ worktreePath, conflictedFiles, onDone, onClose }: Props): React.JSX.Element {
+export function MergeConflictResolver({ worktreePath, conflictedFiles, localBranch, remoteBranch, onDone, onClose }: Props): React.JSX.Element {
   const [fileIndex, setFileIndex] = useState(0);
   const [segments, setSegments] = useState<ConflictFileSegment[]>([]);
   const [resolutions, setResolutions] = useState<Record<number, string>>({});
@@ -125,7 +127,7 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, onDone, o
         {/* 3-column body */}
         <div style={{ flex: 1, overflow: 'auto', display: 'grid', gridTemplateColumns: '1fr 32px 1fr 32px 1fr' }}>
           <div style={{ padding: '8px 0', borderRight: '1px solid var(--border)' }}>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--fg-muted)', padding: '0 12px 6px' }}>Local (this worktree)</div>
+            <div style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--fg-muted)', padding: '0 12px 6px' }}>Mine ({localBranch})</div>
             {segments.map((seg, i) =>
               seg.type === 'context'
                 ? <div key={i} style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
@@ -155,7 +157,7 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, onDone, o
           </div>
           <div />
           <div style={{ padding: '8px 0', borderLeft: '1px solid var(--border)' }}>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--fg-muted)', padding: '0 12px 6px' }}>Remote</div>
+            <div style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--fg-muted)', padding: '0 12px 6px' }}>Theirs ({remoteBranch})</div>
             {segments.map((seg, i) =>
               seg.type === 'context'
                 ? <div key={i} style={{ fontFamily: 'monospace', fontSize: 12, padding: '0 8px', whiteSpace: 'pre-wrap' }}>{seg.lines.join('\n')}</div>
@@ -167,8 +169,8 @@ export function MergeConflictResolver({ worktreePath, conflictedFiles, onDone, o
         {/* Per-conflict accept buttons for the active conflict */}
         {active && (
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', padding: '6px 0', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-            <button onClick={() => accept(active.id, active.oursText)} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--fg)', cursor: 'pointer' }}>« Accept Local</button>
-            <button onClick={() => accept(active.id, active.theirsText)} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--fg)', cursor: 'pointer' }}>Accept Remote »</button>
+            <button onClick={() => accept(active.id, active.oursText)} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--fg)', cursor: 'pointer' }}>« Accept Mine</button>
+            <button onClick={() => accept(active.id, active.theirsText)} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--fg)', cursor: 'pointer' }}>Accept Theirs »</button>
           </div>
         )}
 

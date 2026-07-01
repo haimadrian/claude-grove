@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { OpResult, SyncAction } from '../../shared/types';
 import type { Runner } from './gitRunner';
 import { git } from './gitRunner';
-import { isValidBranchName } from '../security/validate';
+import { isValidBranchName, isPathWithinRoots } from '../security/validate';
 import { resolveBaseBranch } from './baseBranch';
 import { parseUnmergedFiles } from './mergeStatus';
 import { logger } from '../logger';
@@ -206,6 +206,7 @@ export async function applyFileResolution(
   runner: Runner = git
 ): Promise<OpResult> {
   const abs = path.join(worktreePath, filePath);
+  if (!isPathWithinRoots(abs, [worktreePath])) return fail(`Invalid file path: ${filePath}`);
   try {
     await fs.writeFile(abs, resolvedContent, 'utf-8');
   } catch (e) {

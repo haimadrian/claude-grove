@@ -3,9 +3,12 @@ import path from 'node:path';
 import type { ConflictFileSegment } from '../../shared/types';
 import { parseConflictBlocks } from './conflictParser';
 import { computeSideDiff } from './conflictDiff';
+import { isPathWithinRoots } from '../security/validate';
 
 export async function getConflictBlocks(worktreePath: string, filePath: string): Promise<ConflictFileSegment[]> {
-  const content = await fs.readFile(path.join(worktreePath, filePath), 'utf-8');
+  const abs = path.join(worktreePath, filePath);
+  if (!isPathWithinRoots(abs, [worktreePath])) return [];
+  const content = await fs.readFile(abs, 'utf-8');
   const segments = parseConflictBlocks(content);
   let conflictId = 0;
   return segments.map((seg) => {

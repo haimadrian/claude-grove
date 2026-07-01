@@ -737,6 +737,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
               branches={mergeBranches}
               value={mergeTarget}
               autoLabel=""
+              showAuto={false}
               onChange={(b) => { setMergeTarget(b); if (b) doMerge(b); }}
               triggerLabel={mergeTarget ?? 'Choose a branch…'}
             />

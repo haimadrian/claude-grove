@@ -787,6 +787,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, o
               branches={mergeBranches.branches}
               value={null}
               autoLabel=""
+              showAuto={false}
               onChange={(b) => {
                 if (!b) return;
                 const target = mergeBranches.row;

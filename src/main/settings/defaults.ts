@@ -16,4 +16,5 @@ export const DEFAULT_SETTINGS: Settings = {
   cardColumns: 3,
   cardRows: 3,
   ignoredBranches: [],
+  jiraBaseUrl: 'https://honeybook.atlassian.net/browse',
 };

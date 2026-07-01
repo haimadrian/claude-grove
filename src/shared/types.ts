@@ -16,6 +16,7 @@ export interface Settings {
   cardColumns: number;
   cardRows: number;
   ignoredBranches: string[];
+  jiraBaseUrl: string;
 }
 
 export interface RepoRef {

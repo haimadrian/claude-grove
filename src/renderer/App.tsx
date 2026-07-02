@@ -11,6 +11,8 @@ import { Onboarding } from './components/Onboarding';
 import { ToastStack, useToast } from './components/Toast';
 import { HelpModal } from './components/HelpModal';
 import { Logo } from './components/Logo';
+import { Greeting } from './components/Greeting';
+import { RotatingPhrase } from './components/RotatingPhrase';
 import { useSettings } from './hooks/useSettings';
 import { useWorktrees } from './hooks/useWorktrees';
 
@@ -63,7 +65,11 @@ function AppInner(): React.JSX.Element {
         padding: '10px 16px', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
       }}>
-        <Logo />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Logo />
+          <RotatingPhrase />
+        </div>
+        <Greeting />
         <button
           onClick={selected !== null
             ? () => setDetailRefreshKey((k) => k + 1)

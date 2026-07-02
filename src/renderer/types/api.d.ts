@@ -36,6 +36,9 @@ declare global {
       gh: {
         status(): Promise<GhStatus>;
       };
+      user: {
+        getFirstName(): Promise<string>;
+      };
       terminals: {
         available(): Promise<TerminalKind[]>;
         resumeSession(input: { terminal: TerminalKind; launchDir: string; sessionId: string }): Promise<OpResult>;

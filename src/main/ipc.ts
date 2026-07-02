@@ -11,6 +11,7 @@ import { removeWorktree, deleteRemoteBranch, createWorktree, syncWorktree, renam
 import { getConflictBlocks } from './git/conflictResolver';
 import { getPr } from './gh/pr';
 import { ghStatus } from './gh/ghRunner';
+import { getUserFirstName } from './user';
 import { isPathWithinRoots } from './security/validate';
 import { logger } from './logger';
 import type { Settings, SyncAction, TerminalKind } from '../shared/types';
@@ -285,6 +286,9 @@ export function registerIpc(): void {
 
   // GH
   ipcMain.handle(CH.ghStatus, async () => ghStatus());
+
+  // User
+  ipcMain.handle(CH.userGetFirstName, async () => getUserFirstName());
 
   // Terminals
   ipcMain.handle(CH.terminalsAvailable, async () => terminalsAvailable());

@@ -24,6 +24,7 @@ export const CH = {
   worktreesRollbackFile: 'worktrees:rollbackFile',
   prGet: 'pr:get',
   ghStatus: 'gh:status',
+  userGetFirstName: 'user:getFirstName',
   terminalsAvailable: 'terminals:available',
   terminalsResume: 'terminals:resumeSession',
   terminalsOpenDir: 'terminals:openDir',

@@ -49,6 +49,9 @@ contextBridge.exposeInMainWorld('api', {
   gh: {
     status: (): Promise<GhStatus> => ipcRenderer.invoke(CH.ghStatus),
   },
+  user: {
+    getFirstName: (): Promise<string> => ipcRenderer.invoke(CH.userGetFirstName),
+  },
   terminals: {
     available: (): Promise<TerminalKind[]> => ipcRenderer.invoke(CH.terminalsAvailable),
     resumeSession: (input: { terminal: TerminalKind; launchDir: string; sessionId: string }): Promise<OpResult> =>

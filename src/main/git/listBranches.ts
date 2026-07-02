@@ -4,7 +4,7 @@ import { git } from './gitRunner';
 export function parseBranchList(raw: string): string[] {
   const names = raw
     .split('\n')
-    .map((line) => line.replace(/^\*?\s*/, '').trim())
+    .map((line) => line.replace(/^[*+]?\s*/, '').trim())
     .filter((line) => line.length > 0 && !line.includes(' -> ')) // drop "origin/HEAD -> origin/main" pointer line
     .map((line) => line.replace(/^remotes\//, ''));
   return [...new Set(names)].sort();

@@ -7,6 +7,7 @@ interface BranchPickerProps {
   onChange: (branch: string | null) => void;
   placeholder?: string;
   triggerLabel: string;
+  showAuto?: boolean;
 }
 
 const CHIP: React.CSSProperties = {
@@ -15,7 +16,7 @@ const CHIP: React.CSSProperties = {
   userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 6,
 };
 
-export function BranchPicker({ branches, value, autoLabel, onChange, placeholder, triggerLabel }: BranchPickerProps): React.JSX.Element {
+export function BranchPicker({ branches, value, autoLabel, onChange, placeholder, triggerLabel, showAuto = true }: BranchPickerProps): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const [search, setSearch] = useState('');
@@ -84,7 +85,7 @@ export function BranchPicker({ branches, value, autoLabel, onChange, placeholder
             />
           </div>
           <div style={{ height: 1, background: 'var(--border)', marginBottom: 4 }} />
-          {!search.trim() && (
+          {showAuto && !search.trim() && (
             <div
               onClick={() => { onChange(null); setOpen(false); }}
               style={{

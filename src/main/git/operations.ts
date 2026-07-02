@@ -1,9 +1,11 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { OpResult, SyncAction } from '../../shared/types';
 import type { Runner } from './gitRunner';
 import { git } from './gitRunner';
-import { isValidBranchName } from '../security/validate';
+import { isValidBranchName, isPathWithinRoots } from '../security/validate';
 import { resolveBaseBranch } from './baseBranch';
+import { parseUnmergedFiles } from './mergeStatus';
 import { logger } from '../logger';
 
 function ok(message: string): OpResult { return { success: true, message }; }
@@ -167,4 +169,60 @@ export async function commitFiles(
     return fail('Commit failed', commit.stderr);
   }
   return ok(`Committed ${files.length} file${files.length !== 1 ? 's' : ''}`);
+}
+
+export async function mergeFrom(
+  worktreePath: string,
+  branch: string,
+  runner: Runner = git
+): Promise<OpResult & { conflictedFiles: string[] | null }> {
+  if (!isValidBranchName(branch)) return { success: false, message: `Invalid branch name: ${branch}`, conflictedFiles: null };
+  const result = await runner.run(['-C', worktreePath, '-c', 'merge.conflictStyle=diff3', 'merge', branch]);
+  if (result.code === 0) return { success: true, message: `Merged ${branch}`, conflictedFiles: null };
+
+  const status = await runner.run(['-C', worktreePath, 'status', '--porcelain']);
+  const conflicted = parseUnmergedFiles(status.stdout);
+  if (conflicted.length > 0) {
+    logger.info(`operations: merge of ${branch} into ${worktreePath} has ${conflicted.length} conflicted files`);
+    return {
+      success: false,
+      message: `Merge has ${conflicted.length} conflicted file${conflicted.length !== 1 ? 's' : ''}`,
+      conflictedFiles: conflicted,
+    };
+  }
+  logger.error(`operations: merge of ${branch} into ${worktreePath} failed: ${result.stderr}`);
+  return { success: false, message: 'Merge failed', stderr: result.stderr, conflictedFiles: null };
+}
+
+export async function listConflictedFiles(worktreePath: string, runner: Runner = git): Promise<string[]> {
+  const status = await runner.run(['-C', worktreePath, 'status', '--porcelain']);
+  return parseUnmergedFiles(status.stdout);
+}
+
+export async function applyFileResolution(
+  worktreePath: string,
+  filePath: string,
+  resolvedContent: string,
+  runner: Runner = git
+): Promise<OpResult> {
+  const abs = path.join(worktreePath, filePath);
+  if (!isPathWithinRoots(abs, [worktreePath])) return fail(`Invalid file path: ${filePath}`);
+  try {
+    await fs.writeFile(abs, resolvedContent, 'utf-8');
+  } catch (e) {
+    return fail(`Failed to write ${filePath}`, String(e));
+  }
+  const add = await runner.run(['-C', worktreePath, 'add', '--', filePath]);
+  if (add.code !== 0) return fail(`Failed to stage ${filePath}`, add.stderr);
+  return ok(`Resolved ${filePath}`);
+}
+
+export async function finishMerge(worktreePath: string, runner: Runner = git): Promise<OpResult> {
+  const result = await runner.run(['-C', worktreePath, 'commit', '--no-edit']);
+  return result.code === 0 ? ok('Merge completed') : fail('Failed to finish merge', result.stderr);
+}
+
+export async function abortMerge(worktreePath: string, runner: Runner = git): Promise<OpResult> {
+  const result = await runner.run(['-C', worktreePath, 'merge', '--abort']);
+  return result.code === 0 ? ok('Merge aborted') : fail('Failed to abort merge', result.stderr);
 }

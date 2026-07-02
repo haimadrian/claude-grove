@@ -90,3 +90,9 @@ export interface GhStatus {
   installed: boolean;
   authed: boolean;
 }
+
+export interface DiffLineOp { type: 'context' | 'add' | 'del'; text: string; }
+
+export type ConflictFileSegment =
+  | { type: 'context'; lines: string[] }
+  | { type: 'conflict'; id: number; ours: DiffLineOp[]; theirs: DiffLineOp[]; oursText: string; theirsText: string };

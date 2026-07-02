@@ -23,4 +23,13 @@ describe('parseBranchList', () => {
   it('returns empty array for empty input', () => {
     expect(parseBranchList('')).toEqual([]);
   });
+
+  it('strips the + marker for a branch checked out in another worktree', () => {
+    const raw = [
+      '* main',
+      '+ feature/other-worktree',
+      '  feature/plain',
+    ].join('\n');
+    expect(parseBranchList(raw)).toEqual(['feature/other-worktree', 'feature/plain', 'main']);
+  });
 });

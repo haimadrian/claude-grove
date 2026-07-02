@@ -1,4 +1,4 @@
-import type { Settings, WorktreeRow, Commit, PrInfo, OpResult, GhStatus, SyncAction, TerminalKind } from '../../shared/types';
+import type { Settings, WorktreeRow, Commit, PrInfo, OpResult, GhStatus, SyncAction, TerminalKind, ConflictFileSegment } from '../../shared/types';
 
 declare global {
   interface Window {
@@ -23,6 +23,12 @@ declare global {
         workingFileDiff(path: string, filePath: string): Promise<string>;
         commitFiles(path: string, files: string[], message: string): Promise<OpResult>;
         rollbackFile(path: string, filePath: string, status: string): Promise<OpResult>;
+        mergeFrom(path: string, branch: string): Promise<OpResult & { conflictedFiles: string[] | null }>;
+        listConflictedFiles(path: string): Promise<string[]>;
+        getConflictBlocks(path: string, filePath: string): Promise<ConflictFileSegment[]>;
+        applyFileResolution(path: string, filePath: string, resolvedContent: string): Promise<OpResult>;
+        finishMerge(path: string): Promise<OpResult>;
+        abortMerge(path: string): Promise<OpResult>;
       };
       pr: {
         get(ownerRepo: string, branch: string): Promise<PrInfo | null>;

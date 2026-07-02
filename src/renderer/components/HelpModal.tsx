@@ -41,6 +41,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
             <p style={P}>Claude Grove is a macOS desktop app for managing git worktrees across multiple repositories. It shows PR status, links Claude Code sessions to worktrees, and provides an in-app diff viewer — all in one place.</p>
             <p style={P}>Add one or more <strong>root folders</strong> in Settings. Claude Grove scans them for git repositories and lists all their worktrees.</p>
             <p style={P}>The header toolbar has: <strong>↺</strong> Refresh, <strong>≡ / ⊞</strong> layout toggle (table / card), <strong>☀ / ☾</strong> theme toggle (light / dark), <strong>?</strong> Help, <strong>⚙</strong> Settings. The layout and theme preferences persist across restarts.</p>
+            <p style={P}>Hover the tree logo (here or in the header) to watch it grow.</p>
           </div>
 
           <div style={SECTION}>
@@ -120,6 +121,19 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
               <li>The <strong>commit list splitter</strong> (left edge of diff area) can be clicked to collapse/expand the commit list. Drag it to resize.</li>
               <li><strong>Cmd+F</strong> — open find-in-page search. Type 2+ characters to highlight all matches. <strong>Enter</strong> = next, <strong>Shift+Enter</strong> = prev. Click ↑ ↓ buttons or press Escape to close.</li>
               <li><strong>↺ Refresh</strong> in detail view reloads only this worktree's diff and commits — not the full list</li>
+              <li>The <strong>branch picker</strong> next to the PR badge lets you diff against any branch instead of the auto-detected base. Your choice is remembered per worktree; pick "Auto" to go back to auto-detection.</li>
+            </ul>
+          </div>
+
+          <div style={SECTION}>
+            <div style={H2}>Merge Conflict Resolver</div>
+            <p style={P}>Use <strong>⎇ Git → Merge from…</strong> to merge any branch into a worktree. Most merges are clean and just show a success toast — the resolver only opens when git can't auto-resolve something.</p>
+            <ul style={{ paddingLeft: 20, color: 'var(--fg-muted)', fontSize: 13, lineHeight: 2 }}>
+              <li>Three columns: <strong>Mine</strong> and <strong>Theirs</strong> show each branch's real content (labeled with the actual branch name); <strong>Result</strong> is what gets written to the file. Raw <code style={CODE}>{'<<<<<<<'}</code>-style conflict markers are never shown — only colored, human-readable diffs.</li>
+              <li>Click the <strong>»</strong> / <strong>«</strong> arrows beside a conflict to take that side, or edit the Result column directly if neither side is exactly right.</li>
+              <li>The view opens at the first conflict; the <strong>↑ ↓</strong> nav in the toolbar scrolls to the previous/next one. Column headers stay pinned while you scroll.</li>
+              <li><strong>Abort merge</strong> is available at any point and discards all progress. Resolving every conflicted file finishes the merge automatically (no extra confirmation).</li>
+              <li>Drag the dialog's bottom-right corner to resize it.</li>
             </ul>
           </div>
 
@@ -145,6 +159,7 @@ export function HelpModal({ onClose }: Props): React.JSX.Element {
                   ['Default editor', 'App bundle or CLI command (e.g. code, cursor).'],
                   ['Card layout', 'Columns and rows for the card grid (1–6 each, default 3×3).'],
                   ['Base branch', 'Fallback branch for diffs. Also hides main / master worktrees from the list. Applied on Save.'],
+                  ['Jira base URL', 'Base URL for the Jira ticket badge on branch names. Clear to hide the badge.'],
                   ['PR cache TTL', 'Seconds to cache PR data before re-fetching.'],
                 ].map(([setting, desc]) => (
                   <tr key={setting}>

@@ -17,6 +17,8 @@ declare global {
         create(input: { repoPath: string; branch: string; base: string }): Promise<OpResult>;
         sync(path: string, action: SyncAction): Promise<OpResult>;
         renameBranch(path: string, newBranch: string): Promise<OpResult>;
+        listBranches(path: string): Promise<string[]>;
+        resolveActiveBase(path: string, prBaseRefName?: string): Promise<string>;
         workingFiles(path: string): Promise<Array<{ path: string; status: string; label: string }>>;
         workingFileDiff(path: string, filePath: string): Promise<string>;
         commitFiles(path: string, files: string[], message: string): Promise<OpResult>;

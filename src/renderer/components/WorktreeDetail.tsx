@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X as XIcon } from 'lucide-react';
-import type { WorktreeRow, TerminalKind } from '../../shared/types';
+import type { WorktreeRow, TerminalKind, Settings } from '../../shared/types';
 
 import { PrBadge } from './PrBadge';
 import { CommitList } from './CommitList';
 import { DiffViewer } from './DiffViewer';
 import { SessionPickerModal } from './SessionPickerModal';
+import { BranchPicker } from './BranchPicker';
+import { JiraBadge } from './JiraBadge';
 
 const LS_PIN_KEY = 'claude-grove:detail-pinned';
 function loadPinned(): boolean {
@@ -17,16 +19,24 @@ function loadIgnoreWs(): boolean {
   try { return JSON.parse(localStorage.getItem(LS_DIFF_OPTIONS) ?? '{}').ignoreWhitespace === true; } catch { return false; }
 }
 
+function baseOverrideKey(worktreePath: string): string {
+  return `claude-grove:base-override:${worktreePath}`;
+}
+function loadBaseOverride(worktreePath: string): string | null {
+  try { return localStorage.getItem(baseOverrideKey(worktreePath)); } catch { return null; }
+}
+
 interface Props {
   worktree: WorktreeRow;
   defaultTerminal: TerminalKind;
+  settings: Settings;
   refreshKey?: number;
   onBack: () => void;
   onMessage: (msg: string, ok: boolean | 'pending', resolveId?: string, subtitle?: string) => string;
   onRefresh?: () => void;
 }
 
-export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, onMessage, onRefresh }: Props): React.JSX.Element {
+export function WorktreeDetail({ worktree, defaultTerminal, settings, refreshKey, onBack, onMessage, onRefresh }: Props): React.JSX.Element {
   const [diff, setDiff] = useState<string>('');
   const [pinned, setPinned] = useState(loadPinned);
   const [leftWidth, setLeftWidth] = useState(300);
@@ -36,6 +46,9 @@ export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteRemote, setDeleteRemote] = useState(false);
   const [ignoreWhitespace, setIgnoreWhitespace] = useState(loadIgnoreWs);
+  const [baseOverride, setBaseOverride] = useState<string | null>(() => loadBaseOverride(worktree.path));
+  const [autoBase, setAutoBase] = useState<string>(worktree.pr?.baseRefName ?? '…');
+  const [allBranches, setAllBranches] = useState<string[]>([]);
   const [showSessionPicker, setShowSessionPicker] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,6 +62,19 @@ export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, 
   useEffect(() => {
     try { localStorage.setItem(LS_PIN_KEY, String(pinned)); } catch { /* ignore */ }
   }, [pinned]);
+
+  useEffect(() => {
+    try {
+      if (baseOverride) localStorage.setItem(baseOverrideKey(worktree.path), baseOverride);
+      else localStorage.removeItem(baseOverrideKey(worktree.path));
+    } catch { /* ignore */ }
+  }, [baseOverride, worktree.path]);
+
+  useEffect(() => {
+    setBaseOverride(loadBaseOverride(worktree.path));
+    window.api.worktrees.resolveActiveBase(worktree.path, worktree.pr?.baseRefName).then(setAutoBase);
+    window.api.worktrees.listBranches(worktree.path).then(setAllBranches);
+  }, [worktree.path, worktree.pr?.baseRefName]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -168,9 +194,11 @@ export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, 
       .catch((e) => onMessage(String(e), false, delId));
   }, [worktree, deleteRemote, onMessage, onBack, onRefresh]);
 
+  const effectiveBase = baseOverride ?? worktree.pr?.baseRefName ?? undefined;
+
   const loadFullDiff = useCallback((): void => {
-    window.api.worktrees.fullDiff(worktree.path, worktree.pr?.baseRefName ?? undefined, ignoreWhitespace).then(setDiff);
-  }, [worktree.path, worktree.pr?.baseRefName, ignoreWhitespace]);
+    window.api.worktrees.fullDiff(worktree.path, effectiveBase, ignoreWhitespace).then(setDiff);
+  }, [worktree.path, effectiveBase, ignoreWhitespace]);
 
   useEffect(() => { loadFullDiff(); }, [worktree.path, ignoreWhitespace, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -201,6 +229,15 @@ export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, 
           <PrBadge
             pr={worktree.pr}
             {...(worktree.pr ? { onClick: () => window.api.open.url(worktree.pr!.url) } : {})}
+          />
+          <JiraBadge branch={worktree.branch} jiraBaseUrl={settings.jiraBaseUrl} />
+          <span style={{ fontSize: 11, color: 'var(--fg-muted)' }}>diff against</span>
+          <BranchPicker
+            branches={allBranches}
+            value={baseOverride}
+            autoLabel={autoBase}
+            onChange={setBaseOverride}
+            triggerLabel={baseOverride ?? `Auto (${autoBase})`}
           />
         </div>
         <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 4, fontFamily: 'monospace' }}>
@@ -297,7 +334,7 @@ export function WorktreeDetail({ worktree, defaultTerminal, refreshKey, onBack, 
             worktreePath={worktree.path}
             isDirty={worktree.isDirty}
             ignoreWhitespace={ignoreWhitespace}
-            {...(worktree.pr?.baseRefName ? { prBase: worktree.pr.baseRefName } : {})}
+            {...(effectiveBase ? { prBase: effectiveBase } : {})}
             onDiff={setDiff}
             onFullDiff={loadFullDiff}
             onMessage={onMessage}

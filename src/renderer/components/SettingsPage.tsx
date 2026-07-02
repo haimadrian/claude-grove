@@ -16,6 +16,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
   const [cardColumns, setCardColumns] = useState(settings.cardColumns ?? 3);
   const [cardRows, setCardRows] = useState(settings.cardRows ?? 3);
   const [ignoredBranches, setIgnoredBranches] = useState<string[]>(settings.ignoredBranches ?? []);
+  const [jiraBaseUrl, setJiraBaseUrl] = useState(settings.jiraBaseUrl ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -40,6 +41,7 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
       cardColumns: Math.max(1, Math.min(6, cardColumns)),
       cardRows: Math.max(1, Math.min(6, cardRows)),
       ignoredBranches,
+      jiraBaseUrl: jiraBaseUrl.trim(),
     });
     setSaving(false);
     setSaved(true);
@@ -184,6 +186,17 @@ export function SettingsPage({ settings, onUpdate, onClose }: Props): React.JSX.
           </div>
           <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 6 }}>
             Worktrees on these branches are hidden from the list.
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-muted)', marginTop: 16, marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>Jira base URL</div>
+          <input
+            className="settings-input"
+            value={jiraBaseUrl}
+            onChange={(e) => setJiraBaseUrl(e.target.value)}
+            style={INPUT}
+            placeholder="https://yourteam.atlassian.net/browse"
+          />
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4 }}>
+            Branch names containing a ticket id (e.g. t2a-3131) get a clickable badge linking here. Clear to disable.
           </div>
         </Section>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RotateCcw, List, LayoutGrid, Sun, Moon, CircleHelp, Settings2, Trees } from 'lucide-react';
+import { RotateCcw, List, LayoutGrid, Sun, Moon, CircleHelp, Settings2 } from 'lucide-react';
 import type { WorktreeRow } from '../shared/types';
 import { ThemeProvider, useTheme } from './theme/ThemeProvider';
 import { WorktreeTable } from './components/WorktreeTable';
@@ -10,6 +10,7 @@ import { SettingsPage } from './components/SettingsPage';
 import { Onboarding } from './components/Onboarding';
 import { ToastStack, useToast } from './components/Toast';
 import { HelpModal } from './components/HelpModal';
+import { Logo } from './components/Logo';
 import { useSettings } from './hooks/useSettings';
 import { useWorktrees } from './hooks/useWorktrees';
 
@@ -62,20 +63,7 @@ function AppInner(): React.JSX.Element {
         padding: '10px 16px', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
       }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, userSelect: 'none' }}>
-          <Trees size={28} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-          <span style={{
-            fontFamily: "'Bangers', cursive",
-            fontSize: 34,
-            letterSpacing: '0.08em',
-            color: 'var(--fg)',
-            WebkitTextStroke: '0.5px var(--accent)',
-            textShadow: '2px 2px 0 var(--accent), 4px 4px 0 rgba(0,0,0,0.15)',
-            lineHeight: 1,
-          } as React.CSSProperties}>
-            Claude Grove
-          </span>
-        </span>
+        <Logo />
         <button
           onClick={selected !== null
             ? () => setDetailRefreshKey((k) => k + 1)
@@ -138,6 +126,7 @@ function AppInner(): React.JSX.Element {
                 worktrees={filteredWorktrees}
                 loading={loading}
                 defaultTerminal={settings.defaultTerminal}
+                settings={settings}
                 onSelect={(w) => setSelectedId(w.id)}
                 onMessage={(msg, ok, resolveId, subtitle) => showToast(msg, ok === 'pending' ? 'pending' : ok ? 'ok' : 'error', resolveId, subtitle)}
                 onRefresh={refresh}
@@ -156,6 +145,7 @@ function AppInner(): React.JSX.Element {
               <WorktreeDetail
                 worktree={selected}
                 defaultTerminal={settings.defaultTerminal}
+                settings={settings}
                 refreshKey={detailRefreshKey}
                 onBack={() => setSelectedId(null)}
                 onMessage={(msg, ok, resolveId, subtitle) => showToast(msg, ok === 'pending' ? 'pending' : ok ? 'ok' : 'error', resolveId, subtitle)}

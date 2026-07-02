@@ -4,6 +4,7 @@ import { buildStateLines, buildPrLines } from '../utils/tooltips';
 import { PrBadge } from './PrBadge';
 import { CopyButton } from './CopyButton';
 import { SessionPickerModal } from './SessionPickerModal';
+import { JiraBadge } from './JiraBadge';
 import { Eye, Play, Code2, Terminal, FolderOpen, GitBranch, ExternalLink, ArrowDownToLine, Pencil, Trash2, MoreVertical } from 'lucide-react';
 
 const REPO_HUES = [217, 142, 271, 24, 180, 329, 90, 45, 195, 0, 260, 158];
@@ -361,6 +362,7 @@ export function WorktreeCard({ row, settings, onSelect, onRefresh, onToast, open
             {row.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}
           </span>
           {row.branch && <CopyButton text={row.branch} />}
+          <JiraBadge branch={row.branch} jiraBaseUrl={settings.jiraBaseUrl} />
           <button
             onClick={(e) => { e.stopPropagation(); onSelect(row); }}
             title="View diff"

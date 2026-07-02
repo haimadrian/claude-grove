@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import type { WorktreeRow, TerminalKind } from '../../shared/types';
+import type { WorktreeRow, TerminalKind, Settings } from '../../shared/types';
 import { buildStateLines, buildPrLines } from '../utils/tooltips';
 import { PrBadge } from './PrBadge';
 import { SearchBar } from './SearchBar';
 import { FilterBar, type Filters } from './FilterBar';
 import { SessionPickerModal } from './SessionPickerModal';
 import { CopyButton } from './CopyButton';
+import { JiraBadge } from './JiraBadge';
 import { useLabels } from '../hooks/useLabels';
 import { LabelBar } from './LabelBar';
 import { Eye, Play, Code2, Terminal, FolderOpen, GitBranch, ExternalLink, ArrowDownToLine, Pencil, Trash2 } from 'lucide-react';
@@ -104,12 +105,13 @@ interface Props {
   worktrees: WorktreeRow[];
   loading: boolean;
   defaultTerminal: TerminalKind;
+  settings: Settings;
   onSelect: (wt: WorktreeRow) => void;
   onMessage: (msg: string, ok: boolean | 'pending', resolveId?: string, subtitle?: string) => string;
   onRefresh: () => void;
 }
 
-export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, onMessage, onRefresh }: Props): React.JSX.Element {
+export function WorktreeTable({ worktrees, loading, defaultTerminal, settings, onSelect, onMessage, onRefresh }: Props): React.JSX.Element {
   const [search, setSearch] = useState('');
   const persisted = loadPersistedState();
   const [filters, setFilters] = useState<Filters>({ ...DEFAULT_FILTERS, ...(persisted.filters ?? {}) });
@@ -387,6 +389,7 @@ export function WorktreeTable({ worktrees, loading, defaultTerminal, onSelect, o
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                         {w.branch ?? <em style={{ color: 'var(--fg-muted)' }}>detached</em>}
                       </span>
+                      <JiraBadge branch={w.branch} jiraBaseUrl={settings.jiraBaseUrl} />
                       {hovered && w.branch && <CopyButton text={w.branch} />}
                     </div>
                   </td>
